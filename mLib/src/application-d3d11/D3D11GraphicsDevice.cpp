@@ -158,10 +158,10 @@ void D3D11GraphicsDevice::createViews() {
 void D3D11GraphicsDevice::registerDefaultShaders()
 {
     const std::string cwd = util::workingDirectory();
-    const std::string mLibShaderDir = "shaders/";
+    const std::string mLibShaderDir = cwd + "/shaders/";
 
-    m_shaderManager.registerShader(mLibShaderDir + "defaultBasicTexture.hlsl", "defaultBasicTexture");
-	m_shaderManager.registerShader(mLibShaderDir + "defaultBasic.hlsl", "defaultBasic");
+    m_shaderManager.registerShader(mLibShaderDir + "defaultBasicTexture.shader", "defaultBasicTexture");
+	m_shaderManager.registerShader(mLibShaderDir + "defaultBasic.shader", "defaultBasic");
 }
 
 void D3D11GraphicsDevice::resize(const WindowWin32 &window)

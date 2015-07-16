@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mLibSource.cpp" />
+    <ClCompile Include="DLLExportWriter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h" />
+    <ClInclude Include="mLibInclude.h" />
+    <ClInclude Include="DLLExportWriter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="data">
+      <UniqueIdentifier>{1d674f85-1378-4f26-a41d-6bf3c21f32ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="output">
+      <UniqueIdentifier>{addc2453-7952-47e1-8c5b-f16e84ccdfa9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\d3d11Exports.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="data\d3d11ExportsTemplate.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="output\d3d11Exports.cpp.txt">
+      <Filter>output</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="output\exports.def">
+      <Filter>output</Filter>
+    </None>
+  </ItemGroup>
+</Project>

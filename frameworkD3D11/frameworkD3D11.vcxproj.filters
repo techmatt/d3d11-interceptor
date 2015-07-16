@@ -227,14 +227,8 @@
     <Text Include="shaders\defaultCanvas.hlsl">
       <Filter>shaders</Filter>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="shaders\defaultBasic.hlsl">
-      <Filter>shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="shaders\defaultBasicTexture.hlsl">
-      <Filter>shaders</Filter>
-    </FxCompile>
+    <Text Include="shaders\defaultBasic.hlsl" />
+    <Text Include="shaders\defaultBasicTexture.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.shader">

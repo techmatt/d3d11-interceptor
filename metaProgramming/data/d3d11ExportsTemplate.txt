@@ -1,0 +1,7 @@
+HRESULT my#FunctionName#(#FunctionParameters#)
+{
+    initGlobalLogger();
+    g_logger->log("DLL call: #FunctionName#");
+
+	return S_OK;
+}

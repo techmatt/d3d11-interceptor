@@ -1,0 +1,470 @@
+==================================================
+Function Name     : D3D11CoreCreateDevice
+Address           : 0x000000018001eeb0
+Relative Address  : 0x0001eeb0
+Ordinal           : 14 (0xe)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3D11CoreCreateLayeredDevice
+Address           : 0x000000018001d03c
+Relative Address  : 0x0001d03c
+Ordinal           : 15 (0xf)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3D11CoreGetLayeredDeviceSize
+Address           : 0x000000018001ced4
+Relative Address  : 0x0001ced4
+Ordinal           : 16 (0x10)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3D11CoreRegisterLayers
+Address           : 0x000000018001cd2c
+Relative Address  : 0x0001cd2c
+Ordinal           : 17 (0x11)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3D11CreateDevice
+Address           : 0x0000000180020090
+Relative Address  : 0x00020090
+Ordinal           : 18 (0x12)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3D11CreateDeviceAndSwapChain
+Address           : 0x00000001800200f8
+Relative Address  : 0x000200f8
+Ordinal           : 19 (0x13)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTCloseAdapter
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 1 (0x1)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTCreateAllocation
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 20 (0x14)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTCreateContext
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 21 (0x15)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTCreateDevice
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 22 (0x16)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTCreateSynchronizationObject
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 23 (0x17)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTDestroyAllocation
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 2 (0x2)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTDestroyContext
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 3 (0x3)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTDestroyDevice
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 4 (0x4)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTDestroySynchronizationObject
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 5 (0x5)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTEscape
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 24 (0x18)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetContextSchedulingPriority
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 25 (0x19)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetDeviceState
+Address           : 0x000000018001c39c
+Relative Address  : 0x0001c39c
+Ordinal           : 26 (0x1a)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetDisplayModeList
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 27 (0x1b)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetMultisampleMethodList
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 28 (0x1c)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetRuntimeData
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 29 (0x1d)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTGetSharedPrimaryHandle
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 30 (0x1e)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTLock
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 31 (0x1f)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTOpenAdapterFromHdc
+Address           : 0x000000018001c378
+Relative Address  : 0x0001c378
+Ordinal           : 32 (0x20)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTOpenResource
+Address           : 0x000000018001c314
+Relative Address  : 0x0001c314
+Ordinal           : 33 (0x21)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTPresent
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 34 (0x22)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTQueryAdapterInfo
+Address           : 0x000000018001c320
+Relative Address  : 0x0001c320
+Ordinal           : 6 (0x6)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTQueryAllocationResidency
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 35 (0x23)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTQueryResourceInfo
+Address           : 0x000000018001c314
+Relative Address  : 0x0001c314
+Ordinal           : 36 (0x24)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTRender
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 37 (0x25)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetAllocationPriority
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 38 (0x26)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetContextSchedulingPriority
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 39 (0x27)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetDisplayMode
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 40 (0x28)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetDisplayPrivateDriverFormat
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 7 (0x7)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetGammaRamp
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 41 (0x29)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSetVidPnSourceOwner
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 42 (0x2a)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTSignalSynchronizationObject
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 8 (0x8)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTUnlock
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 9 (0x9)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTWaitForSynchronizationObject
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 10 (0xa)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DKMTWaitForVerticalBlankEvent
+Address           : 0x0000000180038a28
+Relative Address  : 0x00038a28
+Ordinal           : 43 (0x2b)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DPerformance_BeginEvent
+Address           : 0x000000018001ee6c
+Relative Address  : 0x0001ee6c
+Ordinal           : 44 (0x2c)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DPerformance_EndEvent
+Address           : 0x000000018001ee6c
+Relative Address  : 0x0001ee6c
+Ordinal           : 45 (0x2d)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DPerformance_GetStatus
+Address           : 0x000000018001ee98
+Relative Address  : 0x0001ee98
+Ordinal           : 46 (0x2e)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : D3DPerformance_SetMarker
+Address           : 0x000000018001ee84
+Relative Address  : 0x0001ee84
+Ordinal           : 47 (0x2f)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : EnableFeatureLevelUpgrade
+Address           : 0x000000018001ee54
+Relative Address  : 0x0001ee54
+Ordinal           : 11 (0xb)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OpenAdapter10
+Address           : 0x000000018001c270
+Relative Address  : 0x0001c270
+Ordinal           : 12 (0xc)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OpenAdapter10_2
+Address           : 0x000000018001c2a8
+Relative Address  : 0x0001c2a8
+Ordinal           : 13 (0xd)
+Filename          : d3d11.dll
+Full Path         : C:\Windows\System32\d3d11.dll
+Type              : Exported Function
+==================================================
+
