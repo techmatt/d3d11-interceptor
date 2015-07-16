@@ -162,17 +162,6 @@
     <Text Include="console.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="shaders\defaultBasic.hlsl">
-      <FileType>Document</FileType>
-    </Text>
-    <Text Include="shaders\defaultBasicTexture.hlsl">
-      <FileType>Document</FileType>
-    </Text>
-    <Text Include="shaders\defaultCanvas.hlsl">
-      <FileType>Document</FileType>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="shaders\test.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

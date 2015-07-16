@@ -11,6 +11,17 @@ struct DLLExportFunction
         }
         return result;
     }
+    string getParameterCallList() const
+    {
+        string result;
+        for (int i = 0; i < parameterTypes.size(); i++)
+        {
+            result += "p" + to_string(i);
+            if (i != parameterTypes.size() - 1) result += ", ";
+        }
+        return result;
+    }
+
     string name;
     vector<string> parameterTypes;
 };

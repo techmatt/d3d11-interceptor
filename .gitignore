@@ -87,3 +87,17 @@
 /tools/d3d11BackupSysWOW64.dll
 /tools/d3d11BackupSystem32.dll
 /tools/dllexp.cfg
+/interceptor/x64/Debug/DLLMain.obj
+/interceptor/x64/Debug/d3d11Exports.obj
+/interceptor/x64/Debug/interceptor.log
+/interceptor/x64/Debug/interceptor.tlog/CL.read.1.tlog
+/interceptor/x64/Debug/interceptor.tlog/CL.write.1.tlog
+/interceptor/x64/Debug/interceptor.tlog/cl.command.1.tlog
+/interceptor/x64/Debug/interceptor.tlog/interceptor.lastbuildstate
+/interceptor/x64/Debug/interceptor.tlog/interceptor.write.1u.tlog
+/interceptor/x64/Debug/interceptor.tlog/link.command.1.tlog
+/interceptor/x64/Debug/interceptor.tlog/link.read.1.tlog
+/interceptor/x64/Debug/interceptor.tlog/link.write.1.tlog
+/interceptor/x64/Debug/main.obj
+/interceptor/x64/Debug/vc120.idb
+/interceptor/x64/Debug/vc120.pdb

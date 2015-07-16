@@ -1,7 +1,13 @@
+
+typedef #FunctionReturn# (WINAPI *#FunctionName#Type)(#FunctionParameters#);
 HRESULT WINAPI my#FunctionName#(#FunctionParameters#)
 {
-    initGlobalLogger();
+    initGlobals();
     g_logger->log("DLL call: #FunctionName#");
 
-	return S_OK;
+	#FunctionName#Type proc = (#FunctionName#Type)g_state->getProcedure("#FunctionName#");
+
+	#FunctionReturn# result = proc(#FunctionParameterCall#);
+
+	return result;
 }

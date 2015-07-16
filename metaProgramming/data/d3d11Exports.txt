@@ -14,7 +14,7 @@ D3D11CoreCreateLayeredDevice
 D3D11CoreGetLayeredDeviceSize
 D3D11CoreRegisterLayers
 D3D11CreateDevice,IDXGIAdapter*,D3D_DRIVER_TYPE,HMODULE,UINT,const D3D_FEATURE_LEVEL*,UINT,UINT,ID3D11Device**,D3D_FEATURE_LEVEL*,ID3D11DeviceContext **
-D3D11CreateDeviceAndSwapChain
+D3D11CreateDeviceAndSwapChain,IDXGIAdapter*,D3D_DRIVER_TYPE,HMODULE,UINT,const D3D_FEATURE_LEVEL*,UINT,UINT,const DXGI_SWAP_CHAIN_DESC *,IDXGISwapChain **,ID3D11Device**,D3D_FEATURE_LEVEL*,ID3D11DeviceContext **
 D3DKMTCreateAllocation
 D3DKMTCreateContext
 D3DKMTCreateDevice

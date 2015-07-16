@@ -35,6 +35,9 @@ void DLLExportWriter::write(const string &input, const string &outputCpp, const 
         {
             string line = util::replace(templateLine, "#FunctionName#", func.name);
             line = util::replace(line, "#FunctionParameters#", func.getParameterList());
+            line = util::replace(line, "#FunctionParameterCall#", func.getParameterCallList());
+            line = util::replace(line, "#FunctionReturn#", "HRESULT");
+            
             cppFile << line << endl;
         }
         cppFile << endl;

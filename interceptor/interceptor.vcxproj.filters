@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="main.h" />
-    <ClInclude Include="logger.h" />
+    <ClInclude Include="globals.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

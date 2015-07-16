@@ -77,7 +77,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="logger.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
