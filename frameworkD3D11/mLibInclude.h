@@ -15,3 +15,4 @@
 #include "mLibD3D11Font.h"
 
 using namespace ml;
+using namespace std;

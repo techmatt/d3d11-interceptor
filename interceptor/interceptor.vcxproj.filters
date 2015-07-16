@@ -7,6 +7,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="d3d11Exports.cpp" />
+    <ClCompile Include="DLLMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

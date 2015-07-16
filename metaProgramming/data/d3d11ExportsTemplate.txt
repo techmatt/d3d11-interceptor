@@ -1,4 +1,4 @@
-HRESULT my#FunctionName#(#FunctionParameters#)
+HRESULT WINAPI my#FunctionName#(#FunctionParameters#)
 {
     initGlobalLogger();
     g_logger->log("DLL call: #FunctionName#");

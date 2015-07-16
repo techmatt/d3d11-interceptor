@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-HRESULT myD3DKMTDestroyAllocation()
+HRESULT WINAPI myD3DKMTDestroyAllocation()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTDestroyAllocation");
@@ -9,7 +9,7 @@ HRESULT myD3DKMTDestroyAllocation()
     return S_OK;
 }
 
-HRESULT myD3DKMTDestroyContext()
+HRESULT WINAPI myD3DKMTDestroyContext()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTDestroyContext");
@@ -17,7 +17,7 @@ HRESULT myD3DKMTDestroyContext()
     return S_OK;
 }
 
-HRESULT myD3DKMTDestroyDevice()
+HRESULT WINAPI myD3DKMTDestroyDevice()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTDestroyDevice");
@@ -25,7 +25,7 @@ HRESULT myD3DKMTDestroyDevice()
     return S_OK;
 }
 
-HRESULT myD3DKMTDestroySynchronizationObject()
+HRESULT WINAPI myD3DKMTDestroySynchronizationObject()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTDestroySynchronizationObject");
@@ -33,7 +33,7 @@ HRESULT myD3DKMTDestroySynchronizationObject()
     return S_OK;
 }
 
-HRESULT myD3DKMTQueryAdapterInfo()
+HRESULT WINAPI myD3DKMTQueryAdapterInfo()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTQueryAdapterInfo");
@@ -41,7 +41,7 @@ HRESULT myD3DKMTQueryAdapterInfo()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetDisplayPrivateDriverFormat()
+HRESULT WINAPI myD3DKMTSetDisplayPrivateDriverFormat()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetDisplayPrivateDriverFormat");
@@ -49,7 +49,7 @@ HRESULT myD3DKMTSetDisplayPrivateDriverFormat()
     return S_OK;
 }
 
-HRESULT myD3DKMTSignalSynchronizationObject()
+HRESULT WINAPI myD3DKMTSignalSynchronizationObject()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSignalSynchronizationObject");
@@ -57,7 +57,7 @@ HRESULT myD3DKMTSignalSynchronizationObject()
     return S_OK;
 }
 
-HRESULT myD3DKMTUnlock()
+HRESULT WINAPI myD3DKMTUnlock()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTUnlock");
@@ -65,7 +65,7 @@ HRESULT myD3DKMTUnlock()
     return S_OK;
 }
 
-HRESULT myD3DKMTWaitForSynchronizationObject()
+HRESULT WINAPI myD3DKMTWaitForSynchronizationObject()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTWaitForSynchronizationObject");
@@ -73,7 +73,7 @@ HRESULT myD3DKMTWaitForSynchronizationObject()
     return S_OK;
 }
 
-HRESULT myOpenAdapter10()
+HRESULT WINAPI myOpenAdapter10()
 {
     initGlobalLogger();
     g_logger->log("DLL call: OpenAdapter10");
@@ -81,7 +81,7 @@ HRESULT myOpenAdapter10()
     return S_OK;
 }
 
-HRESULT myOpenAdapter10_2()
+HRESULT WINAPI myOpenAdapter10_2()
 {
     initGlobalLogger();
     g_logger->log("DLL call: OpenAdapter10_2");
@@ -89,7 +89,7 @@ HRESULT myOpenAdapter10_2()
     return S_OK;
 }
 
-HRESULT myD3D11CoreCreateDevice()
+HRESULT WINAPI myD3D11CoreCreateDevice()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CoreCreateDevice");
@@ -97,7 +97,7 @@ HRESULT myD3D11CoreCreateDevice()
     return S_OK;
 }
 
-HRESULT myD3D11CoreCreateLayeredDevice()
+HRESULT WINAPI myD3D11CoreCreateLayeredDevice()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CoreCreateLayeredDevice");
@@ -105,7 +105,7 @@ HRESULT myD3D11CoreCreateLayeredDevice()
     return S_OK;
 }
 
-HRESULT myD3D11CoreGetLayeredDeviceSize()
+HRESULT WINAPI myD3D11CoreGetLayeredDeviceSize()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CoreGetLayeredDeviceSize");
@@ -113,7 +113,7 @@ HRESULT myD3D11CoreGetLayeredDeviceSize()
     return S_OK;
 }
 
-HRESULT myD3D11CoreRegisterLayers()
+HRESULT WINAPI myD3D11CoreRegisterLayers()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CoreRegisterLayers");
@@ -121,7 +121,7 @@ HRESULT myD3D11CoreRegisterLayers()
     return S_OK;
 }
 
-HRESULT myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE p2, UINT p3, const D3D_FEATURE_LEVEL* p4, UINT p5, UINT p6, ID3D11Device** p7, D3D_FEATURE_LEVEL* p8, ID3D11DeviceContext ** p9)
+HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE p2, UINT p3, const D3D_FEATURE_LEVEL* p4, UINT p5, UINT p6, ID3D11Device** p7, D3D_FEATURE_LEVEL* p8, ID3D11DeviceContext ** p9)
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CreateDevice");
@@ -129,7 +129,7 @@ HRESULT myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE p2, UI
     return S_OK;
 }
 
-HRESULT myD3D11CreateDeviceAndSwapChain()
+HRESULT WINAPI myD3D11CreateDeviceAndSwapChain()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3D11CreateDeviceAndSwapChain");
@@ -137,7 +137,7 @@ HRESULT myD3D11CreateDeviceAndSwapChain()
     return S_OK;
 }
 
-HRESULT myD3DKMTCreateAllocation()
+HRESULT WINAPI myD3DKMTCreateAllocation()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTCreateAllocation");
@@ -145,7 +145,7 @@ HRESULT myD3DKMTCreateAllocation()
     return S_OK;
 }
 
-HRESULT myD3DKMTCreateContext()
+HRESULT WINAPI myD3DKMTCreateContext()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTCreateContext");
@@ -153,7 +153,7 @@ HRESULT myD3DKMTCreateContext()
     return S_OK;
 }
 
-HRESULT myD3DKMTCreateDevice()
+HRESULT WINAPI myD3DKMTCreateDevice()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTCreateDevice");
@@ -161,7 +161,7 @@ HRESULT myD3DKMTCreateDevice()
     return S_OK;
 }
 
-HRESULT myD3DKMTCreateSynchronizationObject()
+HRESULT WINAPI myD3DKMTCreateSynchronizationObject()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTCreateSynchronizationObject");
@@ -169,7 +169,7 @@ HRESULT myD3DKMTCreateSynchronizationObject()
     return S_OK;
 }
 
-HRESULT myD3DKMTEscape()
+HRESULT WINAPI myD3DKMTEscape()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTEscape");
@@ -177,7 +177,7 @@ HRESULT myD3DKMTEscape()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetContextSchedulingPriority()
+HRESULT WINAPI myD3DKMTGetContextSchedulingPriority()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetContextSchedulingPriority");
@@ -185,7 +185,7 @@ HRESULT myD3DKMTGetContextSchedulingPriority()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetDeviceState()
+HRESULT WINAPI myD3DKMTGetDeviceState()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetDeviceState");
@@ -193,7 +193,7 @@ HRESULT myD3DKMTGetDeviceState()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetDisplayModeList()
+HRESULT WINAPI myD3DKMTGetDisplayModeList()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetDisplayModeList");
@@ -201,7 +201,7 @@ HRESULT myD3DKMTGetDisplayModeList()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetMultisampleMethodList()
+HRESULT WINAPI myD3DKMTGetMultisampleMethodList()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetMultisampleMethodList");
@@ -209,7 +209,7 @@ HRESULT myD3DKMTGetMultisampleMethodList()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetRuntimeData()
+HRESULT WINAPI myD3DKMTGetRuntimeData()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetRuntimeData");
@@ -217,7 +217,7 @@ HRESULT myD3DKMTGetRuntimeData()
     return S_OK;
 }
 
-HRESULT myD3DKMTGetSharedPrimaryHandle()
+HRESULT WINAPI myD3DKMTGetSharedPrimaryHandle()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTGetSharedPrimaryHandle");
@@ -225,7 +225,7 @@ HRESULT myD3DKMTGetSharedPrimaryHandle()
     return S_OK;
 }
 
-HRESULT myD3DKMTLock()
+HRESULT WINAPI myD3DKMTLock()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTLock");
@@ -233,7 +233,7 @@ HRESULT myD3DKMTLock()
     return S_OK;
 }
 
-HRESULT myD3DKMTOpenAdapterFromHdc()
+HRESULT WINAPI myD3DKMTOpenAdapterFromHdc()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTOpenAdapterFromHdc");
@@ -241,7 +241,7 @@ HRESULT myD3DKMTOpenAdapterFromHdc()
     return S_OK;
 }
 
-HRESULT myD3DKMTOpenResource()
+HRESULT WINAPI myD3DKMTOpenResource()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTOpenResource");
@@ -249,7 +249,7 @@ HRESULT myD3DKMTOpenResource()
     return S_OK;
 }
 
-HRESULT myD3DKMTPresent()
+HRESULT WINAPI myD3DKMTPresent()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTPresent");
@@ -257,7 +257,7 @@ HRESULT myD3DKMTPresent()
     return S_OK;
 }
 
-HRESULT myD3DKMTQueryAllocationResidency()
+HRESULT WINAPI myD3DKMTQueryAllocationResidency()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTQueryAllocationResidency");
@@ -265,7 +265,7 @@ HRESULT myD3DKMTQueryAllocationResidency()
     return S_OK;
 }
 
-HRESULT myD3DKMTQueryResourceInfo()
+HRESULT WINAPI myD3DKMTQueryResourceInfo()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTQueryResourceInfo");
@@ -273,7 +273,7 @@ HRESULT myD3DKMTQueryResourceInfo()
     return S_OK;
 }
 
-HRESULT myD3DKMTRender()
+HRESULT WINAPI myD3DKMTRender()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTRender");
@@ -281,7 +281,7 @@ HRESULT myD3DKMTRender()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetAllocationPriority()
+HRESULT WINAPI myD3DKMTSetAllocationPriority()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetAllocationPriority");
@@ -289,7 +289,7 @@ HRESULT myD3DKMTSetAllocationPriority()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetContextSchedulingPriority()
+HRESULT WINAPI myD3DKMTSetContextSchedulingPriority()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetContextSchedulingPriority");
@@ -297,7 +297,7 @@ HRESULT myD3DKMTSetContextSchedulingPriority()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetDisplayMode()
+HRESULT WINAPI myD3DKMTSetDisplayMode()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetDisplayMode");
@@ -305,7 +305,7 @@ HRESULT myD3DKMTSetDisplayMode()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetGammaRamp()
+HRESULT WINAPI myD3DKMTSetGammaRamp()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetGammaRamp");
@@ -313,7 +313,7 @@ HRESULT myD3DKMTSetGammaRamp()
     return S_OK;
 }
 
-HRESULT myD3DKMTSetVidPnSourceOwner()
+HRESULT WINAPI myD3DKMTSetVidPnSourceOwner()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTSetVidPnSourceOwner");
@@ -321,7 +321,7 @@ HRESULT myD3DKMTSetVidPnSourceOwner()
     return S_OK;
 }
 
-HRESULT myD3DKMTWaitForVerticalBlankEvent()
+HRESULT WINAPI myD3DKMTWaitForVerticalBlankEvent()
 {
     initGlobalLogger();
     g_logger->log("DLL call: D3DKMTWaitForVerticalBlankEvent");
