@@ -220,7 +220,26 @@ HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE
 
     D3D11CreateDeviceType proc = (D3D11CreateDeviceType)g_state->getProcedure("D3D11CreateDevice");
 
+#ifdef INTERCEPTOR_DEBUG_LAYER
+    p3 |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
     HRESULT result = proc(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+
+#ifdef INTERCEPTOR_DEBUG_LAYER
+    setupDeviceDebugLayer(*p7);
+#endif
+
+    MyD3DAssets assets;
+
+    assets.device = new myD3D11Device(*p7);
+    assets.context = new myD3D11DeviceContext(*p9);
+    assets.swapChain = nullptr;
+
+    assets.context->assets = assets;
+
+    *p7 = assets.device;
+    *p9 = assets.context;
 
     return result;
 }
@@ -244,30 +263,7 @@ HRESULT WINAPI myD3D11CreateDeviceAndSwapChain(IDXGIAdapter* p0, D3D_DRIVER_TYPE
         return result;
 
 #ifdef INTERCEPTOR_DEBUG_LAYER
-    ID3D11Debug *d3dDebug = nullptr;
-    if (SUCCEEDED((*p9)->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
-    {
-        ID3D11InfoQueue *d3dInfoQueue = nullptr;
-        if (SUCCEEDED(d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue)))
-        {
-            d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
-            d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
-
-            /*D3D11_MESSAGE_ID hide[] =
-            {
-            D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
-            // Add more message IDs here as needed
-            };
-
-            D3D11_INFO_QUEUE_FILTER filter;
-            memset(&filter, 0, sizeof(filter));
-            filter.DenyList.NumIDs = _countof(hide);
-            filter.DenyList.pIDList = hide;
-            d3dInfoQueue->AddStorageFilterEntries(&filter);*/
-            d3dInfoQueue->Release();
-        }
-        d3dDebug->Release();
-    }
+    setupDeviceDebugLayer(*p9);
 #endif
 
     MyD3DAssets assets;

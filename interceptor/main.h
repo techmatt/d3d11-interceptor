@@ -60,3 +60,5 @@ struct MyD3DAssets
 #include "d3d11Device.h"
 #include "d3d11DeviceContext.h"
 #include "DXGISwapChain.h"
+
+#include "util.h"

@@ -88,6 +88,7 @@
     <ClInclude Include="DXGISwapChain.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d11Device.cpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="DXGISwapChain.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
