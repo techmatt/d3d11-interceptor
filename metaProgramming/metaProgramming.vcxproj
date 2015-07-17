@@ -69,18 +69,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="D3D11InterfaceWriter.cpp" />
     <ClCompile Include="DLLExportWriter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mLibSource.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="D3D11InterfaceWriter.h" />
     <ClInclude Include="DLLExportWriter.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="data\d3d11Device.txt" />
     <Text Include="data\d3d11Exports.txt" />
     <Text Include="data\d3d11ExportsTemplate.txt" />
+    <Text Include="data\d3d11InterfaceTemplate.txt" />
+    <Text Include="data\d3d11InterfaceVoidTemplate.txt" />
+    <Text Include="output\d3d11Device.cpp.txt" />
+    <Text Include="output\d3d11Device.h.txt" />
     <Text Include="output\d3d11Exports.cpp.txt" />
   </ItemGroup>
   <ItemGroup>

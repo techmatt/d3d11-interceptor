@@ -236,7 +236,12 @@ HRESULT WINAPI myD3D11CreateDeviceAndSwapChain(IDXGIAdapter* p0, D3D_DRIVER_TYPE
 
     HRESULT result = proc(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
 
-    return result;
+    if (result != S_OK)
+        return result;
+
+    myD3D11Device *myDevice = new myD3D11Device(*p9);
+
+    return S_OK;
 }
 
 

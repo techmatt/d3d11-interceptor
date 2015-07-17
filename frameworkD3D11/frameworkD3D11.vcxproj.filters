@@ -223,7 +223,7 @@
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="console.txt" />
+    <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.shader">

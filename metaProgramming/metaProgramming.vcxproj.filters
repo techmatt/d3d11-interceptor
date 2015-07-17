@@ -4,11 +4,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="DLLExportWriter.cpp" />
+    <ClCompile Include="D3D11InterfaceWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="DLLExportWriter.h" />
+    <ClInclude Include="D3D11InterfaceWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="data">
@@ -27,6 +29,21 @@
     </Text>
     <Text Include="output\d3d11Exports.cpp.txt">
       <Filter>output</Filter>
+    </Text>
+    <Text Include="data\d3d11Device.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="data\d3d11InterfaceTemplate.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="output\d3d11Device.cpp.txt">
+      <Filter>output</Filter>
+    </Text>
+    <Text Include="output\d3d11Device.h.txt">
+      <Filter>output</Filter>
+    </Text>
+    <Text Include="data\d3d11InterfaceVoidTemplate.txt">
+      <Filter>data</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>

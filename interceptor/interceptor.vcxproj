@@ -77,10 +77,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="d3d11Device.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="d3d11Device.cpp" />
     <ClCompile Include="d3d11Exports.cpp" />
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="main.cpp" />

@@ -1,0 +1,295 @@
+virtual HRESULT STDMETHODCALLTYPE CreateBuffer( 
+    /* [annotation] */ 
+    _In_  const D3D11_BUFFER_DESC *pDesc,
+    /* [annotation] */ 
+    _In_opt_  const D3D11_SUBRESOURCE_DATA *pInitialData,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Buffer **ppBuffer) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateTexture1D( 
+    /* [annotation] */ 
+    _In_  const D3D11_TEXTURE1D_DESC *pDesc,
+    /* [annotation] */ 
+    const D3D11_SUBRESOURCE_DATA *pInitialData,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Texture1D **ppTexture1D) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateTexture2D( 
+    /* [annotation] */ 
+    _In_  const D3D11_TEXTURE2D_DESC *pDesc,
+    /* [annotation] */ 
+    const D3D11_SUBRESOURCE_DATA *pInitialData,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Texture2D **ppTexture2D) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateTexture3D( 
+    /* [annotation] */ 
+    _In_  const D3D11_TEXTURE3D_DESC *pDesc,
+    /* [annotation] */ 
+    const D3D11_SUBRESOURCE_DATA *pInitialData,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Texture3D **ppTexture3D) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateShaderResourceView( 
+    /* [annotation] */ 
+    _In_  ID3D11Resource *pResource,
+    /* [annotation] */ 
+    _In_opt_  const D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11ShaderResourceView **ppSRView) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateUnorderedAccessView( 
+    /* [annotation] */ 
+    _In_  ID3D11Resource *pResource,
+    /* [annotation] */ 
+    _In_opt_  const D3D11_UNORDERED_ACCESS_VIEW_DESC *pDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11UnorderedAccessView **ppUAView) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateRenderTargetView( 
+    /* [annotation] */ 
+    _In_  ID3D11Resource *pResource,
+    /* [annotation] */ 
+    _In_opt_  const D3D11_RENDER_TARGET_VIEW_DESC *pDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11RenderTargetView **ppRTView) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateDepthStencilView( 
+    /* [annotation] */ 
+    _In_  ID3D11Resource *pResource,
+    /* [annotation] */ 
+    _In_opt_  const D3D11_DEPTH_STENCIL_VIEW_DESC *pDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11DepthStencilView **ppDepthStencilView) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateInputLayout( 
+    /* [annotation] */ 
+    const D3D11_INPUT_ELEMENT_DESC *pInputElementDescs,
+    /* [annotation] */ 
+    UINT NumElements,
+    /* [annotation] */ 
+    const void *pShaderBytecodeWithInputSignature,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11InputLayout **ppInputLayout) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateVertexShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11VertexShader **ppVertexShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateGeometryShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11GeometryShader **ppGeometryShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateGeometryShaderWithStreamOutput( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    const D3D11_SO_DECLARATION_ENTRY *pSODeclaration,
+    /* [annotation] */ 
+    UINT NumEntries,
+    /* [annotation] */ 
+    const UINT *pBufferStrides,
+    /* [annotation] */ 
+    UINT NumStrides,
+    /* [annotation] */ 
+    _In_  UINT RasterizedStream,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11GeometryShader **ppGeometryShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreatePixelShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11PixelShader **ppPixelShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateHullShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11HullShader **ppHullShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateDomainShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11DomainShader **ppDomainShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateComputeShader( 
+    /* [annotation] */ 
+    const void *pShaderBytecode,
+    /* [annotation] */ 
+    _In_  SIZE_T BytecodeLength,
+    /* [annotation] */ 
+    _In_opt_  ID3D11ClassLinkage *pClassLinkage,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11ComputeShader **ppComputeShader) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateClassLinkage( 
+    /* [annotation] */ 
+    _Out_  ID3D11ClassLinkage **ppLinkage) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateBlendState( 
+    /* [annotation] */ 
+    _In_  const D3D11_BLEND_DESC *pBlendStateDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11BlendState **ppBlendState) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateDepthStencilState( 
+    /* [annotation] */ 
+    _In_  const D3D11_DEPTH_STENCIL_DESC *pDepthStencilDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11DepthStencilState **ppDepthStencilState) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateRasterizerState( 
+    /* [annotation] */ 
+    _In_  const D3D11_RASTERIZER_DESC *pRasterizerDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11RasterizerState **ppRasterizerState) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateSamplerState( 
+    /* [annotation] */ 
+    _In_  const D3D11_SAMPLER_DESC *pSamplerDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11SamplerState **ppSamplerState) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateQuery( 
+    /* [annotation] */ 
+    _In_  const D3D11_QUERY_DESC *pQueryDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Query **ppQuery) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreatePredicate( 
+    /* [annotation] */ 
+    _In_  const D3D11_QUERY_DESC *pPredicateDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Predicate **ppPredicate) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateCounter( 
+    /* [annotation] */ 
+    _In_  const D3D11_COUNTER_DESC *pCounterDesc,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11Counter **ppCounter) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CreateDeferredContext( 
+    UINT ContextFlags,
+    /* [annotation] */ 
+    _Out_opt_  ID3D11DeviceContext **ppDeferredContext) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE OpenSharedResource( 
+    /* [annotation] */ 
+    _In_  HANDLE hResource,
+    /* [annotation] */ 
+    _In_  REFIID ReturnedInterface,
+    /* [annotation] */ 
+    _Out_opt_  void **ppResource) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CheckFormatSupport( 
+    /* [annotation] */ 
+    _In_  DXGI_FORMAT Format,
+    /* [annotation] */ 
+    _Out_  UINT *pFormatSupport) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CheckMultisampleQualityLevels( 
+    /* [annotation] */ 
+    _In_  DXGI_FORMAT Format,
+    /* [annotation] */ 
+    _In_  UINT SampleCount,
+    /* [annotation] */ 
+    _Out_  UINT *pNumQualityLevels) = 0;
+        
+virtual void STDMETHODCALLTYPE CheckCounterInfo( 
+    /* [annotation] */ 
+    _Out_  D3D11_COUNTER_INFO *pCounterInfo) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CheckCounter( 
+    /* [annotation] */ 
+    _In_  const D3D11_COUNTER_DESC *pDesc,
+    /* [annotation] */ 
+    _Out_  D3D11_COUNTER_TYPE *pType,
+    /* [annotation] */ 
+    _Out_  UINT *pActiveCounters,
+    /* [annotation] */ 
+    LPSTR szName,
+    /* [annotation] */ 
+    _Inout_opt_  UINT *pNameLength,
+    /* [annotation] */ 
+    LPSTR szUnits,
+    /* [annotation] */ 
+    _Inout_opt_  UINT *pUnitsLength,
+    /* [annotation] */ 
+    LPSTR szDescription,
+    /* [annotation] */ 
+    _Inout_opt_  UINT *pDescriptionLength) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE CheckFeatureSupport( 
+    D3D11_FEATURE Feature,
+    /* [annotation] */ 
+    void *pFeatureSupportData,
+    UINT FeatureSupportDataSize) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE GetPrivateData( 
+    /* [annotation] */ 
+    _In_  REFGUID guid,
+    /* [annotation] */ 
+    _Inout_  UINT *pDataSize,
+    /* [annotation] */ 
+    void *pData) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE SetPrivateData( 
+    /* [annotation] */ 
+    _In_  REFGUID guid,
+    /* [annotation] */ 
+    _In_  UINT DataSize,
+    /* [annotation] */ 
+    const void *pData) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE SetPrivateDataInterface( 
+    /* [annotation] */ 
+    _In_  REFGUID guid,
+    /* [annotation] */ 
+    _In_opt_  const IUnknown *pData) = 0;
+        
+virtual D3D_FEATURE_LEVEL STDMETHODCALLTYPE GetFeatureLevel( void) = 0;
+        
+virtual UINT STDMETHODCALLTYPE GetCreationFlags( void) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE GetDeviceRemovedReason( void) = 0;
+        
+virtual void STDMETHODCALLTYPE GetImmediateContext( 
+    /* [annotation] */ 
+    _Out_  ID3D11DeviceContext **ppImmediateContext) = 0;
+        
+virtual HRESULT STDMETHODCALLTYPE SetExceptionMode( 
+    UINT RaiseFlags) = 0;
+        
+virtual UINT STDMETHODCALLTYPE GetExceptionMode( void) = 0;

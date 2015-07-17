@@ -1,0 +1,7 @@
+
+#FunctionReturn# my#InterfaceName#::#FunctionName#(#FunctionParameters#)
+{
+    g_logger->log("Interface call: #FunctionName#");
+
+	base->#FunctionName#(#FunctionParameterCall#);
+}

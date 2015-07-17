@@ -3,11 +3,13 @@
   <ItemGroup>
     <ClInclude Include="main.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="d3d11Device.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="d3d11Exports.cpp" />
     <ClCompile Include="DLLMain.cpp" />
+    <ClCompile Include="d3d11Device.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
