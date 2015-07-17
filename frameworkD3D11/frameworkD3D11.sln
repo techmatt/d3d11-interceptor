@@ -5,10 +5,12 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frameworkD3D11", "frameworkD3D11.vcxproj", "{28114563-F715-4042-A798-B2A73D9C8AC4}"
 	ProjectSection(ProjectDependencies) = postProject
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90} = {F3F27ED9-276D-4557-B36A-328CB3D19C90}
+		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F} = {AC420E6A-E8C2-4B40-8DB7-268957D7A81F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interceptor", "..\interceptor\interceptor.vcxproj", "{F3F27ED9-276D-4557-B36A-328CB3D19C90}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interceptorDebugLayer", "..\interceptor\interceptorDebugLayer.vcxproj", "{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,10 @@ Global
 		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Debug|x64.Build.0 = Debug|x64
 		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Release|x64.ActiveCfg = Release|x64
 		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Release|x64.Build.0 = Release|x64
+		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}.Debug|x64.ActiveCfg = Debug|x64
+		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}.Debug|x64.Build.0 = Debug|x64
+		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}.Release|x64.ActiveCfg = Release|x64
+		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

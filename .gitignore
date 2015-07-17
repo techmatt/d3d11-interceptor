@@ -110,3 +110,9 @@
 /bin/Debug/d3d11LogInterface.txt
 /bin/Debug/d3d11Logs
 /interceptor/x64
+/Dolphin-x64
+/bin/Debug/*.dll
+/bin/Debug/*.exp
+/bin/Debug/*.ilk
+/bin/Debug/*.lib
+/bin/Debug/*.pdb

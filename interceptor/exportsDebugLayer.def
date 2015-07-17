@@ -1,0 +1,5 @@
+LIBRARY "d3d11DebugLayer"
+
+EXPORTS
+    myD3D11CreateDevice
+    myD3D11CreateDeviceAndSwapChain

@@ -47,7 +47,7 @@ void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &re
     D3D11_TEXTURE2D_DESC renderDesc;
     inputTexture->GetDesc(&renderDesc);
 
-    renderDesc.MipLevels = 0;
+    renderDesc.MipLevels = 1;
     renderDesc.ArraySize = 1;
     renderDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     renderDesc.SampleDesc.Count = 1;

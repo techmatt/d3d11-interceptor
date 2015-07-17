@@ -25,8 +25,13 @@ void D3D11GraphicsDevice::init(const WindowWin32 &window)
     };
     UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
+#ifdef USE_INTERCEPTOR_D3D11DLL
+    D3D_VALIDATE(myD3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
+        D3D11_SDK_VERSION, &m_swapChainDesc, &m_swapChain, &m_device, &m_featureLevel, &m_context));
+#else
     D3D_VALIDATE(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
         D3D11_SDK_VERSION, &m_swapChainDesc, &m_swapChain, &m_device, &m_featureLevel, &m_context));
+#endif
 
 	createViews();
 
