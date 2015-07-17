@@ -11,6 +11,8 @@ public:
     IDXGISwapChain *base;
     myIUnknown unknown;
 
+    MyD3DAssets assets;
+
     HRESULT QueryInterface(const IID &, void **)
     {
         return E_FAIL;

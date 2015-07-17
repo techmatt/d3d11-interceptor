@@ -55,8 +55,25 @@ HRESULT myDXGISwapChain::GetDevice(REFIID  riid, void * *  ppDevice)
 HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
 {
     if (g_logger->logInterfaceCalls) g_logger->log("Interface call: Present");
+    if (g_logger->logDrawCalls) g_logger->logDrawFile << "Present Flags=" << Flags << endl;
+
+    if (g_logger->capturingFrame)
+    {
+        g_logger->endFrameCapture();
+
+        Bitmap image;
+        assets.context->readRenderTarget(image);
+        LodePNG::save(image, "frame" + util::zeroPad(g_logger->frameIndex, 6) + ".png");
+    }
 
     HRESULT result = base->Present(SyncInterval, Flags);
+
+    g_logger->frameIndex++;
+
+    if (GetAsyncKeyState(VK_F8))
+    {
+        g_logger->beginFrameCapture();
+    }
 
     return result;
 }

@@ -156,7 +156,7 @@ void assertFunctionMLIB(bool statement, const std::string &description);
 //#endif
 
 //#ifndef E_RETURN
-//#define E_RETURN(hr) { if(FAILED(hr)) { Console::log() << #hr << " " << hr << std::endl; } }
+//#define E_RETURN(hr) { if(FAILED(hr)) { std::cout << () << #hr << " " << hr << std::endl; } }
 //#endif
 
 #ifndef D3D_VALIDATE

@@ -3,8 +3,10 @@ struct Logger
 {
     Logger()
     {
+        frameIndex = 0;
         logInterfaceCalls = true;
         logDrawCalls = true;
+        capturingFrame = false;
     }
 
     void log(const string &s)
@@ -17,11 +19,29 @@ struct Logger
         logDrawFile << s << endl;
     }
 
+    void beginFrameCapture()
+    {
+        capturingFrame = true;
+        logDrawFile << "Capturing frame " << frameIndex << endl;
+        logFrameCaptureFile.open("captureLog" + util::zeroPad(frameIndex, 6) + ".txt");
+    }
+
+    void endFrameCapture()
+    {
+        capturingFrame = false;
+        logFrameCaptureFile.close();
+    }
+
+    ofstream logErrorFile;
     ofstream logInterfaceFile;
     ofstream logDrawFile;
+    ofstream logFrameCaptureFile;
 
     bool logInterfaceCalls;
     bool logDrawCalls;
+    long frameIndex;
+
+    bool capturingFrame;
 };
 
 extern Logger *g_logger;
@@ -49,6 +69,7 @@ inline void initGlobalLogger()
     g_logger = new Logger();
     g_logger->logInterfaceFile.open("d3d11LogInterface.txt");
     g_logger->logDrawFile.open("d3d11LogDraw.txt");
+    g_logger->logErrorFile.open("d3d11LogError.txt");
 }
 
 inline void initGlobalState()

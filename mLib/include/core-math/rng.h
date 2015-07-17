@@ -14,14 +14,14 @@
 // version is not extensively tested.
 //
 // 2. This generator should NOT be used as in the following line.
-// for (int i = 0; i < 100; ++i) { RNG x; cout << x.uniform() << endl; }
+// for (int i = 0; i < 100; ++i) { RNG x; std::cout << x.uniform() << endl; }
 // The problem is that each time through the loop, a new RNG 'x' is
 // created, and that RNG is used to generate exactly one random number.
 // While the results may be satisfactory, the class is designed to
 // produce quality random numbers by having a single (or a few) RNGs
 // called repeatedly.
 // The better way to do the above loop is:
-// RNG x; for (int i = 0; i < 100; ++i) { cout << x.uniform() << endl; }
+// RNG x; for (int i = 0; i < 100; ++i) { std::cout << x.uniform() << endl; }
 
 // __________________________________________________________________________
 // This C++ code uses the simple, fast "KISS" (Keep It Simple Stupid)

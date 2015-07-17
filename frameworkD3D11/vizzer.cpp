@@ -25,14 +25,18 @@ void Vizzer::init(ApplicationData &app)
 
     m_font.init(app.graphics, "Calibri");
 
+    m_world = mat4f::identity();
+
 }
 
 void Vizzer::render(ApplicationData &app)
 {
     m_timer.frame();
 
+    m_world = m_world * mat4f::rotationZ(1.0f);
+
     ConstantBuffer constants;
-    constants.worldViewProj = m_camera.getCameraPerspective();
+    constants.worldViewProj =  m_camera.getCameraPerspective() * m_world;
     m_constants.update(constants);
 
     m_vsColor.bind();

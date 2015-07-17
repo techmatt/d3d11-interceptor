@@ -29,4 +29,6 @@ private:
 
 	D3D11ConstantBuffer<ConstantBuffer> m_constants;
 	Cameraf m_camera;
+
+    mat4f m_world;
 };

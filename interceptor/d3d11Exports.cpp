@@ -239,12 +239,18 @@ HRESULT WINAPI myD3D11CreateDeviceAndSwapChain(IDXGIAdapter* p0, D3D_DRIVER_TYPE
     if (result != S_OK)
         return result;
 
-    myDXGISwapChain *mySwapChain = new myDXGISwapChain(*p8);
-    myD3D11Device *myDevice = new myD3D11Device(*p9);
-    myD3D11DeviceContext *myContext = new myD3D11DeviceContext(*p11);
-    *p8 = mySwapChain;
-    *p9 = myDevice;
-    *p11 = myContext;
+    MyD3DAssets assets;
+
+    assets.swapChain = new myDXGISwapChain(*p8);
+    assets.device = new myD3D11Device(*p9);
+    assets.context = new myD3D11DeviceContext(*p11);
+    
+    assets.context->assets = assets;
+    assets.swapChain->assets = assets;
+
+    *p8 = assets.swapChain;
+    *p9 = assets.device;
+    *p11 = assets.context;
 
     return S_OK;
 }

@@ -1,7 +1,12 @@
 
-#include <string>
-#include <fstream>
+#include "mLibCore.h"
+
+#include "mLibLodePNG.h"
+
 using namespace std;
+using namespace ml;
+
+typedef ColorImageR8G8B8A8 Bitmap;
 
 #include <windows.h>
 #include <d3d11.h>
@@ -39,6 +44,17 @@ public:
         }
         return ulRef;
     }
+};
+
+class myDXGISwapChain;
+class myD3D11Device;
+class myD3D11DeviceContext;
+
+struct MyD3DAssets
+{
+    myDXGISwapChain *swapChain;
+    myD3D11Device *device;
+    myD3D11DeviceContext *context;
 };
 
 #include "d3d11Device.h"

@@ -29,7 +29,7 @@ void Pipe::closePipe()
 
 void Pipe::createPipe(const std::string &pipeName, bool block)
 {
-    //Console::log() << "creating pipe " << pipeName << std::endl;
+    //std::cout << () << "creating pipe " << pipeName << std::endl;
 
     closePipe();
     const UINT PipeBufferSize = 100000;
@@ -104,14 +104,14 @@ void Pipe::createPipe(const std::string &pipeName, bool block)
 
     if(block)
     {
-        Console::log("Pipe created, waiting for connection");
+        std::cout << ("Pipe created, waiting for connection");
         BOOL Connected = (ConnectNamedPipe(m_handle, nullptr) != 0);
         MLIB_ASSERT_STR(Connected != FALSE, "ConnectNamedPipe failed in Pipe::CreatePipe");
-        Console::log("Connected");
+        std::cout << ("Connected");
     }
     else
     {
-        //cout << "Not blocking for connection to complete" << endl;
+        //std::cout << "Not blocking for connection to complete" << endl;
     }
 }
 
@@ -122,7 +122,7 @@ void Pipe::connectToLocalPipe(const std::string &pipeName)
 
 void Pipe::connectToPipe(const std::string &pipeName)
 {
-    //Console::log("Connecting to " + pipeName);
+    //std::cout << ("Connecting to " + pipeName);
     closePipe();
     bool done = false;
     while(!done)
@@ -142,7 +142,7 @@ void Pipe::connectToPipe(const std::string &pipeName)
         }
         Sleep(100);
     }
-    //cout << "Connected" << endl;
+    //std::cout << "Connected" << endl;
 
     //DWORD mode = PIPE_READMODE_MESSAGE;
     DWORD mode = PIPE_READMODE_BYTE;

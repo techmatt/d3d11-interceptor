@@ -42,11 +42,13 @@
     <TargetName>d3d11</TargetName>
     <TargetExt>.dll</TargetExt>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <IncludePath>../mLib/include/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>d3d11</TargetName>
     <TargetExt>.dll</TargetExt>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <IncludePath>../mLib/include/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
