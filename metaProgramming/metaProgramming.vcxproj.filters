@@ -54,6 +54,15 @@
     <Text Include="output\d3d11DeviceContext.h.txt">
       <Filter>output</Filter>
     </Text>
+    <Text Include="data\DXGISwapChain.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="output\DXGISwapChain.cpp.txt">
+      <Filter>output</Filter>
+    </Text>
+    <Text Include="output\DXGISwapChain.h.txt">
+      <Filter>output</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="output\exports.def">

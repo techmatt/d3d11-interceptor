@@ -13,6 +13,8 @@ int main()
 
     interfaceWriter.write("D3D11DeviceContext", dataDir + "d3d11DeviceContext.txt", outputDir + "d3d11DeviceContext.cpp.txt", outputDir + "d3d11DeviceContext.h.txt");
 
+    interfaceWriter.write("DXGISwapChain", dataDir + "DXGISwapChain.txt", outputDir + "DXGISwapChain.cpp.txt", outputDir + "DXGISwapChain.h.txt");
+
     cout << "Press any key to continue...";
     cin.get();
     return 0;

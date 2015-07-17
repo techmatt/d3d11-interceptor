@@ -43,3 +43,4 @@ public:
 
 #include "d3d11Device.h"
 #include "d3d11DeviceContext.h"
+#include "DXGISwapChain.h"

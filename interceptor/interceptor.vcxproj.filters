@@ -5,6 +5,7 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="d3d11Device.h" />
     <ClInclude Include="d3d11DeviceContext.h" />
+    <ClInclude Include="DXGISwapChain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -12,6 +13,7 @@
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="d3d11Device.cpp" />
     <ClCompile Include="d3d11DeviceContext.cpp" />
+    <ClCompile Include="DXGISwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

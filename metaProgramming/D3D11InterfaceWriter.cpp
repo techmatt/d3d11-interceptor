@@ -45,6 +45,10 @@ void D3D11InterfaceWriter::write(const string &_name, const string &input, const
         fullDesc += s + "\n";
 
     fullDesc = util::remove(fullDesc, "/* [annotation] */");
+    fullDesc = util::remove(fullDesc, "/* [annotation][out] */");
+    fullDesc = util::remove(fullDesc, "/* [annotation][in] */");
+    fullDesc = util::remove(fullDesc, "/* [annotation][out][in] */");
+    fullDesc = util::remove(fullDesc, "/* [in] */");
     fullDesc = util::remove(fullDesc, "__inout_opt");
     fullDesc = util::remove(fullDesc, "_In_opt_");
     fullDesc = util::remove(fullDesc, "__in_opt");
