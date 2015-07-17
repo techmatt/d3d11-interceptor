@@ -234,6 +234,10 @@ HRESULT WINAPI myD3D11CreateDeviceAndSwapChain(IDXGIAdapter* p0, D3D_DRIVER_TYPE
 
     D3D11CreateDeviceAndSwapChainType proc = (D3D11CreateDeviceAndSwapChainType)g_state->getProcedure("D3D11CreateDeviceAndSwapChain");
 
+#ifdef _DEBUG
+    //p3 |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
     HRESULT result = proc(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
 
     if (result != S_OK)

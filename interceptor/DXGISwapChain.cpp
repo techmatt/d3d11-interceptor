@@ -59,11 +59,11 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
 
     if (g_logger->capturingFrame)
     {
-        g_logger->endFrameCapture();
-
         Bitmap image;
-        assets.context->readRenderTarget(image);
-        LodePNG::save(image, "frame" + util::zeroPad(g_logger->frameIndex, 6) + ".png");
+        assets.context->readSwapChain(image);
+        LodePNG::save(image, g_logger->captureDir + "final.png");
+
+        g_logger->endFrameCapture();
     }
 
     HRESULT result = base->Present(SyncInterval, Flags);

@@ -1,6 +1,81 @@
 
 #include "main.h"
 
+void myD3D11DeviceContext::readSwapChain(Bitmap &result)
+{
+    ID3D11Texture2D* swapChainTexture;
+    HRESULT hr = assets.swapChain->base->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast< void** >(&swapChainTexture));
+    if (FAILED(hr))
+    {
+        g_logger->logErrorFile << "assets.swapChain->base->GetBuffer failed" << endl;
+    }
+    else
+    {
+        readTexture(swapChainTexture, result);
+    }
+
+    swapChainTexture->Release();
+}
+
+void myD3D11DeviceContext::readRenderTarget(Bitmap &result)
+{
+    ID3D11RenderTargetView *view;
+    OMGetRenderTargets(1, &view, nullptr);
+
+    ID3D11Resource *resource;
+    view->GetResource(&resource);
+
+    ID3D11Texture2D *inputTexture;
+
+    HRESULT hr = resource->QueryInterface(__uuidof(ID3D11Texture2D), (void **)&inputTexture);
+    if (FAILED(hr))
+    {
+        g_logger->logErrorFile << "QueryInterface failed to cast to a texture" << endl;
+    }
+    else
+    {
+        readTexture(inputTexture, result);
+    }
+
+    view->Release();
+}
+
+void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &result)
+{
+    ID3D11Texture2D *captureTexture;
+
+    D3D11_TEXTURE2D_DESC renderDesc;
+    inputTexture->GetDesc(&renderDesc);
+
+    renderDesc.MipLevels = 0;
+    renderDesc.ArraySize = 1;
+    renderDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    renderDesc.SampleDesc.Count = 1;
+    renderDesc.SampleDesc.Quality = 0;
+    renderDesc.BindFlags = 0;
+    renderDesc.MiscFlags = 0;
+    renderDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+    renderDesc.Usage = D3D11_USAGE_STAGING;
+    assets.device->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
+
+    CopyResource(captureTexture, inputTexture);
+
+    result.allocate(renderDesc.Width, renderDesc.Height);
+
+    D3D11_MAPPED_SUBRESOURCE resource;
+    UINT subresource = D3D11CalcSubresource(0, 0, 0);
+    HRESULT hr = Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
+    const BYTE *data = (BYTE *)resource.pData;
+
+    for (UINT y = 0; y < renderDesc.Height; y++)
+    {
+        memcpy(&result(0U, y), data + resource.RowPitch * y, renderDesc.Width * sizeof(ml::vec4uc));
+    }
+
+    Unmap(captureTexture, subresource);
+
+    captureTexture->Release();
+}
 
 void myD3D11DeviceContext::GetDevice(ID3D11Device * *  ppDevice)
 {

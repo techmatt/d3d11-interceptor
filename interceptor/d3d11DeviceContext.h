@@ -13,66 +13,16 @@ public:
 
     MyD3DAssets assets;
     
-    void readRenderTarget(Bitmap &result)
-    {
-        ID3D11RenderTargetView *view;
-        OMGetRenderTargets(1, &view, nullptr);
+    //
+    // custom helper functions
+    //
+    void readSwapChain(Bitmap &result);
+    void readRenderTarget(Bitmap &result);
+    void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result);
 
-        ID3D11Resource *resource;
-        view->GetResource(&resource);
-
-        ID3D11Texture2D *inputTexture;
-
-        HRESULT hr = resource->QueryInterface(__uuidof(ID3D11Texture2D), (void **)&inputTexture);
-        if (FAILED(hr))
-        {
-            g_logger->logErrorFile << "QueryInterface failed to cast to a texture" << endl;
-        }
-        else
-        {
-            readTexture(inputTexture, result);
-        }
-
-        view->Release();
-    }
-
-    void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result)
-    {
-        ID3D11Texture2D *captureTexture;
-
-        D3D11_TEXTURE2D_DESC renderDesc;
-        inputTexture->GetDesc(&renderDesc);
-
-        renderDesc.MipLevels = 0;
-        renderDesc.ArraySize = 1;
-        renderDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        renderDesc.SampleDesc.Count = 1;
-        renderDesc.SampleDesc.Quality = 0;
-        renderDesc.BindFlags = 0;
-        renderDesc.MiscFlags = 0;
-        renderDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-        renderDesc.Usage = D3D11_USAGE_STAGING;
-        assets.device->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
-
-        CopyResource(captureTexture, inputTexture);
-
-        result.allocate(renderDesc.Width, renderDesc.Height);
-
-        D3D11_MAPPED_SUBRESOURCE resource;
-        UINT subresource = D3D11CalcSubresource(0, 0, 0);
-        HRESULT hr = Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
-        const BYTE *data = (BYTE *)resource.pData;
-
-        for (UINT y = 0; y < renderDesc.Height; y++)
-        {
-            memcpy(&result(0U, y), data + resource.RowPitch * y, renderDesc.Width * sizeof(ml::vec4uc));
-        }
-
-        Unmap(captureTexture, subresource);
-
-        captureTexture->Release();
-    }
-
+    //
+    // IUnknown functions
+    //
     HRESULT QueryInterface(const IID &, void **)
     {
         return E_FAIL;
@@ -86,6 +36,9 @@ public:
         return unknown.AddRef();
     }
 
+    //
+    // D3D11DeviceContext functions
+    //
     void GetDevice(ID3D11Device * *  ppDevice);
     HRESULT GetPrivateData(REFGUID  guid, _Inout_ UINT *  pDataSize, void *  pData);
     HRESULT SetPrivateData(REFGUID  guid, UINT  DataSize, const void *  pData);

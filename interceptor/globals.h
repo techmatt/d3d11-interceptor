@@ -23,12 +23,15 @@ struct Logger
     {
         capturingFrame = true;
         logDrawFile << "Capturing frame " << frameIndex << endl;
-        logFrameCaptureFile.open("captureLog" + util::zeroPad(frameIndex, 6) + ".txt");
+        captureDir = logDir + "capture" + util::zeroPad(frameIndex, 6) + "/";
+        util::makeDirectory(captureDir);
+        logFrameCaptureFile.open(captureDir + "log.txt");
     }
 
     void endFrameCapture()
     {
         capturingFrame = false;
+        captureDir = "";
         logFrameCaptureFile.close();
     }
 
@@ -42,6 +45,9 @@ struct Logger
     long frameIndex;
 
     bool capturingFrame;
+
+    string logDir;
+    string captureDir;
 };
 
 extern Logger *g_logger;
@@ -67,9 +73,13 @@ inline void initGlobalLogger()
     if (g_logger != nullptr) return;
 
     g_logger = new Logger();
-    g_logger->logInterfaceFile.open("d3d11LogInterface.txt");
-    g_logger->logDrawFile.open("d3d11LogDraw.txt");
-    g_logger->logErrorFile.open("d3d11LogError.txt");
+
+    g_logger->logDir = "d3d11Logs/";
+    util::makeDirectory(g_logger->logDir);
+
+    g_logger->logInterfaceFile.open(g_logger->logDir + "interfaceCalls.txt");
+    g_logger->logDrawFile.open(g_logger->logDir + "drawCalls.txt");
+    g_logger->logErrorFile.open(g_logger->logDir + "errors.txt");
 }
 
 inline void initGlobalState()
