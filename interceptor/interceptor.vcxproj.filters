@@ -14,4 +14,7 @@
   <ItemGroup>
     <None Include="exports.def" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />
+  </ItemGroup>
 </Project>

@@ -90,6 +90,9 @@
   <ItemGroup>
     <None Include="exports.def" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
