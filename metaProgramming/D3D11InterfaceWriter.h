@@ -26,7 +26,13 @@ struct D3D11InterfaceFunction
         string result;
         for (int i = 0; i < params.size(); i++)
         {
-            result += params[i].name;
+            string trueName = params[i].name;
+            if (trueName == "]")
+            {
+                auto preBracket = util::split(params[i].type, '[');
+                trueName = util::split(preBracket[0], ' ').back();
+            }
+            result += trueName;
             if (i != params.size() - 1) result += ", ";
         }
 

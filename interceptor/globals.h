@@ -1,11 +1,18 @@
 
 struct Logger
 {
+    Logger()
+    {
+        logInterfaceCalls = true;
+    }
+
     void log(const string &s)
     {
         logFile << s << endl;
     }
     ofstream logFile;
+
+    bool logInterfaceCalls;
 };
 
 extern Logger *g_logger;

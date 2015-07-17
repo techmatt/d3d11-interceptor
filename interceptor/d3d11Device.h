@@ -2,7 +2,12 @@
 class myD3D11Device : public ID3D11Device
 {
 public:
-    myD3D11Device(ID3D11Device *baseObject);
+    myD3D11Device(ID3D11Device *baseObject)
+        : unknown((IUnknown*)baseObject)
+    {
+        base = baseObject;
+    }
+
     ID3D11Device *base;
     myIUnknown unknown;
 

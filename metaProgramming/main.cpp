@@ -11,6 +11,8 @@ int main()
 
     interfaceWriter.write("D3D11Device", dataDir + "d3d11Device.txt", outputDir + "d3d11Device.cpp.txt", outputDir + "d3d11Device.h.txt");
 
+    interfaceWriter.write("D3D11DeviceContext", dataDir + "d3d11DeviceContext.txt", outputDir + "d3d11DeviceContext.cpp.txt", outputDir + "d3d11DeviceContext.h.txt");
+
     cout << "Press any key to continue...";
     cin.get();
     return 0;

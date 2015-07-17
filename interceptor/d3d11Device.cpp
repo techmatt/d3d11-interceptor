@@ -1,13 +1,6 @@
 
 #include "main.h"
 
-
-myD3D11Device::myD3D11Device(ID3D11Device *baseObject)
-    : unknown((IUnknown*)baseObject)
-{
-    base = baseObject;
-}
-
 HRESULT myD3D11Device::CreateBuffer(const D3D11_BUFFER_DESC *  pDesc, const D3D11_SUBRESOURCE_DATA *  pInitialData, ID3D11Buffer * *  ppBuffer)
 {
     g_logger->log("Interface call: CreateBuffer");

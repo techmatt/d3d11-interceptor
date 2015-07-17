@@ -33,7 +33,7 @@ public:
     HRESULT CheckFormatSupport(DXGI_FORMAT  Format, UINT *  pFormatSupport);
     HRESULT CheckMultisampleQualityLevels(DXGI_FORMAT  Format, UINT  SampleCount, UINT *  pNumQualityLevels);
     void CheckCounterInfo(D3D11_COUNTER_INFO *  pCounterInfo);
-    HRESULT CheckCounter(const D3D11_COUNTER_DESC *  pDesc, D3D11_COUNTER_TYPE *  pType, UINT *  pActiveCounters, LPSTR  szName, _Inout_opt_ UINT *  pNameLength, LPSTR  szUnits, _Inout_opt_ UINT *  pUnitsLength, LPSTR  szDescription, _Inout_opt_ UINT *  pDescriptionLength);
+    HRESULT CheckCounter(const D3D11_COUNTER_DESC *  pDesc, D3D11_COUNTER_TYPE *  pType, UINT *  pActiveCounters, LPSTR  szName, _Inout_ UINT *  pNameLength, LPSTR  szUnits, _Inout_ UINT *  pUnitsLength, LPSTR  szDescription, _Inout_ UINT *  pDescriptionLength);
     HRESULT CheckFeatureSupport(D3D11_FEATURE  Feature, void *  pFeatureSupportData, UINT  FeatureSupportDataSize);
     HRESULT GetPrivateData(REFGUID  guid, _Inout_ UINT *  pDataSize, void *  pData);
     HRESULT SetPrivateData(REFGUID  guid, UINT  DataSize, const void *  pData);

@@ -4,15 +4,18 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="d3d11Device.h" />
+    <ClInclude Include="d3d11DeviceContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="d3d11Exports.cpp" />
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="d3d11Device.cpp" />
+    <ClCompile Include="d3d11DeviceContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
+    <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />

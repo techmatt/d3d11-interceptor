@@ -16,7 +16,8 @@ string wordify(const string &s)
             (c >= 'a' && c <= 'z') ||
             (c >= '0' && c <= '9') ||
             c == '*' || c == ',' || c == '(' ||
-            c == ')' || c == '_')
+            c == ')' || c == '_' || c == '[' ||
+            c == ']')
         {
             result += c;
             if (c == '*') result += ' ';
@@ -44,10 +45,17 @@ void D3D11InterfaceWriter::write(const string &_name, const string &input, const
         fullDesc += s + "\n";
 
     fullDesc = util::remove(fullDesc, "/* [annotation] */");
+    fullDesc = util::remove(fullDesc, "__inout_opt");
     fullDesc = util::remove(fullDesc, "_In_opt_");
+    fullDesc = util::remove(fullDesc, "__in_opt");
     fullDesc = util::remove(fullDesc, "_Out_opt_");
     fullDesc = util::remove(fullDesc, "_In_");
     fullDesc = util::remove(fullDesc, "_Out_");
+    fullDesc = util::remove(fullDesc, "_Out_");
+    fullDesc = util::remove(fullDesc, "__in");
+    fullDesc = util::remove(fullDesc, "__out");
+    fullDesc = util::remove(fullDesc, "_opt");
+    
     fullDesc = util::remove(fullDesc, ") = 0;");
 
     auto functionDescriptions = util::split(fullDesc, "virtual ");

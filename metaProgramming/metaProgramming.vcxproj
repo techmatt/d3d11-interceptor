@@ -82,12 +82,15 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="data\d3d11Device.txt" />
+    <Text Include="data\d3d11DeviceContext.txt" />
     <Text Include="data\d3d11Exports.txt" />
     <Text Include="data\d3d11ExportsTemplate.txt" />
     <Text Include="data\d3d11InterfaceTemplate.txt" />
     <Text Include="data\d3d11InterfaceVoidTemplate.txt" />
     <Text Include="output\d3d11Device.cpp.txt" />
     <Text Include="output\d3d11Device.h.txt" />
+    <Text Include="output\d3d11DeviceContext.cpp.txt" />
+    <Text Include="output\d3d11DeviceContext.h.txt" />
     <Text Include="output\d3d11Exports.cpp.txt" />
   </ItemGroup>
   <ItemGroup>

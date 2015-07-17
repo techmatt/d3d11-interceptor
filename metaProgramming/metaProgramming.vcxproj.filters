@@ -45,6 +45,15 @@
     <Text Include="data\d3d11InterfaceVoidTemplate.txt">
       <Filter>data</Filter>
     </Text>
+    <Text Include="data\d3d11DeviceContext.txt">
+      <Filter>data</Filter>
+    </Text>
+    <Text Include="output\d3d11DeviceContext.cpp.txt">
+      <Filter>output</Filter>
+    </Text>
+    <Text Include="output\d3d11DeviceContext.h.txt">
+      <Filter>output</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="output\exports.def">
