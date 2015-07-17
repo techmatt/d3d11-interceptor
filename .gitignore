@@ -105,3 +105,6 @@
 /interceptor/x64/Debug/d3d11.Build.CppClean.log
 /interceptor/x64/Debug/d3d11Device.obj
 /metaProgramming/x64/Debug/D3D11InterfaceWriter.obj
+/interceptor/x64/Debug/d3d11DeviceContext.obj
+/bin/Debug/d3d11LogDraw.txt
+/bin/Debug/d3d11LogInterface.txt

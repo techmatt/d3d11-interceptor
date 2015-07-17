@@ -18,6 +18,16 @@
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />
+    <Filter Include="logs">
+      <UniqueIdentifier>{1315ab2b-008e-4adb-9fae-b30855927d8a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\bin\Debug\d3d11LogDraw.txt">
+      <Filter>logs</Filter>
+    </Text>
+    <Text Include="..\bin\Debug\d3d11LogInterface.txt">
+      <Filter>logs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

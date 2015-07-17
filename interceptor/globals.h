@@ -4,15 +4,24 @@ struct Logger
     Logger()
     {
         logInterfaceCalls = true;
+        logDrawCalls = true;
     }
 
     void log(const string &s)
     {
-        logFile << s << endl;
+        logInterfaceFile << s << endl;
     }
-    ofstream logFile;
+
+    void logDraw(const string &s)
+    {
+        logDrawFile << s << endl;
+    }
+
+    ofstream logInterfaceFile;
+    ofstream logDrawFile;
 
     bool logInterfaceCalls;
+    bool logDrawCalls;
 };
 
 extern Logger *g_logger;
@@ -38,7 +47,8 @@ inline void initGlobalLogger()
     if (g_logger != nullptr) return;
 
     g_logger = new Logger();
-    g_logger->logFile.open("d3d11InterceptorLog.txt");
+    g_logger->logInterfaceFile.open("d3d11LogInterface.txt");
+    g_logger->logDrawFile.open("d3d11LogDraw.txt");
 }
 
 inline void initGlobalState()
@@ -46,7 +56,7 @@ inline void initGlobalState()
     if (g_state != nullptr) return;
 
     g_state = new GlobalState();
-    g_state->D3D11Handle = LoadLibrary("C:\\Windows\\System32\\d3d11Original.dll");
+    g_state->D3D11Handle = LoadLibrary("C:\\Windows\\System32\\d3d11.dll");
     if (g_state->D3D11Handle == nullptr)
     {
         g_logger->log("failed to load system d3d11.dll");

@@ -23,6 +23,5 @@ VertexShaderOutput vertexShaderMain( float4 position : position,
 
 float4 pixelShaderMain( VertexShaderOutput input ) : SV_Target
 {
-    //return float4( input.color.x, input.color.y, input.color.z, 1.0f );
-	return float4( 1.0, 1.0, 1.0, 1.0);
+    return float4( input.color.x, input.color.y, input.color.z, 1.0f );
 }

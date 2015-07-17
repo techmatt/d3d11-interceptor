@@ -284,7 +284,7 @@ HRESULT myD3D11Device::CheckMultisampleQualityLevels(DXGI_FORMAT  Format, UINT  
 
 void myD3D11Device::CheckCounterInfo(D3D11_COUNTER_INFO *  pCounterInfo)
 {
-    g_logger->log("Interface call: CheckCounterInfo");
+    if(g_logger->logInterfaceCalls) g_logger->log("Interface call: CheckCounterInfo");
 
 	base->CheckCounterInfo(pCounterInfo);
 }
@@ -372,7 +372,7 @@ HRESULT myD3D11Device::GetDeviceRemovedReason( void)
 
 void myD3D11Device::GetImmediateContext(ID3D11DeviceContext * *  ppImmediateContext)
 {
-    g_logger->log("Interface call: GetImmediateContext");
+    if(g_logger->logInterfaceCalls) g_logger->log("Interface call: GetImmediateContext");
 
 	base->GetImmediateContext(ppImmediateContext);
 }
