@@ -14,6 +14,7 @@
     <ClCompile Include="d3d11Device.cpp" />
     <ClCompile Include="d3d11DeviceContext.cpp" />
     <ClCompile Include="DXGISwapChain.cpp" />
+    <ClCompile Include="globals.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

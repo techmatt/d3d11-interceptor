@@ -1,4 +1,6 @@
 
+struct MyD3DAssets;
+
 struct Logger
 {
     Logger()
@@ -19,21 +21,9 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void beginFrameCapture()
-    {
-        capturingFrame = true;
-        logDrawFile << "Capturing frame " << frameIndex << endl;
-        captureDir = logDir + "capture" + util::zeroPad(frameIndex, 6) + "/";
-        util::makeDirectory(captureDir);
-        logFrameCaptureFile.open(captureDir + "log.txt");
-    }
-
-    void endFrameCapture()
-    {
-        capturingFrame = false;
-        captureDir = "";
-        logFrameCaptureFile.close();
-    }
+    void recordDrawEvent(const MyD3DAssets &assets);
+    void beginFrameCapture();
+    void endFrameCapture();
 
     ofstream logErrorFile;
     ofstream logInterfaceFile;
@@ -43,6 +33,7 @@ struct Logger
     bool logInterfaceCalls;
     bool logDrawCalls;
     long frameIndex;
+    long captureRenderIndex;
 
     bool capturingFrame;
 
@@ -68,34 +59,4 @@ struct GlobalState
 
 extern GlobalState *g_state;
 
-inline void initGlobalLogger()
-{
-    if (g_logger != nullptr) return;
-
-    g_logger = new Logger();
-
-    g_logger->logDir = "d3d11Logs/";
-    util::makeDirectory(g_logger->logDir);
-
-    g_logger->logInterfaceFile.open(g_logger->logDir + "interfaceCalls.txt");
-    g_logger->logDrawFile.open(g_logger->logDir + "drawCalls.txt");
-    g_logger->logErrorFile.open(g_logger->logDir + "errors.txt");
-}
-
-inline void initGlobalState()
-{
-    if (g_state != nullptr) return;
-
-    g_state = new GlobalState();
-    g_state->D3D11Handle = LoadLibrary("C:\\Windows\\System32\\d3d11.dll");
-    if (g_state->D3D11Handle == nullptr)
-    {
-        g_logger->log("failed to load system d3d11.dll");
-    }
-}
-
-inline void initGlobals()
-{
-    initGlobalLogger();
-    initGlobalState();
-}
+void initGlobals();

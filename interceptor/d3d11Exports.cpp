@@ -213,7 +213,7 @@ HRESULT WINAPI myD3D11CoreRegisterLayers()
 
 
 typedef HRESULT(WINAPI *D3D11CreateDeviceType)(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE p2, UINT p3, const D3D_FEATURE_LEVEL* p4, UINT p5, UINT p6, ID3D11Device** p7, D3D_FEATURE_LEVEL* p8, ID3D11DeviceContext ** p9);
-HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE p2, UINT p3, const D3D_FEATURE_LEVEL* p4, UINT p5, UINT p6, ID3D11Device** p7, D3D_FEATURE_LEVEL* p8, ID3D11DeviceContext ** p9)
+HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext ** ppImmediateContext)
 {
     initGlobals();
     g_logger->log("DLL call: D3D11CreateDevice");
@@ -221,25 +221,33 @@ HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_DRIVER_TYPE p1, HMODULE
     D3D11CreateDeviceType proc = (D3D11CreateDeviceType)g_state->getProcedure("D3D11CreateDevice");
 
 #ifdef INTERCEPTOR_DEBUG_LAYER
-    p3 |= D3D11_CREATE_DEVICE_DEBUG;
+    Flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
+    
+    HRESULT result = proc(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 
-    HRESULT result = proc(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    if (FAILED(result) || ppDevice == nullptr || ppImmediateContext == nullptr)
+    {
+        g_logger->log("D3D11CreateDevice failed: hr=" + to_string(result) + ", ppDevice=" + to_string((long)ppDevice));
+        return result;
+    }
+
+    g_logger->log("D3D11CreateDevice suceeded: hr=" + to_string(result));
 
 #ifdef INTERCEPTOR_DEBUG_LAYER
-    setupDeviceDebugLayer(*p7);
+    setupDeviceDebugLayer(*ppDevice);
 #endif
 
     MyD3DAssets assets;
 
-    assets.device = new myD3D11Device(*p7);
-    assets.context = new myD3D11DeviceContext(*p9);
+    assets.device = new myD3D11Device(*ppDevice);
+    assets.context = new myD3D11DeviceContext(*ppImmediateContext);
     assets.swapChain = nullptr;
 
     assets.context->assets = assets;
 
-    *p7 = assets.device;
-    *p9 = assets.context;
+    *ppDevice = assets.device;
+    *ppImmediateContext = assets.context;
 
     return result;
 }

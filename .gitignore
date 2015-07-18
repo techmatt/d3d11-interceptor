@@ -116,3 +116,6 @@
 /bin/Debug/*.ilk
 /bin/Debug/*.lib
 /bin/Debug/*.pdb
+/frameworkD3D11/ipch/interceptor-36ec9359/*.ipch
+/frameworkD3D11/ipch/interceptordebuglayer-7171c2dd/*.ipch
+/metaProgramming/x64/Debug/metaProgramming.tlog/unsuccessfulbuild
