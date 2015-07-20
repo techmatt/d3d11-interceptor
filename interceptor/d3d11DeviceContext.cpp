@@ -20,7 +20,7 @@ void myD3D11DeviceContext::readSwapChain(Bitmap &result)
 void myD3D11DeviceContext::readRenderTarget(Bitmap &result)
 {
     ID3D11RenderTargetView *view;
-    OMGetRenderTargets(1, &view, nullptr);
+    assets.context->base->OMGetRenderTargets(1, &view, nullptr);
 
     ID3D11Resource *resource;
     view->GetResource(&resource);
@@ -56,15 +56,15 @@ void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &re
     renderDesc.MiscFlags = 0;
     renderDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
     renderDesc.Usage = D3D11_USAGE_STAGING;
-    assets.device->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
+    assets.device->base->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
 
-    CopyResource(captureTexture, inputTexture);
+    assets.context->base->CopyResource(captureTexture, inputTexture);
 
     result.allocate(renderDesc.Width, renderDesc.Height);
 
     D3D11_MAPPED_SUBRESOURCE resource;
     UINT subresource = D3D11CalcSubresource(0, 0, 0);
-    HRESULT hr = Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
+    HRESULT hr = assets.context->base->Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
     const BYTE *data = (BYTE *)resource.pData;
 
     for (UINT y = 0; y < renderDesc.Height; y++)
@@ -72,7 +72,7 @@ void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &re
         memcpy(&result(0U, y), data + resource.RowPitch * y, renderDesc.Width * sizeof(ml::vec4uc));
     }
 
-    Unmap(captureTexture, subresource);
+    assets.context->base->Unmap(captureTexture, subresource);
 
     captureTexture->Release();
 }
@@ -134,7 +134,7 @@ void myD3D11DeviceContext::PSSetShaderResources(UINT  StartSlot, UINT  NumViews,
 
 void myD3D11DeviceContext::PSSetShader(ID3D11PixelShader *  pPixelShader, ID3D11ClassInstance * const *  ppClassInstances, UINT  NumClassInstances)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("PSSetShader");
+    if (g_logger->logInterfaceCalls) g_logger->log("PSSetShader " + pointerToString(pPixelShader));
 
     base->PSSetShader(pPixelShader, ppClassInstances, NumClassInstances);
 }
@@ -150,7 +150,7 @@ void myD3D11DeviceContext::PSSetSamplers(UINT  StartSlot, UINT  NumSamplers, ID3
 
 void myD3D11DeviceContext::VSSetShader(ID3D11VertexShader *  pVertexShader, ID3D11ClassInstance * const *  ppClassInstances, UINT  NumClassInstances)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("VSSetShader");
+    if (g_logger->logInterfaceCalls) g_logger->log("VSSetShader " + pointerToString(pVertexShader));
 
     base->VSSetShader(pVertexShader, ppClassInstances, NumClassInstances);
 }
@@ -158,15 +158,16 @@ void myD3D11DeviceContext::VSSetShader(ID3D11VertexShader *  pVertexShader, ID3D
 
 void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocation, INT  BaseVertexLocation)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("DrawIndexed");
+    if (g_logger->logInterfaceCalls) g_logger->logInterfaceFile << "DrawIndexed" << endl;
     if (g_logger->logDrawCalls) g_logger->logDrawFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
+    
+    base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
+
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
         g_logger->recordDrawEvent(assets);
     }
-
-    base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
 
 
@@ -174,19 +175,20 @@ void myD3D11DeviceContext::Draw(UINT  VertexCount, UINT  StartVertexLocation)
 {
     if (g_logger->logInterfaceCalls) g_logger->log("Draw");
     if (g_logger->logDrawCalls) g_logger->logDrawFile << "Draw vertexCount=" << VertexCount << ", StartVertexLocation=" << StartVertexLocation << endl;
+
+    base->Draw(VertexCount, StartVertexLocation);
+
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "Draw vertexCount=" << VertexCount << ", StartVertexLocation=" << StartVertexLocation << endl;
         g_logger->recordDrawEvent(assets);
     }
-
-    base->Draw(VertexCount, StartVertexLocation);
 }
 
 
 HRESULT myD3D11DeviceContext::Map(ID3D11Resource *  pResource, UINT  Subresource, D3D11_MAP  MapType, UINT  MapFlags, D3D11_MAPPED_SUBRESOURCE *  pMappedResource)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("Map");
+    if (g_logger->logInterfaceCalls) g_logger->log("Map resource=" + pointerToString(pResource) + " subResource=" + to_string(Subresource) + " type=" + to_string(MapType));
 
     HRESULT result = base->Map(pResource, Subresource, MapType, MapFlags, pMappedResource);
 
@@ -454,7 +456,7 @@ void myD3D11DeviceContext::CopySubresourceRegion(ID3D11Resource *  pDstResource,
 
 void myD3D11DeviceContext::CopyResource(ID3D11Resource *  pDstResource, ID3D11Resource *  pSrcResource)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("CopyResource");
+    if (g_logger->logInterfaceCalls) g_logger->log("CopyResource dst=" + pointerToString(pDstResource) + " src=" + pointerToString(pSrcResource));
 
     base->CopyResource(pDstResource, pSrcResource);
 }

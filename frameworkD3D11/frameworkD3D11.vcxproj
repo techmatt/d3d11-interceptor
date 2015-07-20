@@ -159,9 +159,6 @@
     <ClCompile Include="winMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\bin\Debug\d3d11InterceptorLog.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="shaders\test.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

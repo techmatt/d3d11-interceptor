@@ -63,6 +63,9 @@
       <OutputFile>$(OutDir)d3d11.dll</OutputFile>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetDir)d3d11.dll" "$(SolutionDir)..\Dolphin-x64\d3d11.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -81,6 +84,9 @@
       <OutputFile>$(OutDir)d3d11.dll</OutputFile>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetDir)d3d11.dll" "$(SolutionDir)..\Dolphin-x64\d3d11.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="d3d11Device.h" />
@@ -106,10 +112,6 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="exports.def" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\bin\Debug\d3d11LogDraw.txt" />
-    <Text Include="..\bin\Debug\d3d11LogInterface.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

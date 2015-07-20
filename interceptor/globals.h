@@ -1,6 +1,15 @@
 
 struct MyD3DAssets;
 
+template<class T>
+inline string pointerToString(T *ptr)
+{
+    std::ostringstream address;
+    address << (void const *)ptr;
+    return address.str();
+}
+
+
 struct Logger
 {
     Logger()
@@ -14,6 +23,8 @@ struct Logger
     void log(const string &s)
     {
         logInterfaceFile << s << endl;
+        if (capturingFrame)
+            logFrameCaptureFile << s << endl;
     }
 
     void logDraw(const string &s)
