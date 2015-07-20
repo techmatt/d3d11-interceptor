@@ -6,16 +6,26 @@ void Logger::recordDrawEvent(MyD3DAssets &assets)
     if (capturingFrame)
     {
         assets.loadVSConstantBuffer();
-
+        
         string constantList;
         for (size_t i = 0; i < assets.VSBufferSize; i++)
             constantList += to_string(assets.VSBufferStorage[i]) + " ";
         
-        g_logger->logFrameCaptureFile << "constants: " << constantList << endl;
+        //g_logger->logFrameCaptureFile << "constants: " << constantList << endl;
 
         Bitmap image;
         assets.context->readRenderTarget(image);
-        LodePNG::save(image, g_logger->captureDir + "render" + util::zeroPad(captureRenderIndex++, 5) + ".png");
+        LodePNG::save(image, g_logger->captureDir + "render" + util::zeroPad(captureRenderIndex, 5) + "_frame.png");
+
+        assets.loadPSTexture(0);
+        if (assets.PSTexture.size() > 0)
+            LodePNG::save(assets.PSTexture, g_logger->captureDir + "render" + util::zeroPad(captureRenderIndex, 5) + "_tex0.png");
+
+        assets.loadPSTexture(1);
+        if (assets.PSTexture.size() > 0)
+            LodePNG::save(assets.PSTexture, g_logger->captureDir + "render" + util::zeroPad(captureRenderIndex, 5) + "_tex1.png");
+
+        captureRenderIndex++;
     }
 }
 

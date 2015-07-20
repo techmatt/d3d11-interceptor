@@ -15,8 +15,8 @@ struct Logger
     Logger()
     {
         frameIndex = 0;
-        logInterfaceCalls = false;
-        logDrawCalls = false;
+        logInterfaceCalls = true;
+        logDrawCalls = true;
         capturingFrame = false;
     }
 

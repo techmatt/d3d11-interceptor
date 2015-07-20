@@ -167,10 +167,11 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     
     base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 
-    const bool reportAIRender = true;
+    const bool reportAIRender = g_logger->capturingFrame;
     if (reportAIRender)
     {
         assets.loadVSConstantBuffer();
+        assets.loadPSTexture(0);
 
         GameAIConstantBuffer VSBuffer;
         VSBuffer.data = assets.VSBufferStorage.data();

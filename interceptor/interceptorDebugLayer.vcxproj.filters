@@ -7,6 +7,7 @@
     <ClInclude Include="d3d11DeviceContext.h" />
     <ClInclude Include="DXGISwapChain.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="assets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -17,6 +18,7 @@
     <ClCompile Include="DXGISwapChain.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="globals.cpp" />
+    <ClCompile Include="assets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
