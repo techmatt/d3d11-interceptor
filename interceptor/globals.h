@@ -15,8 +15,8 @@ struct Logger
     Logger()
     {
         frameIndex = 0;
-        logInterfaceCalls = true;
-        logDrawCalls = true;
+        logInterfaceCalls = false;
+        logDrawCalls = false;
         capturingFrame = false;
     }
 
@@ -32,7 +32,7 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void recordDrawEvent(const MyD3DAssets &assets);
+    void recordDrawEvent(MyD3DAssets &assets);
     void beginFrameCapture();
     void endFrameCapture();
 
@@ -65,7 +65,9 @@ struct GlobalState
         }
         return result;
     }
+
     HMODULE D3D11Handle;
+    GameAIInterface *AI;
 };
 
 extern GlobalState *g_state;

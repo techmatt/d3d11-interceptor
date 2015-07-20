@@ -142,3 +142,16 @@
 /frameworkD3D11/x64/Release/vc120.pdb
 /frameworkD3D11/x64/Release/vizzer.obj
 /frameworkD3D11/x64/Release/winMain.obj
+/frameworkD3D11/x64/Debug/gameAI.dll
+/frameworkD3D11/x64/Debug/gameAI.lib
+/gameAICore/Release/gameAICore.log
+/gameAICore/Release/gameAICore.tlog/cl.command.1.tlog
+/gameAICore/Release/gameAICore.tlog/gameAICore.lastbuildstate
+/gameAICore/Release/gameAICore.tlog/unsuccessfulbuild
+/gameAICore/Release/*.pdb
+/gameAICore/x64/Debug/*.log
+/gameAICore/x64/Debug/*.obj
+/gameAICore/x64/Debug/gameAICore.tlog/*.tlog
+/gameAICore/x64/Debug/gameAICore.tlog/*.lastbuildstate
+/gameAICore/x64/Debug/*.idb
+/gameAICore/x64/Debug/*.pdb

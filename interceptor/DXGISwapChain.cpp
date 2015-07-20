@@ -67,8 +67,9 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
     }
 
     HRESULT result = base->Present(SyncInterval, Flags);
-
     g_logger->frameIndex++;
+
+    g_state->AI->newFrameStart(g_logger->frameIndex);
 
     if (GetAsyncKeyState(VK_F8))
     {

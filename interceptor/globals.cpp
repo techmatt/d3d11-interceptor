@@ -1,10 +1,18 @@
 
 #include "Main.h"
 
-void Logger::recordDrawEvent(const MyD3DAssets &assets)
+void Logger::recordDrawEvent(MyD3DAssets &assets)
 {
     if (capturingFrame)
     {
+        assets.loadVSConstantBuffer();
+
+        string constantList;
+        for (size_t i = 0; i < assets.VSBufferSize; i++)
+            constantList += to_string(assets.VSBufferStorage[i]) + " ";
+        
+        g_logger->logFrameCaptureFile << "constants: " << constantList << endl;
+
         Bitmap image;
         assets.context->readRenderTarget(image);
         LodePNG::save(image, g_logger->captureDir + "render" + util::zeroPad(captureRenderIndex++, 5) + ".png");
@@ -51,6 +59,12 @@ void initGlobalState()
     if (g_state->D3D11Handle == nullptr)
     {
         g_logger->log("failed to load system d3d11.dll");
+    }
+
+    g_state->AI = GameAICreate();
+    if (g_state->AI == nullptr)
+    {
+        g_logger->log("failed to create game AI");
     }
 }
 

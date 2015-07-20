@@ -117,7 +117,11 @@ HRESULT myD3D11DeviceContext::SetPrivateDataInterface(REFGUID  guid, const IUnkn
 
 void myD3D11DeviceContext::VSSetConstantBuffers(UINT  StartSlot, UINT  NumBuffers, ID3D11Buffer * const *  ppConstantBuffers)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("VSSetConstantBuffers");
+    if (g_logger->logInterfaceCalls)
+    {
+        string pointer = ppConstantBuffers == nullptr ? "<invalid>" : pointerToString(ppConstantBuffers[0]);
+        g_logger->log("VSSetConstantBuffers StartSlot=" + to_string(StartSlot) + ", NumBuffers=" + to_string(NumBuffers) + ", buffers[0]=" + pointer);
+    }
 
     base->VSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
 }
@@ -162,6 +166,18 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (g_logger->logDrawCalls) g_logger->logDrawFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
     
     base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
+
+    const bool reportAIRender = true;
+    if (reportAIRender)
+    {
+        assets.loadVSConstantBuffer();
+
+        GameAIConstantBuffer VSBuffer;
+        VSBuffer.data = assets.VSBufferStorage.data();
+        VSBuffer.floatCount = assets.VSBufferSize;
+
+        g_state->AI->drawIndexed(VSBuffer, VSBuffer, IndexCount, StartIndexLocation, BaseVertexLocation);
+    }
 
     if (g_logger->capturingFrame)
     {

@@ -1,0 +1,4 @@
+LIBRARY "gameAI"
+
+EXPORTS
+    GameAICreate

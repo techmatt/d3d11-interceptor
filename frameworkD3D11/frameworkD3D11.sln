@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frameworkD3D11", "framework
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interceptor", "..\interceptor\interceptor.vcxproj", "{F3F27ED9-276D-4557-B36A-328CB3D19C90}"
+	ProjectSection(ProjectDependencies) = postProject
+		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6} = {87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interceptorDebugLayer", "..\interceptor\interceptorDebugLayer.vcxproj", "{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}"
 EndProject
@@ -24,6 +27,8 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "Dolphin", "..\Dolphin-x64\D
 		LaunchSQLEngine = No
 		AttachLaunchAction = No
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameAICore", "..\gameAICore\gameAICore.vcxproj", "{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +50,10 @@ Global
 		{AC420E6A-E8C2-4B40-8DB7-268957D7A81F}.Release|x64.Build.0 = Release|x64
 		{A69587FB-1927-4F86-97BE-4D8DC4C086F3}.Debug|x64.ActiveCfg = Debug|x64
 		{A69587FB-1927-4F86-97BE-4D8DC4C086F3}.Release|x64.ActiveCfg = Debug|x64
+		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Debug|x64.ActiveCfg = Debug|x64
+		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Debug|x64.Build.0 = Debug|x64
+		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Release|x64.ActiveCfg = Release|x64
+		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

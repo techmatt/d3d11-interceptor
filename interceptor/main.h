@@ -11,6 +11,8 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include <windows.h>
 #include <d3d11.h>
 
+#include "../shared/gameAIInterface.h"
+
 #include "globals.h"
 
 class myIUnknown
@@ -52,9 +54,17 @@ class myD3D11DeviceContext;
 
 struct MyD3DAssets
 {
+    ID3D11Buffer* getStagingBuffer(ID3D11Buffer *baseBuffer);
+    void loadVSConstantBuffer();
+
     myDXGISwapChain *swapChain;
     myD3D11Device *device;
     myD3D11DeviceContext *context;
+
+    vector<float> VSBufferStorage;
+    UINT VSBufferSize;
+
+    map<UINT, ID3D11Buffer *> stagingBuffersBySize;
 };
 
 #include "d3d11Device.h"
