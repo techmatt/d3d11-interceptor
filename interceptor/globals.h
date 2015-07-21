@@ -32,14 +32,16 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void recordDrawEvent(MyD3DAssets &assets);
+    void recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
     void beginFrameCapture();
     void endFrameCapture();
 
+    ofstream logInputLayoutFile;
     ofstream logErrorFile;
     ofstream logInterfaceFile;
     ofstream logDrawFile;
     ofstream logFrameCaptureFile;
+    ofstream logFrameCaptureHtml;
 
     bool logInterfaceCalls;
     bool logDrawCalls;

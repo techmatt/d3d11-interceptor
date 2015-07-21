@@ -35,15 +35,44 @@ class myDXGISwapChain;
 class myD3D11Device;
 class myD3D11DeviceContext;
 
+struct BufferCPU
+{
+    BufferCPU()
+    {
+        dirty = false;
+    }
+    bool dirty;
+    vector<BYTE> data;
+    const void* handle;
+};
+
+struct VertexBufferState
+{
+    const BufferCPU *buffer;
+    UINT stride;
+    UINT offset;
+};
+
+struct IndexBufferState
+{
+    const BufferCPU *buffer;
+    UINT offset;
+};
+
 struct MyD3DAssets
 {
     ID3D11Buffer* getStagingBuffer(ID3D11Buffer *baseBuffer);
     ID3D11Texture2D* getStagingTexture(ID3D11Texture2D *baseTexture);
 
     void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result);
+    void readBuffer(ID3D11Buffer *inputBuffer, vector<BYTE> &result);
 
     void loadVSConstantBuffer();
     void loadPSTexture(int textureIndex);
+
+    VertexBufferState getActiveVertexBuffer();
+    IndexBufferState getActiveIndexBuffer();
+    const BufferCPU* loadAndCacheBuffer(ID3D11Buffer *inputBuffer);
 
     myDXGISwapChain *swapChain;
     myD3D11Device *device;
@@ -56,4 +85,5 @@ struct MyD3DAssets
 
     map<UINT, ID3D11Buffer*> stagingBuffersBySize;
     map<UINT64, ID3D11Texture2D*> stagingTexturesBySize;
+    map<UINT64, BufferCPU*> cachedBuffers;
 };

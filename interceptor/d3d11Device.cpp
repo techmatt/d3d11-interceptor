@@ -84,7 +84,25 @@ HRESULT myD3D11Device::CreateDepthStencilView(ID3D11Resource *  pResource, const
 
 HRESULT myD3D11Device::CreateInputLayout(const D3D11_INPUT_ELEMENT_DESC *  pInputElementDescs, UINT  NumElements, const void *  pShaderBytecodeWithInputSignature, SIZE_T  BytecodeLength, ID3D11InputLayout * *  ppInputLayout)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("Interface call: CreateInputLayout");
+    if (g_logger->logInterfaceCalls)
+    {
+        g_logger->log("Interface call: CreateInputLayout");
+        g_logger->logInputLayoutFile << endl << " *** New input layout:" << endl;
+        for (int elem = 0; elem < (int)NumElements; elem++)
+        {
+            const D3D11_INPUT_ELEMENT_DESC &desc = pInputElementDescs[elem];
+            g_logger->logInputLayoutFile << desc.SemanticName << "-" << desc.SemanticIndex << ", offset=" << desc.AlignedByteOffset << ", format=" << desc.Format << endl;
+            
+            if (desc.InputSlot != 0)
+                g_logger->logInputLayoutFile << "InputSlot=" << desc.InputSlot << endl;
+
+            if (desc.InputSlotClass != 0)
+                g_logger->logInputLayoutFile << "InputSlotClass=" << desc.InputSlotClass << endl;
+
+            if (desc.InstanceDataStepRate != 0)
+                g_logger->logInputLayoutFile << "InstanceDataStepRate=" << desc.InstanceDataStepRate << endl;
+        }
+    }
 
     HRESULT result = base->CreateInputLayout(pInputElementDescs, NumElements, pShaderBytecodeWithInputSignature, BytecodeLength, ppInputLayout);
 

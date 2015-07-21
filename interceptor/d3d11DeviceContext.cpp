@@ -130,7 +130,31 @@ void myD3D11DeviceContext::VSSetConstantBuffers(UINT  StartSlot, UINT  NumBuffer
 void myD3D11DeviceContext::PSSetShaderResources(UINT  StartSlot, UINT  NumViews, ID3D11ShaderResourceView * const *  ppShaderResourceViews)
 {
     if (g_logger->logInterfaceCalls) g_logger->logInterfaceFile << "PSSetShaderResources StartSlot=" << StartSlot << ", NumViews=" << NumViews << endl;
-    if (g_logger->capturingFrame) g_logger->logFrameCaptureFile << "PSSetShaderResources StartSlot=" << StartSlot << ", NumViews=" << NumViews << endl;
+    if (g_logger->capturingFrame)
+    {
+        string r0Type = "<invalid>";
+        int r0Width = 0;
+        int r0Height = 0;
+
+        if (ppShaderResourceViews != nullptr && ppShaderResourceViews[0] != nullptr)
+        {
+            D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+            ppShaderResourceViews[0]->GetDesc(&desc);
+
+            switch (desc.ViewDimension)
+            {
+            case D3D11_SRV_DIMENSION_TEXTURE2DARRAY:
+                {
+                    r0Type = "texture2DArray(" + to_string(desc.Texture2DArray.ArraySize) + ")";
+                }
+                break;
+            default:
+                r0Type = "unknown-" + to_string(desc.ViewDimension);
+            }
+        }
+
+        g_logger->logFrameCaptureFile << "PSSetShaderResources StartSlot=" << StartSlot << ", NumViews=" << NumViews << ", view0Stats=" << r0Type << "," << r0Width << "," << r0Height << endl;
+    }
 
     base->PSSetShaderResources(StartSlot, NumViews, ppShaderResourceViews);
 }
@@ -171,7 +195,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (reportAIRender)
     {
         assets.loadVSConstantBuffer();
-        assets.loadPSTexture(0);
+        //assets.loadPSTexture(0);
 
         GameAIConstantBuffer VSBuffer;
         VSBuffer.data = assets.VSBufferStorage.data();
@@ -182,8 +206,8 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
 
     if (g_logger->capturingFrame)
     {
-        g_logger->logFrameCaptureFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
-        g_logger->recordDrawEvent(assets);
+        g_logger->logFrameCaptureFile << "DrawIndexed-" << g_logger->captureRenderIndex << " IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
+        g_logger->recordDrawEvent(assets, IndexCount, StartIndexLocation, BaseVertexLocation);
     }
 }
 
@@ -198,7 +222,7 @@ void myD3D11DeviceContext::Draw(UINT  VertexCount, UINT  StartVertexLocation)
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "Draw vertexCount=" << VertexCount << ", StartVertexLocation=" << StartVertexLocation << endl;
-        g_logger->recordDrawEvent(assets);
+        g_logger->recordDrawEvent(assets, 0, 0, -1);
     }
 }
 

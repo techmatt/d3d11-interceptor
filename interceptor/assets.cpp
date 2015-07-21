@@ -26,7 +26,7 @@ ID3D11Texture2D* MyD3DAssets::getStagingTexture(ID3D11Texture2D *baseTexture)
     D3D11_TEXTURE2D_DESC desc;
     baseTexture->GetDesc(&desc);
 
-    const UINT64 combinedSize = desc.Width * (long)0xFFFFFFFF + desc.Height;
+    const UINT64 combinedSize = desc.Width * (long)0xFFFFFFFF + desc.Height + ml::util::hash64(desc.Format);
 
     if (stagingTexturesBySize.count(combinedSize) == 0)
     {
@@ -73,6 +73,48 @@ void MyD3DAssets::loadVSConstantBuffer()
     }
 }
 
+VertexBufferState MyD3DAssets::getActiveVertexBuffer()
+{
+    VertexBufferState result;
+    ID3D11Buffer *buffer;
+    context->base->IAGetVertexBuffers(0, 1, &buffer, &result.stride, &result.offset);
+    result.buffer = loadAndCacheBuffer(buffer);
+    buffer->Release();
+    return result;
+}
+
+IndexBufferState MyD3DAssets::getActiveIndexBuffer()
+{
+    IndexBufferState result;
+    ID3D11Buffer *buffer;
+    context->base->IAGetIndexBuffer(&buffer, nullptr, &result.offset);
+    result.buffer = loadAndCacheBuffer(buffer);
+    buffer->Release();
+    return result;
+}
+
+const BufferCPU* MyD3DAssets::loadAndCacheBuffer(ID3D11Buffer *buffer)
+{
+    if (buffer == nullptr)
+        return nullptr;
+
+    if (cachedBuffers.count((UINT64)buffer) == 0)
+    {
+        if (g_logger->logInterfaceCalls) g_logger->log("*** Creating vertex buffer: " + pointerToString(buffer));
+        BufferCPU *cpu = new BufferCPU();
+        readBuffer(buffer, cpu->data);
+        cpu->handle = buffer;
+        cachedBuffers[(UINT64)buffer] = cpu;
+    }
+    
+    //if (cachedBuffers.find((UINT64)buffer)->second->dirty)
+    {
+        readBuffer(buffer, cachedBuffers.find((UINT64)buffer)->second->data);
+    }
+
+    return cachedBuffers.find((UINT64)buffer)->second;
+}
+
 void MyD3DAssets::loadPSTexture(int textureIndex)
 {
     ID3D11ShaderResourceView *view = nullptr;
@@ -84,26 +126,42 @@ void MyD3DAssets::loadPSTexture(int textureIndex)
     }
     else
     {
-        ID3D11Resource *texture0Resource = nullptr;
-        view->GetResource(&texture0Resource);
+        ID3D11Resource *textureResource = nullptr;
+        view->GetResource(&textureResource);
 
-        ID3D11Texture2D* texture0 = nullptr;
-        HRESULT hr = texture0Resource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&texture0));
-        if (texture0 == nullptr || FAILED(hr))
+        ID3D11Texture2D* texture = nullptr;
+        HRESULT hr = textureResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&texture));
+        if (texture == nullptr || FAILED(hr))
         {
             PSTexture.free();
-            g_logger->logErrorFile << "texture0Resource->QueryInterface failed" << endl;
+            g_logger->logErrorFile << "textureResource->QueryInterface failed" << endl;
         }
         else
         {
-            readTexture(texture0, PSTexture);
-            texture0->Release();
+            readTexture(texture, PSTexture);
+            texture->Release();
         }
 
-        
-        texture0Resource->Release();
+        textureResource->Release();
         view->Release();
     }
+}
+
+void MyD3DAssets::readBuffer(ID3D11Buffer *inputBuffer, vector<BYTE> &result)
+{
+    ID3D11Buffer *stagingBuffer = getStagingBuffer(inputBuffer);
+
+    context->base->CopyResource(stagingBuffer, inputBuffer);
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    context->base->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+    if (result.size() != mappedResource.RowPitch)
+        result.resize(mappedResource.RowPitch);
+
+    memcpy(result.data(), mappedResource.pData, mappedResource.RowPitch);
+
+    context->base->Unmap(stagingBuffer, 0);
 }
 
 void MyD3DAssets::readTexture(ID3D11Texture2D *inputTexture, Bitmap &result)
@@ -114,6 +172,9 @@ void MyD3DAssets::readTexture(ID3D11Texture2D *inputTexture, Bitmap &result)
     stagingTexture->GetDesc(&desc);
     if (result.getWidth() != desc.Width || result.getHeight() != desc.Height)
         result.allocate(desc.Width, desc.Height);
+
+    for (auto &p : result)
+        p.value = ml::vec4uc(50, 100, 150, 255);
 
     context->base->CopyResource(stagingTexture, inputTexture);
 
