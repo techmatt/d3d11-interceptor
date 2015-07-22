@@ -4,7 +4,7 @@
 void myD3D11DeviceContext::readSwapChain(Bitmap &result)
 {
     ID3D11Texture2D* swapChainTexture;
-    HRESULT hr = assets.swapChain->base->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast< void** >(&swapChainTexture));
+    HRESULT hr = assets->swapChain->base->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast< void** >(&swapChainTexture));
     if (FAILED(hr))
     {
         g_logger->logErrorFile << "assets.swapChain->base->GetBuffer failed" << endl;
@@ -20,7 +20,7 @@ void myD3D11DeviceContext::readSwapChain(Bitmap &result)
 void myD3D11DeviceContext::readRenderTarget(Bitmap &result)
 {
     ID3D11RenderTargetView *view;
-    assets.context->base->OMGetRenderTargets(1, &view, nullptr);
+    assets->context->base->OMGetRenderTargets(1, &view, nullptr);
 
     ID3D11Resource *resource;
     view->GetResource(&resource);
@@ -56,15 +56,15 @@ void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &re
     renderDesc.MiscFlags = 0;
     renderDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
     renderDesc.Usage = D3D11_USAGE_STAGING;
-    assets.device->base->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
+    assets->device->base->CreateTexture2D(&renderDesc, nullptr, &captureTexture);
 
-    assets.context->base->CopyResource(captureTexture, inputTexture);
+    assets->context->base->CopyResource(captureTexture, inputTexture);
 
     result.allocate(renderDesc.Width, renderDesc.Height);
 
     D3D11_MAPPED_SUBRESOURCE resource;
     UINT subresource = D3D11CalcSubresource(0, 0, 0);
-    HRESULT hr = assets.context->base->Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
+    HRESULT hr = assets->context->base->Map(captureTexture, subresource, D3D11_MAP_READ, 0, &resource);
     const BYTE *data = (BYTE *)resource.pData;
 
     for (UINT y = 0; y < renderDesc.Height; y++)
@@ -72,7 +72,7 @@ void myD3D11DeviceContext::readTexture(ID3D11Texture2D *inputTexture, Bitmap &re
         memcpy(&result(0U, y), data + resource.RowPitch * y, renderDesc.Width * sizeof(ml::vec4uc));
     }
 
-    assets.context->base->Unmap(captureTexture, subresource);
+    assets->context->base->Unmap(captureTexture, subresource);
 
     captureTexture->Release();
 }
@@ -194,20 +194,20 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     const bool reportAIRender = g_logger->capturingFrame;
     if (reportAIRender)
     {
-        assets.loadVSConstantBuffer();
+        assets->loadVSConstantBuffer();
         //assets.loadPSTexture(0);
 
         GameAIConstantBuffer VSBuffer;
-        VSBuffer.data = assets.VSBufferStorage.data();
-        VSBuffer.floatCount = assets.VSBufferSize;
+        VSBuffer.data = assets->VSBufferStorage.data();
+        VSBuffer.floatCount = assets->VSBufferSize;
 
         g_state->AI->drawIndexed(VSBuffer, VSBuffer, IndexCount, StartIndexLocation, BaseVertexLocation);
     }
 
     if (g_logger->capturingFrame)
     {
-        g_logger->logFrameCaptureFile << "DrawIndexed-" << g_logger->captureRenderIndex << " IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
-        g_logger->recordDrawEvent(assets, IndexCount, StartIndexLocation, BaseVertexLocation);
+        g_logger->logFrameCaptureFile << "DrawIndexed-" << g_logger->frameRenderIndex << " IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
+        g_logger->recordDrawEvent(*assets, IndexCount, StartIndexLocation, BaseVertexLocation);
     }
 }
 
@@ -222,7 +222,7 @@ void myD3D11DeviceContext::Draw(UINT  VertexCount, UINT  StartVertexLocation)
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "Draw vertexCount=" << VertexCount << ", StartVertexLocation=" << StartVertexLocation << endl;
-        g_logger->recordDrawEvent(assets, 0, 0, -1);
+        g_logger->recordDrawEvent(*assets, 0, 0, -1);
     }
 }
 
@@ -255,7 +255,13 @@ void myD3D11DeviceContext::PSSetConstantBuffers(UINT  StartSlot, UINT  NumBuffer
 
 void myD3D11DeviceContext::IASetInputLayout(ID3D11InputLayout *  pInputLayout)
 {
-    if (g_logger->logInterfaceCalls) g_logger->log("IASetInputLayout");
+    if (g_logger->logInterfaceCalls) g_logger->log("IASetInputLayout handle=" + pointerToString(pInputLayout));
+
+    
+    if (assets->vertexLayouts.count((UINT64)pInputLayout) == 0)
+        assets->activeVertexLayout = nullptr;
+    else
+        assets->activeVertexLayout = assets->vertexLayouts.find((UINT64)pInputLayout)->second;
 
     base->IASetInputLayout(pInputLayout);
 }

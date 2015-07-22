@@ -238,17 +238,17 @@ HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE Drive
     setupDeviceDebugLayer(*ppDevice);
 #endif
 
-    MyD3DAssets assets;
+    MyD3DAssets *assets = new MyD3DAssets();
 
-    assets.device = new myD3D11Device(*ppDevice);
-    assets.context = new myD3D11DeviceContext(*ppImmediateContext);
-    assets.swapChain = nullptr;
+    assets->device = new myD3D11Device(*ppDevice);
+    assets->context = new myD3D11DeviceContext(*ppImmediateContext);
+    assets->swapChain = nullptr;
 
-    assets.context->assets = assets;
-    assets.device->assets = assets;
+    assets->context->assets = assets;
+    assets->device->assets = assets;
 
-    *ppDevice = assets.device;
-    *ppImmediateContext = assets.context;
+    *ppDevice = assets->device;
+    *ppImmediateContext = assets->context;
 
     return result;
 }
@@ -275,18 +275,19 @@ HRESULT WINAPI myD3D11CreateDeviceAndSwapChain(IDXGIAdapter* p0, D3D_DRIVER_TYPE
     setupDeviceDebugLayer(*p9);
 #endif
 
-    MyD3DAssets assets;
+    MyD3DAssets *assets = new MyD3DAssets();
 
-    assets.swapChain = new myDXGISwapChain(*p8);
-    assets.device = new myD3D11Device(*p9);
-    assets.context = new myD3D11DeviceContext(*p11);
+    assets->swapChain = new myDXGISwapChain(*p8);
+    assets->device = new myD3D11Device(*p9);
+    assets->context = new myD3D11DeviceContext(*p11);
     
-    assets.context->assets = assets;
-    assets.swapChain->assets = assets;
+    assets->context->assets = assets;
+    assets->device->assets = assets;
+    assets->swapChain->assets = assets;
 
-    *p8 = assets.swapChain;
-    *p9 = assets.device;
-    *p11 = assets.context;
+    *p8 = assets->swapChain;
+    *p9 = assets->device;
+    *p11 = assets->context;
 
     return S_OK;
 }

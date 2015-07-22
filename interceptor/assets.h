@@ -98,7 +98,6 @@ struct MyD3DAssets
 
     VertexBufferState getActiveVertexBuffer();
     IndexBufferState getActiveIndexBuffer();
-    VertexLayout getActiveVertexLayout();
     const BufferCPU* loadAndCacheBuffer(ID3D11Buffer *inputBuffer);
 
     myDXGISwapChain *swapChain;
@@ -110,7 +109,8 @@ struct MyD3DAssets
 
     Bitmap PSTexture;
 
-    map<UINT64, VertexLayout> vertexLayouts;
+    VertexLayout *activeVertexLayout;
+    map<UINT64, VertexLayout*> vertexLayouts;
 
     map<UINT, ID3D11Buffer*> stagingBuffersBySize;
     map<UINT64, ID3D11Texture2D*> stagingTexturesBySize;

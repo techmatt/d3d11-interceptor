@@ -46,7 +46,7 @@ struct Logger
     bool logInterfaceCalls;
     bool logDrawCalls;
     long frameIndex;
-    long captureRenderIndex;
+    long frameRenderIndex;
 
     bool capturingFrame;
 
@@ -54,6 +54,8 @@ struct Logger
     string captureDir;
 
     Bitmap prevCaptureImage;
+
+    ObjectCollection frameCaptureObjects;
 };
 
 extern Logger *g_logger;

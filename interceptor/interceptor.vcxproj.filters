@@ -1,30 +1,87 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="main.h" />
-    <ClInclude Include="globals.h" />
-    <ClInclude Include="d3d11Device.h" />
-    <ClInclude Include="d3d11DeviceContext.h" />
-    <ClInclude Include="DXGISwapChain.h" />
-    <ClInclude Include="assets.h" />
+    <ClInclude Include="d3d11Device.h">
+      <Filter>D3D</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11DeviceContext.h">
+      <Filter>D3D</Filter>
+    </ClInclude>
+    <ClInclude Include="DXGISwapChain.h">
+      <Filter>D3D</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="globals.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="assets.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="localizedObject.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="objectCollection.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="d3d11Exports.cpp" />
-    <ClCompile Include="DLLMain.cpp" />
-    <ClCompile Include="d3d11Device.cpp" />
-    <ClCompile Include="d3d11DeviceContext.cpp" />
-    <ClCompile Include="DXGISwapChain.cpp" />
-    <ClCompile Include="globals.cpp" />
-    <ClCompile Include="assets.cpp" />
+    <ClCompile Include="d3d11Device.cpp">
+      <Filter>D3D</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11DeviceContext.cpp">
+      <Filter>D3D</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11Exports.cpp">
+      <Filter>D3D</Filter>
+    </ClCompile>
+    <ClCompile Include="DXGISwapChain.cpp">
+      <Filter>D3D</Filter>
+    </ClCompile>
+    <ClCompile Include="DLLMain.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="assets.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="localizedObject.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="objectCollection.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="exports.def" />
     <None Include="..\README.md" />
+    <None Include="exports.def">
+      <Filter>Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="logs">
       <UniqueIdentifier>{1315ab2b-008e-4adb-9fae-b30855927d8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="D3D">
+      <UniqueIdentifier>{9dd08b89-b613-4384-bbf0-0d6f66cf6b05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{db945947-660d-46f7-b4d8-d497a05624d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Infrastructure">
+      <UniqueIdentifier>{af2d10a3-2051-402a-9bd3-500bac873185}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

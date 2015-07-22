@@ -136,21 +136,6 @@ IndexBufferState MyD3DAssets::getActiveIndexBuffer()
     return result;
 }
 
-VertexLayout MyD3DAssets::getActiveVertexLayout()
-{
-    ID3D11InputLayout *layout = nullptr;
-    context->base->IAGetInputLayout(&layout);
-    
-    if (layout == nullptr)
-        return VertexLayout();
-
-    if (vertexLayouts.count((UINT64)layout) == 0)
-        return VertexLayout();
-
-    return vertexLayouts[(UINT64)layout];
-}
-
-
 const BufferCPU* MyD3DAssets::loadAndCacheBuffer(ID3D11Buffer *buffer)
 {
     if (buffer == nullptr)

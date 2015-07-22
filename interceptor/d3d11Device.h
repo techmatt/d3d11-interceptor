@@ -11,7 +11,7 @@ public:
     ID3D11Device *base;
     myIUnknown unknown;
 
-    MyD3DAssets assets;
+    MyD3DAssets *assets;
 
     HRESULT QueryInterface(const IID &, void **)
     {

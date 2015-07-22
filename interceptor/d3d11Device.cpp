@@ -108,7 +108,8 @@ HRESULT myD3D11Device::CreateInputLayout(const D3D11_INPUT_ELEMENT_DESC *  pInpu
 
     if (*ppInputLayout != nullptr && SUCCEEDED(result))
     {
-        assets.vertexLayouts[(UINT64)*ppInputLayout] = VertexLayout(pInputElementDescs, NumElements);
+        g_logger->logInputLayoutFile << endl << "Handle=" << pointerToString(*ppInputLayout) << endl;
+        assets->vertexLayouts[(UINT64)*ppInputLayout] = new VertexLayout(pInputElementDescs, NumElements);
     }
 
     return result;

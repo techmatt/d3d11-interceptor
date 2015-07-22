@@ -11,7 +11,7 @@ public:
     ID3D11DeviceContext *base;
     myIUnknown unknown;
 
-    MyD3DAssets assets;
+    MyD3DAssets *assets;
     
     //
     // custom helper functions
