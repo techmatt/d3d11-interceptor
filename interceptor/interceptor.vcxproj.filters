@@ -19,13 +19,13 @@
     <ClInclude Include="assets.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="localizedObject.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="objectCollection.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="util.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\localizedObject.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\objectCollection.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
@@ -54,13 +54,13 @@
     <ClCompile Include="assets.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="localizedObject.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="objectCollection.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\localizedObject.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\objectCollection.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
   </ItemGroup>

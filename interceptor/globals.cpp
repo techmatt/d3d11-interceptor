@@ -5,9 +5,10 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
 {
     if (capturingFrame)
     {
-        LocalizedObject *object = new LocalizedObject();
-        object->loadFromDrawIndexed(assets, IndexCount, StartIndexLocation, BaseVertexLocation);
-        frameCaptureObjects.objects.push_back(object);
+        LocalizedObject object;
+        object.loadFromDrawIndexed(assets, IndexCount, StartIndexLocation, BaseVertexLocation);
+        if (object.vertices.size() > 0)
+            frameCaptureObjects.objects.push_back(object);
 
         assets.loadVSConstantBuffer();
         const auto &indexBuffer = assets.getActiveIndexBuffer();
@@ -146,6 +147,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
 void Logger::beginFrameCapture()
 {
     capturingFrame = true;
+    frameCaptureObjects.objects.clear();
     logDrawFile << "Capturing frame " << frameIndex << endl;
     captureDir = logDir + "capture" + util::zeroPad(frameIndex, 6) + "/";
     util::makeDirectory(captureDir);
@@ -181,6 +183,7 @@ void Logger::beginFrameCapture()
 
 void Logger::endFrameCapture()
 {
+    frameCaptureObjects.save(captureDir + "objects.txt");
     capturingFrame = false;
     captureDir = "";
     prevCaptureImage.free();

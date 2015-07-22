@@ -91,17 +91,19 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\localizedObject.h" />
+    <ClInclude Include="..\shared\objectCollection.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="d3d11Device.h" />
     <ClInclude Include="d3d11DeviceContext.h" />
     <ClInclude Include="DXGISwapChain.h" />
     <ClInclude Include="globals.h" />
-    <ClInclude Include="localizedObject.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="objectCollection.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\localizedObject.cpp" />
+    <ClCompile Include="..\shared\objectCollection.cpp" />
     <ClCompile Include="assets.cpp" />
     <ClCompile Include="d3d11Device.cpp" />
     <ClCompile Include="d3d11DeviceContext.cpp" />
@@ -109,14 +111,12 @@
     <ClCompile Include="DLLMain.cpp" />
     <ClCompile Include="DXGISwapChain.cpp" />
     <ClCompile Include="globals.cpp" />
-    <ClCompile Include="localizedObject.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">main.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">main.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="objectCollection.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>

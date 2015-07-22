@@ -11,6 +11,8 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include <windows.h>
 #include <d3d11.h>
 
+#include "util.h"
+
 #include "../shared/gameAIInterface.h"
 
 #include "localizedObject.h"
@@ -22,5 +24,3 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "d3d11Device.h"
 #include "d3d11DeviceContext.h"
 #include "DXGISwapChain.h"
-
-#include "util.h"
