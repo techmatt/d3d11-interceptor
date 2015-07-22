@@ -245,6 +245,7 @@ HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE Drive
     assets.swapChain = nullptr;
 
     assets.context->assets = assets;
+    assets.device->assets = assets;
 
     *ppDevice = assets.device;
     *ppImmediateContext = assets.context;

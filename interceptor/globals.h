@@ -52,6 +52,8 @@ struct Logger
 
     string logDir;
     string captureDir;
+
+    Bitmap prevCaptureImage;
 };
 
 extern Logger *g_logger;

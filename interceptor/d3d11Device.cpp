@@ -106,6 +106,11 @@ HRESULT myD3D11Device::CreateInputLayout(const D3D11_INPUT_ELEMENT_DESC *  pInpu
 
     HRESULT result = base->CreateInputLayout(pInputElementDescs, NumElements, pShaderBytecodeWithInputSignature, BytecodeLength, ppInputLayout);
 
+    if (*ppInputLayout != nullptr && SUCCEEDED(result))
+    {
+        assets.vertexLayouts[(UINT64)*ppInputLayout] = VertexLayout(pInputElementDescs, NumElements);
+    }
+
     return result;
 }
 

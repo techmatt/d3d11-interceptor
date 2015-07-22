@@ -59,6 +59,30 @@ struct IndexBufferState
     UINT offset;
 };
 
+struct VertexLayout
+{
+    VertexLayout() {}
+    VertexLayout(const D3D11_INPUT_ELEMENT_DESC *  pInputElementDescs, UINT  NumElements)
+    {
+        positionOffset = -1;
+        colorOffset = -1;
+
+        for (int elem = 0; elem < (int)NumElements; elem++)
+        {
+            const D3D11_INPUT_ELEMENT_DESC &desc = pInputElementDescs[elem];
+            
+            if (string(desc.SemanticName) == string("POSITION"))
+                positionOffset = desc.AlignedByteOffset;
+
+            if (string(desc.SemanticName) == string("COLOR"))
+                colorOffset = desc.AlignedByteOffset;
+        }
+    }
+
+    int positionOffset;
+    int colorOffset;
+};
+
 struct MyD3DAssets
 {
     ID3D11Buffer* getStagingBuffer(ID3D11Buffer *baseBuffer);
@@ -67,11 +91,14 @@ struct MyD3DAssets
     void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result);
     void readBuffer(ID3D11Buffer *inputBuffer, vector<BYTE> &result);
 
+    vec3f transformObjectToWorldGamecube(const vec3f &basePos) const;
+
     void loadVSConstantBuffer();
     void loadPSTexture(int textureIndex);
 
     VertexBufferState getActiveVertexBuffer();
     IndexBufferState getActiveIndexBuffer();
+    VertexLayout getActiveVertexLayout();
     const BufferCPU* loadAndCacheBuffer(ID3D11Buffer *inputBuffer);
 
     myDXGISwapChain *swapChain;
@@ -82,6 +109,8 @@ struct MyD3DAssets
     UINT VSBufferSize;
 
     Bitmap PSTexture;
+
+    map<UINT64, VertexLayout> vertexLayouts;
 
     map<UINT, ID3D11Buffer*> stagingBuffersBySize;
     map<UINT64, ID3D11Texture2D*> stagingTexturesBySize;

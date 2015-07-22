@@ -17,11 +17,25 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
 
         const string imagePrefix = "render" + util::zeroPad(captureRenderIndex, 5);
         const string frameImageFile = imagePrefix + "_frame.png";
+        const string frameDeltaImageFile = imagePrefix + "_delta.png";
         const string texImageFile = imagePrefix + "_tex";
 
         Bitmap image;
         assets.context->readRenderTarget(image);
         LodePNG::save(image, g_logger->captureDir + frameImageFile);
+
+        if (prevCaptureImage.getDimensions() == image.getDimensions())
+        {
+            Bitmap deltaImage = image;
+            for (auto &p : deltaImage)
+            {
+                if (p.value == prevCaptureImage(p.x, p.y))
+                    p.value = vec4uc(0, 0, 0, 255);
+            }
+            LodePNG::save(deltaImage, g_logger->captureDir + frameDeltaImageFile);
+        }
+
+        prevCaptureImage = image;
 
         auto modifyImage = [](Bitmap &b)
         {
@@ -51,6 +65,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         logFrameCaptureHtml << "<tr>" << endl;
         logFrameCaptureHtml << "<td>" << captureRenderIndex << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << makeHTMLImage(frameImageFile) << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << makeHTMLImage(frameDeltaImageFile) << "</td>" << endl;
         /*logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "0.png") << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "1.png") << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "2.png") << "</td>" << endl;
@@ -75,20 +90,28 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
             
             const BYTE *vertexData = vertexBuffer.buffer->data.data();
 
-
             v0Data = "data:<br />";
 
-            for (int indexIndex = 0; indexIndex < (int)IndexCount; indexIndex++)
+            for (int indexIndex = 0; indexIndex < min((int)IndexCount, 16); indexIndex++)
             {
                 const int curIndex = indexDataStart[indexIndex] + BaseVertexLocation;
                 const float *curVertex = (const float *)(vertexData + (vertexBuffer.stride * curIndex));
 
+                if (vertexBuffer.buffer->data.size() >= vertexBuffer.stride * (curIndex + 1))
+                {
+                    continue;
+                }
+
+                if (vertexBuffer.stride / 4 >= 4)
+                {
+                    const vec3f basePos(curVertex[1], curVertex[2], curVertex[3]);
+                    const vec3f worldPos = assets.transformObjectToWorldGamecube(basePos);
+                    v0Data += worldPos.toString(", ") + " --- ";
+                }
+
                 for (int i = 0; i < (int)vertexBuffer.stride / 4; i++)
                 {
-                    if (vertexBuffer.buffer->data.size() >= vertexBuffer.stride * (curIndex + 1))
-                        v0Data += to_string(curVertex[i]) + ", ";
-                    else
-                        v0Data += "<eob>";
+                    v0Data += to_string(curVertex[i]) + ", ";
                 }
                 v0Data += "<br />";
             }
@@ -117,6 +140,7 @@ void Logger::beginFrameCapture()
     logFrameCaptureHtml << "<tr>" << endl;
     logFrameCaptureHtml << "<td>Index</td>" << endl;
     logFrameCaptureHtml << "<td>Frame</td>" << endl;
+    logFrameCaptureHtml << "<td>Delta Frame</td>" << endl;
     /*logFrameCaptureHtml << "<td>Texture 0</td>" << endl;
     logFrameCaptureHtml << "<td>Texture 1</td>" << endl;
     logFrameCaptureHtml << "<td>Texture 2</td>" << endl;
@@ -141,6 +165,7 @@ void Logger::endFrameCapture()
 {
     capturingFrame = false;
     captureDir = "";
+    prevCaptureImage.free();
     logFrameCaptureFile.close();
 
     logFrameCaptureHtml << "</table>" << endl;
