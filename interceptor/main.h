@@ -14,9 +14,8 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "util.h"
 
 #include "../shared/gameAIInterface.h"
-
-#include "localizedObject.h"
-#include "objectCollection.h"
+#include "../shared/localizedObject.h"
+#include "../shared/objectCollection.h"
 
 #include "globals.h"
 
