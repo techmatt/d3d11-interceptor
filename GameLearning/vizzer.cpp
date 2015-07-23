@@ -2,31 +2,20 @@
 #include "main.h"
 
 void Vizzer::init(ApplicationData &app)
-{
-    m_meshes.resize(20);
-
-    //const FloatType radius, const ml::vec3<FloatType>& pos, const size_t stacks /*= 10*/, const size_t slices /*= 10*/, const ml::vec4<FloatType>& color
-    for (int i = 0; i < 20; i++)
-    {
-        const vec3f pos = vec3f(util::randomUniform(-1.0f, 1.0f), util::randomUniform(-1.0f, 1.0f), util::randomUniform(-1.0f, 1.0f));
-        const vec4f color = vec4f(util::randomUniform(0.5f, 1.0f), util::randomUniform(0.5f, 1.0f), util::randomUniform(0.5f, 1.0f), 1.0f);
-        m_meshes[i].load(app.graphics, TriMeshf(Shapesf::sphere(util::randomUniform(0.1f, 0.2f), pos, 10, 10, color)));
-    }
-	
+{	
     const string shaderDir = "../../frameworkD3D11/shaders/";
-    m_vsColor.load(app.graphics, shaderDir + "test.shader");
-    m_psColor.load(app.graphics, shaderDir + "test.shader");
-
-    m_constants.init(app.graphics);
+    
+    assets.init(app.graphics);
 
     vec3f eye(1.0f, 1.0f, 4.5f);
-    vec3f worldUp(0.0f, 0.0f, 1.0f);
-    m_camera = Cameraf(-eye, worldUp, vec3f::origin, 60.0f, (float)app.window.getWidth() / app.window.getHeight(), 0.01f, 1000.0f, true);
+    vec3f worldUp(0.0f, 1.0f, 0.0f);
+    m_camera = Cameraf(-eye, worldUp, vec3f::origin, 60.0f, (float)app.window.getWidth() / app.window.getHeight(), 0.01f, 10000.0f, true);
 
     m_font.init(app.graphics, "Calibri");
 
     m_world = mat4f::identity();
 
+    objects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\capture000843\objects.txt)");
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -35,16 +24,18 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
-    ConstantBuffer constants;
-    constants.worldViewProj =  m_camera.getCameraPerspective() * m_world;
-    m_constants.update(constants);
-
-    m_vsColor.bind();
-    m_psColor.bind();
-    m_constants.bindVertexShader(0);
-
-    for (auto &m : m_meshes)
-        m.render();
+    int index = 0;
+    for (auto &o : objects.objects)
+    {
+        if (index == 312)
+            int a = 5;
+        index++;
+        for (auto &v : o.vertices)
+        {
+            vec4i material = o.materials[2];
+            assets.renderSphere(m_camera.getCameraPerspective(), v.worldPos, 0.2f, vec3f(material.getVec3()) / 255.0f);
+        }
+    }
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
 }
@@ -61,7 +52,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)
 {
-    const float distance = 0.1f;
+    const float distance = 1.0f;
     const float theta = 5.0f;
 
     if(key == KEY_S) m_camera.move(-distance);
@@ -84,13 +75,13 @@ void Vizzer::mouseDown(ApplicationData &app, MouseButtonType button)
 
 void Vizzer::mouseWheel(ApplicationData &app, int wheelDelta)
 {
-    const float distance = 0.002f;
+    const float distance = 0.1f;
     m_camera.move(distance * wheelDelta);
 }
 
 void Vizzer::mouseMove(ApplicationData &app)
 {
-    const float distance = 0.01f;
+    const float distance = 1.0f;
     const float theta = 0.5f;
 
     vec2i posDelta = app.input.mouse.pos - app.input.prevMouse.pos;

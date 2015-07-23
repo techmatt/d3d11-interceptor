@@ -12,6 +12,7 @@ struct LocalizedObject
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
 
     int drawIndex;
+    vector<vec4i> materials;
     vector<LocalizedObjectVertex> vertices;
 };
 
@@ -30,8 +31,10 @@ ostream& operator << (ostream &os, const vector<T> &objects)
 template<class T>
 istream& operator >> (istream &is, vector<T> &objects)
 {
-    size_t length;
+    size_t length = -1;
     is >> length;
+    if (length == -1)
+        DEBUG_BREAK;
     objects.resize(length);
     for (int i = 0; i < length; i++)
     {
@@ -48,7 +51,7 @@ inline ostream& operator << (ostream &os, const LocalizedObjectVertex &v)
 
 inline ostream& operator << (ostream &os, const LocalizedObject &o)
 {
-    os << o.drawIndex << ' ' << o.vertices << endl;
+    os << o.drawIndex << ' ' << o.vertices << ' ' << o.materials << endl;
     return os;
 }
 
@@ -62,6 +65,6 @@ inline istream& operator >> (istream &is, LocalizedObjectVertex &v)
 
 inline istream& operator >> (istream &is, LocalizedObject &o)
 {
-    is >> o.drawIndex >> o.vertices;
+    is >> o.drawIndex >> o.vertices >> o.materials;
     return is;
 }

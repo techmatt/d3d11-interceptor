@@ -102,3 +102,58 @@ VS_OUTPUT main(
 	return o;
 }
 
+----
+
+struct VS_OUTPUT {
+	float4 pos : POSITION;
+	float4 colors_0 : COLOR0;
+	float4 colors_1 : COLOR1;
+	float3 tex0 : TEXCOORD0;
+	float3 tex1 : TEXCOORD1;
+	float4 clipPos : TEXCOORD2;
+};
+VS_OUTPUT main(
+  float3 rawnorm0 : NORMAL0,
+  float2 tex0 : TEXCOORD0,
+  float4 rawpos : POSITION) {
+	VS_OUTPUT o;
+	float4 pos = float4(dot(cpnmtx[0], rawpos), dot(cpnmtx[1], rawpos), dot(cpnmtx[2], rawpos), 1.0);
+	float3 _norm0 = normalize(float3(dot(cpnmtx[3].xyz, rawnorm0), dot(cpnmtx[4].xyz, rawnorm0), dot(cpnmtx[5].xyz, rawnorm0)));
+	o.pos = float4(dot(cproj[0], pos), dot(cproj[1], pos), dot(cproj[2], pos), dot(cproj[3], pos));
+	int4 lacc;
+	float3 ldir, h, cosAttn, distAttn;
+	float dist, dist2, attn;
+	{
+		int4 mat = cmtrl[2];
+		lacc = int4(255, 255, 255, 255);
+		lacc.w = 255;
+		lacc = clamp(lacc, 0, 255);
+		o.colors_0 = float4((mat * (lacc + (lacc >> 7))) >> 8) / 255.0;
+	}
+	o.colors_1 = o.colors_0;
+	float4 coord = float4(0.0, 0.0, 1.0, 1.0);
+	{
+		coord = float4(0.0, 0.0, 1.0, 1.0);
+		coord = float4(rawnorm0.xyz, 1.0);
+		o.tex0.xyz = float3(dot(coord, ctexmtx[0]), dot(coord, ctexmtx[1]), dot(coord, ctexmtx[2]));
+		float4 P0 = cpostmtx[3];
+		float4 P1 = cpostmtx[4];
+		float4 P2 = cpostmtx[5];
+		o.tex0.xyz = normalize(o.tex0.xyz);
+		o.tex0.xyz = float3(dot(P0.xyz, o.tex0.xyz) + P0.w, dot(P1.xyz, o.tex0.xyz) + P1.w, dot(P2.xyz, o.tex0.xyz) + P2.w);
+	}
+	{
+		coord = float4(0.0, 0.0, 1.0, 1.0);
+		coord = float4(tex0.x, tex0.y, 1.0, 1.0);
+		o.tex1.xyz = float3(dot(coord, ctexmtx[3]), dot(coord, ctexmtx[4]), 1);
+		float4 P0 = cpostmtx[0];
+		float4 P1 = cpostmtx[1];
+		float4 P2 = cpostmtx[2];
+		o.tex1.xyz = float3(dot(P0.xyz, o.tex1.xyz) + P0.w, dot(P1.xyz, o.tex1.xyz) + P1.w, dot(P2.xyz, o.tex1.xyz) + P2.w);
+	}
+	o.clipPos = o.pos;
+	o.pos.z = -o.pos.z;
+	o.pos.xy = o.pos.xy - o.pos.w * cpixelcenter.xy;
+	return o;
+}
+

@@ -66,6 +66,7 @@ struct VertexLayout
     {
         positionOffset = -1;
         colorOffset = -1;
+        tex0Offset = -1;
 
         for (int elem = 0; elem < (int)NumElements; elem++)
         {
@@ -76,11 +77,21 @@ struct VertexLayout
 
             if (string(desc.SemanticName) == string("COLOR"))
                 colorOffset = desc.AlignedByteOffset;
+
+            if (string(desc.SemanticName) == string("TEXCOORD"))
+                tex0Offset = desc.AlignedByteOffset;
+
+            htmlDescription += string(desc.SemanticName) + "-" + to_string(desc.SemanticIndex);
+            htmlDescription += ", offset=" + to_string(desc.AlignedByteOffset);
+            htmlDescription += ", format=" + to_string(desc.Format);
+            htmlDescription += "<br />";
         }
     }
 
     int positionOffset;
     int colorOffset;
+    int tex0Offset;
+    string htmlDescription;
 };
 
 struct MyD3DAssets

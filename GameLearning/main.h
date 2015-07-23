@@ -1,5 +1,5 @@
 
-//#define USE_INTERCEPTOR_D3D11DLL
+#pragma once
 
 #include "mLibInclude.h"
 
@@ -14,5 +14,8 @@ __declspec(dllimport) HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_D
 
 using namespace ml;
 using namespace std;
+
+#include "../shared/localizedObject.h"
+#include "../shared/objectCollection.h"
 
 #include "vizzer.h"

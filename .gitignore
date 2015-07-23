@@ -172,3 +172,11 @@
 /gameAICore/x64/Release/main.obj
 /gameAICore/x64/Release/vc120.pdb
 /gameAICore/x64/Release/gameAI.Build.CppClean.log
+/GameLearning/gameLearning.opensdf
+/GameLearning/gameLearning.sdf
+/GameLearning/bin
+/GameLearning/shaderCache
+/GameLearningUI/obj
+/bin/UIWindowAssetViewer.exe
+/bin/UIWindowAssetViewer.exe.config
+/bin/UIWindowAssetViewer.pdb

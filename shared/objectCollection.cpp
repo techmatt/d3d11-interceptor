@@ -7,3 +7,10 @@ void ObjectCollection::save(const string &filename) const
 
     file << objects << endl;
 }
+
+void ObjectCollection::load(const string &filename)
+{
+    ifstream file(filename);
+
+    file >> objects;
+}

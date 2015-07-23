@@ -3,51 +3,40 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frameworkD3D11", "frameworkD3D11.vcxproj", "{28114563-F715-4042-A798-B2A73D9C8AC4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90} = {F3F27ED9-276D-4557-B36A-328CB3D19C90}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameLearning", "gameLearning.vcxproj", "{28114563-F715-4042-A798-B2A73D9C8AC4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interceptor", "..\interceptor\interceptor.vcxproj", "{F3F27ED9-276D-4557-B36A-328CB3D19C90}"
-	ProjectSection(ProjectDependencies) = postProject
-		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6} = {87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}
-	EndProjectSection
-EndProject
-Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "Dolphin", "..\Dolphin-x64\Dolphin.exe", "{A69587FB-1927-4F86-97BE-4D8DC4C086F3}"
-	ProjectSection(DebuggerProjectSystem) = preProject
-		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = C:\Code\d3d11-interceptor\Dolphin-x64\Dolphin.exe
-		RemoteMachine = BRETHIL
-		StartingDirectory = C:\Code\d3d11-interceptor\Dolphin-x64
-		Environment = Default
-		LaunchingEngine = 00000000-0000-0000-0000-000000000000
-		UseLegacyDebugEngines = No
-		LaunchSQLEngine = No
-		AttachLaunchAction = No
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameAICore", "..\gameAICore\gameAICore.vcxproj", "{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gameLearningUI", "..\GameLearningUI\gameLearningUI.csproj", "{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{28114563-F715-4042-A798-B2A73D9C8AC4}.Debug|x64.ActiveCfg = Debug|x64
 		{28114563-F715-4042-A798-B2A73D9C8AC4}.Debug|x64.Build.0 = Debug|x64
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Release|Any CPU.ActiveCfg = Release|x64
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{28114563-F715-4042-A798-B2A73D9C8AC4}.Release|Mixed Platforms.Build.0 = Release|x64
 		{28114563-F715-4042-A798-B2A73D9C8AC4}.Release|x64.ActiveCfg = Release|x64
 		{28114563-F715-4042-A798-B2A73D9C8AC4}.Release|x64.Build.0 = Release|x64
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Debug|x64.ActiveCfg = Debug|x64
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Debug|x64.Build.0 = Debug|x64
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Release|x64.ActiveCfg = Release|x64
-		{F3F27ED9-276D-4557-B36A-328CB3D19C90}.Release|x64.Build.0 = Release|x64
-		{A69587FB-1927-4F86-97BE-4D8DC4C086F3}.Debug|x64.ActiveCfg = Debug|x64
-		{A69587FB-1927-4F86-97BE-4D8DC4C086F3}.Release|x64.ActiveCfg = Debug|x64
-		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Debug|x64.ActiveCfg = Debug|x64
-		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Debug|x64.Build.0 = Debug|x64
-		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Release|x64.ActiveCfg = Release|x64
-		{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}.Release|x64.Build.0 = Release|x64
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FFEEBEC9-4EFD-4C8F-915C-2EA370097C75}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

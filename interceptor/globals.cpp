@@ -1,6 +1,8 @@
 
 #include "Main.h"
 
+const int textureOutputCount = 0;
+
 void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 {
     if (capturingFrame)
@@ -54,7 +56,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
             }
         };
 
-        for (int textureIndex = 0; textureIndex < 0; textureIndex++)
+        for (int textureIndex = 0; textureIndex < textureOutputCount; textureIndex++)
         {
             assets.loadPSTexture(textureIndex);
             modifyImage(assets.PSTexture);
@@ -71,14 +73,10 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         logFrameCaptureHtml << "<td>" << frameRenderIndex << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << makeHTMLImage(frameImageFile) << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << makeHTMLImage(frameDeltaImageFile) << "</td>" << endl;
-        /*logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "0.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "1.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "2.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "3.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "4.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "5.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "6.png") << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + "7.png") << "</td>" << endl;*/
+
+        for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
+            logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
+        
         logFrameCaptureHtml << "<td>" << IndexCount << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << StartIndexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << BaseVertexLocation << "</td>" << endl;
@@ -105,8 +103,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
             }
             else
             {
-                v0Data += "posOffset=" + to_string(layout->positionOffset) + "<br />";
-                v0Data += "colorOffset=" + to_string(layout->colorOffset) + "<br />";
+                v0Data += layout->htmlDescription;
                 v0Data += "data:<br />";
 
                 for (int indexIndex = 0; indexIndex < min((int)IndexCount, 16); indexIndex++)
@@ -161,14 +158,8 @@ void Logger::beginFrameCapture()
     logFrameCaptureHtml << "<td>Index</td>" << endl;
     logFrameCaptureHtml << "<td>Frame</td>" << endl;
     logFrameCaptureHtml << "<td>Delta Frame</td>" << endl;
-    /*logFrameCaptureHtml << "<td>Texture 0</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 1</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 2</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 3</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 4</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 5</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 6</td>" << endl;
-    logFrameCaptureHtml << "<td>Texture 7</td>" << endl;*/
+    for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
+        logFrameCaptureHtml << "<td>Texture " << texIndex << "</td>" << endl;
     logFrameCaptureHtml << "<td>Index Count</td>" << endl;
     logFrameCaptureHtml << "<td>Start Index</td>" << endl;
     logFrameCaptureHtml << "<td>Base Vertex Location</td>" << endl;
