@@ -15,7 +15,15 @@ void Vizzer::init(ApplicationData &app)
 
     m_world = mat4f::identity();
 
-    objects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\capture000843\objects.txt)");
+    objects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
+
+    objectMeshes.resize(objects.objects.size());
+    for (int objectIndex = 0; objectIndex < objects.objects.size(); objectIndex++)
+    {
+        TriMeshf mesh;
+        objects.objects[objectIndex].toMesh(mesh);
+        objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+    }
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -24,17 +32,20 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
-    int index = 0;
-    for (auto &o : objects.objects)
+    /*for (auto &o : objects.objects)
     {
-        if (index == 312)
+        if (o.drawIndex == 447)
             int a = 5;
-        index++;
         for (auto &v : o.vertices)
         {
-            vec4i material = o.materials[2];
+            vec4i material = o.PSColors[5];
             assets.renderSphere(m_camera.getCameraPerspective(), v.worldPos, 0.2f, vec3f(material.getVec3()) / 255.0f);
         }
+    }*/
+
+    for (auto &m : objectMeshes)
+    {
+        assets.renderMesh(m, m_camera.getCameraPerspective());
     }
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
@@ -47,7 +58,7 @@ void Vizzer::resize(ApplicationData &app)
 
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
-
+    if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)

@@ -3,14 +3,14 @@
 
 void ObjectCollection::save(const string &filename) const
 {
-    ofstream file(filename);
-
-    file << objects << endl;
+    BinaryDataStreamFile file(filename, true);
+    file << objects;
+    file.closeStream();
 }
 
 void ObjectCollection::load(const string &filename)
 {
-    ifstream file(filename);
-
+    BinaryDataStreamFile file(filename, false);
     file >> objects;
+    file.closeStream();
 }

@@ -21,20 +21,40 @@ struct VertexShaderConstants
     vec4f pixelcentercorrection;
 };
 
+struct PixelShaderConstants
+{
+    vec4i colors[4];
+    vec4i kcolors[4];
+    vec4i alpha;
+    vec4f texdims[8];
+    vec4i zbias[2];
+    vec4i indtexscale[2];
+    vec4i indtexmtx[6];
+    vec4i fogcolor;
+    vec4i fogi;
+    vec4f fogf[2];
+    vec4f zslope;
+    vec4f efbscale;
+};
+
 void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 {
     drawIndex = g_logger->frameRenderIndex;
 
     vertices.clear();
+    indices.clear();
 
     assets.loadVSConstantBuffer();
+    //assets.loadPSConstantBuffer();
     //assets.loadPSTexture(0);
     const auto &indexBuffer = assets.getActiveIndexBuffer();
     const auto &vertexBuffer = assets.getActiveVertexBuffer();
 
-    VertexShaderConstants &shaderConstants = *((VertexShaderConstants *)assets.VSBufferStorage.data());
+    /*PixelShaderConstants &PSConstants = *((PixelShaderConstants *)assets.PSBufferStorage.data());
     for (int i = 0; i < 4; i++)
-        materials.push_back(shaderConstants.materials[i]);
+        PSColors.push_back(PSConstants.colors[i]);
+    for (int i = 0; i < 4; i++)
+        PSColors.push_back(PSConstants.kcolors[i]);*/
 
     if (vertexBuffer.buffer != nullptr && indexBuffer.buffer != nullptr && assets.activeVertexLayout != nullptr && assets.activeVertexLayout->positionOffset != -1)
     {
@@ -52,30 +72,26 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             }
 
             const int pOffset = assets.activeVertexLayout->positionOffset;
-            const int cOffset = assets.activeVertexLayout->colorOffset;
-            const int tOffset = assets.activeVertexLayout->tex0Offset;
-
+            const int bOffset = assets.activeVertexLayout->blendOffset;
+            
             const float *pStart = (const float *)(curVertex + pOffset);
             
             LocalizedObjectVertex localizedVertex;
 
+            int blendMatrixIndex = -1;
+            if (bOffset != -1)
+            {
+                vec4uc blendIndices = *((const vec4uc *)(curVertex + bOffset));
+                blendMatrixIndex = blendIndices.x;
+            }
+
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
-            localizedVertex.worldPos = assets.transformObjectToWorldGamecube(basePos);
+            localizedVertex.worldPos = assets.transformObjectToWorldGamecube(basePos, blendMatrixIndex);
 
             if (localizedVertex.worldPos.x != localizedVertex.worldPos.x) localizedVertex.worldPos = vec3f(0.0f, 0.0f, 0.0f);
             
-            localizedVertex.color = vec4uc(255, 255, 255, 255);
-            if (cOffset != -1)
-            {
-                localizedVertex.color = *((const vec4uc *)(curVertex + cOffset));
-            }
-
-            if (tOffset != -1 && assets.PSTexture.size() > 0)
-            {
-                //localizedVertex.color = assets.PSTexture(0.5f, 0.5f);
-            }
-
             vertices.push_back(localizedVertex);
+            indices.push_back(curIndex);
         }
     }
 }

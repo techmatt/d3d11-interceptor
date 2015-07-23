@@ -41,5 +41,8 @@
     <ClCompile Include="vizzer.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\shared\localizedObjectLearner.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

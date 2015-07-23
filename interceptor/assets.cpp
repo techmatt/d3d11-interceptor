@@ -21,27 +21,33 @@ struct VertexShaderConstantsGamecube
     vec4f pixelcentercorrection;
 };
 
-vec3f MyD3DAssets::transformObjectToWorldGamecube(const vec3f &basePos) const
+vec3f MyD3DAssets::transformObjectToWorldGamecube(const vec3f &basePos, int blendMatrixStart) const
 {
-    int sizzze = sizeof(VertexShaderConstantsGamecube);
-    if (VSBufferSize < 16)
+    if (VSBufferSize < sizeof(VertexShaderConstantsGamecube))
     {
         return vec3f::origin;
     }
 
-    const vec4f *asVec4f = (const vec4f *)VSBufferStorage.data();
+    const VertexShaderConstantsGamecube &constants = *((const VertexShaderConstantsGamecube *)VSBufferStorage.data());
 
     vec4f rawPos(basePos, 1.0f);
 
-    vec3f worldPos(asVec4f[0] | rawPos,
-                   asVec4f[1] | rawPos,
-                   asVec4f[2] | rawPos);
+    vec4f m0 = constants.posnormalmatrix[0];
+    vec4f m1 = constants.posnormalmatrix[1];
+    vec4f m2 = constants.posnormalmatrix[2];
+    if (blendMatrixStart != -1)
+    {
+        m0 = constants.transformmatrices[blendMatrixStart + 0];
+        m1 = constants.transformmatrices[blendMatrixStart + 1];
+        m2 = constants.transformmatrices[blendMatrixStart + 2];
+    }
+    
+
+    vec3f worldPos(m0 | rawPos,
+                   m1 | rawPos,
+                   m2 | rawPos);
 
     return worldPos;
-
-    //float4 pos = float4(dot(cpnmtx[0], rawpos), dot(cpnmtx[1], rawpos), dot(cpnmtx[2], rawpos), 1.0);
-    //float3 _norm0 = normalize(float3(dot(cpnmtx[3].xyz, rawnorm0), dot(cpnmtx[4].xyz, rawnorm0), dot(cpnmtx[5].xyz, rawnorm0)));
-    //o.pos = float4(dot(cproj[0], pos), dot(cproj[1], pos), dot(cproj[2], pos), dot(cproj[3], pos));
 }
 
 ID3D11Buffer* MyD3DAssets::getStagingBuffer(ID3D11Buffer *baseBuffer)
@@ -102,16 +108,42 @@ void MyD3DAssets::loadVSConstantBuffer()
         D3D11_MAPPED_SUBRESOURCE mappedResource;
         context->base->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
 
-        const UINT requiredFloatCount = mappedResource.RowPitch / 4;
-        if (VSBufferStorage.size() < requiredFloatCount + 1)
-            VSBufferStorage.resize(requiredFloatCount + 1);
+        if (VSBufferStorage.size() < mappedResource.RowPitch)
+            VSBufferStorage.resize(mappedResource.RowPitch);
 
-        VSBufferSize = requiredFloatCount;
+        VSBufferSize = mappedResource.RowPitch;
 
         memcpy(VSBufferStorage.data(), mappedResource.pData, mappedResource.RowPitch);
 
         context->base->Unmap(stagingBuffer, 0);
         
+        constantBuffer->Release();
+    }
+}
+
+void MyD3DAssets::loadPSConstantBuffer()
+{
+    ID3D11Buffer *constantBuffer = nullptr;
+    context->base->PSGetConstantBuffers(0, 1, &constantBuffer);
+
+    if (constantBuffer != nullptr)
+    {
+        ID3D11Buffer *stagingBuffer = getStagingBuffer(constantBuffer);
+
+        context->base->CopyResource(stagingBuffer, constantBuffer);
+
+        D3D11_MAPPED_SUBRESOURCE mappedResource;
+        context->base->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+        if (PSBufferStorage.size() < mappedResource.RowPitch)
+            PSBufferStorage.resize(mappedResource.RowPitch);
+
+        PSBufferSize = mappedResource.RowPitch;
+
+        memcpy(PSBufferStorage.data(), mappedResource.pData, mappedResource.RowPitch);
+
+        context->base->Unmap(stagingBuffer, 0);
+
         constantBuffer->Release();
     }
 }

@@ -2,6 +2,7 @@
 #include "Main.h"
 
 const int textureOutputCount = 0;
+const bool outputImages = false;
 
 void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 {
@@ -16,9 +17,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         const auto &indexBuffer = assets.getActiveIndexBuffer();
         const auto &vertexBuffer = assets.getActiveVertexBuffer();
         
-        string constantList;
-        for (size_t i = 0; i < assets.VSBufferSize; i++)
-            constantList += to_string(assets.VSBufferStorage[i]) + " ";
+        /*string constantList;
+        for (size_t i = 0; i < assets.VSBufferSize / 4; i++)
+            constantList += to_string(assets.VSBufferStorage[i]) + " ";*/
         
         //g_logger->logFrameCaptureFile << "constants: " << constantList << endl;
 
@@ -27,22 +28,26 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         const string frameDeltaImageFile = imagePrefix + "_delta.png";
         const string texImageFile = imagePrefix + "_tex";
 
-        Bitmap image;
-        assets.context->readRenderTarget(image);
-        LodePNG::save(image, g_logger->captureDir + frameImageFile);
-
-        if (prevCaptureImage.getDimensions() == image.getDimensions())
+        if (outputImages)
         {
-            Bitmap deltaImage = image;
-            for (auto &p : deltaImage)
-            {
-                if (p.value == prevCaptureImage(p.x, p.y))
-                    p.value = vec4uc(0, 0, 0, 255);
-            }
-            LodePNG::save(deltaImage, g_logger->captureDir + frameDeltaImageFile);
-        }
+            Bitmap image;
+            assets.context->readRenderTarget(image);
+            LodePNG::save(image, g_logger->captureDir + frameImageFile);
 
-        prevCaptureImage = image;
+            if (prevCaptureImage.getDimensions() == image.getDimensions())
+            {
+                Bitmap deltaImage = image;
+                for (auto &p : deltaImage)
+                {
+                    if (p.value == prevCaptureImage(p.x, p.y))
+                        p.value = vec4uc(0, 0, 0, 255);
+                }
+
+                LodePNG::save(deltaImage, g_logger->captureDir + frameDeltaImageFile);
+            }
+
+            prevCaptureImage = image;
+        }
 
         auto modifyImage = [](Bitmap &b)
         {
@@ -60,7 +65,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         {
             assets.loadPSTexture(textureIndex);
             modifyImage(assets.PSTexture);
-            if (assets.PSTexture.size() > 0)
+            if (assets.PSTexture.size() > 0 && outputImages)
                 LodePNG::save(assets.PSTexture, g_logger->captureDir + texImageFile + to_string(textureIndex) + ".png");
         }
 
@@ -109,7 +114,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
                 for (int indexIndex = 0; indexIndex < min((int)IndexCount, 16); indexIndex++)
                 {
                     const int curIndex = indexDataStart[indexIndex] + BaseVertexLocation;
-                    const float *curVertex = (const float *)(vertexData + (vertexBuffer.stride * curIndex));
+                    const BYTE *vertexStart = (const BYTE *)(vertexData + (vertexBuffer.stride * curIndex));
 
                     if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
                     {
@@ -118,16 +123,24 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
 
                     if (vertexBuffer.stride / 4 >= 4)
                     {
-                        const vec3f basePos(curVertex[1], curVertex[2], curVertex[3]);
-                        const vec3f worldPos = assets.transformObjectToWorldGamecube(basePos);
-                        v0Data += worldPos.toString(", ") + " --- ";
+                        const float *posStart = (const float *)(vertexStart + layout->positionOffset);
+                        const vec3f basePos(posStart[1], posStart[2], posStart[3]);
+                        const vec3f worldPos = assets.transformObjectToWorldGamecube(basePos, -1);
+                        v0Data += "world=" + worldPos.toString(", ") + " ";
                     }
 
-                    v0Data += to_string(curIndex) + " --- ";
+                    v0Data += "index=" + to_string(curIndex) + " ";
+
+                    if (layout->blendOffset != -1)
+                    {
+                        int blendIndex = 0;
+                        const vec4uc *blendStart = (const vec4uc *)(vertexStart + layout->blendOffset);
+                        v0Data += "blendIndex=" + blendStart[0].toString(", ") + " ";
+                    }
 
                     for (int i = 0; i < (int)vertexBuffer.stride / 4; i++)
                     {
-                        v0Data += to_string(curVertex[i]) + ", ";
+                        v0Data += to_string(((const float *)vertexStart)[i]) + ", ";
                     }
                     v0Data += "<br />";
                 }

@@ -20,6 +20,8 @@ private:
     D3D11AssetRenderer assets;
 
     ObjectCollection objects;
+
+    vector<D3D11TriMesh> objectMeshes;
 	
     D3D11Font m_font;
     FrameTimer m_timer;

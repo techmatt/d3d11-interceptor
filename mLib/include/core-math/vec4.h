@@ -274,6 +274,13 @@ class vec4 : public BinaryDataSerialize< vec4<T> >
 			return vec3<T>(x,y,z);
 		}
 
+        inline std::string toString(const std::string &separator) const {
+            return std::to_string(x) + separator +
+                std::to_string(y) + separator +
+                std::to_string(z) + separator +
+                std::to_string(w);
+        }
+
         union
         {
             struct

@@ -57,10 +57,10 @@
     <ClCompile Include="util.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\localizedObject.cpp">
+    <ClCompile Include="..\shared\objectCollection.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\objectCollection.cpp">
+    <ClCompile Include="..\shared\localizedObjectInterceptor.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
   </ItemGroup>

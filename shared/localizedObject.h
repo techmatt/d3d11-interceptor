@@ -1,70 +1,29 @@
 
 struct MyD3DAssets;
 
-struct LocalizedObjectVertex
+struct LocalizedObjectVertex : public BinaryDataSerialize< LocalizedObjectVertex >
 {
     vec3f worldPos;
-    vec4uc color;
 };
 
 struct LocalizedObject
 {
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
+    void toMesh(TriMeshf &mesh);
 
     int drawIndex;
-    vector<vec4i> materials;
     vector<LocalizedObjectVertex> vertices;
+    vector<unsigned short> indices;
 };
 
-template<class T>
-ostream& operator << (ostream &os, const vector<T> &objects)
-{
-    os << objects.size() << endl;
-    for (const auto &o : objects)
-    {
-        os << o << ' ';
-    }
-    os << endl;
-    return os;
+template<class BinaryDataBuffer, class BinaryDataCompressor>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const LocalizedObject& o) {
+    s << o.drawIndex << o.vertices << o.indices;
+    return s;
 }
 
-template<class T>
-istream& operator >> (istream &is, vector<T> &objects)
-{
-    size_t length = -1;
-    is >> length;
-    if (length == -1)
-        DEBUG_BREAK;
-    objects.resize(length);
-    for (int i = 0; i < length; i++)
-    {
-        is >> objects[i];
-    }
-    return is;
-}
-
-inline ostream& operator << (ostream &os, const LocalizedObjectVertex &v)
-{
-    os << v.worldPos << ' ' << vec4f(v.color) << ' ';
-    return os;
-}
-
-inline ostream& operator << (ostream &os, const LocalizedObject &o)
-{
-    os << o.drawIndex << ' ' << o.vertices << ' ' << o.materials << endl;
-    return os;
-}
-
-inline istream& operator >> (istream &is, LocalizedObjectVertex &v)
-{
-    vec4f color;
-    is >> v.worldPos >> color;
-    v.color = color;
-    return is;
-}
-
-inline istream& operator >> (istream &is, LocalizedObject &o)
-{
-    is >> o.drawIndex >> o.vertices >> o.materials;
-    return is;
+template<class BinaryDataBuffer, class BinaryDataCompressor>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, LocalizedObject& o) {
+    s >> o.drawIndex >> o.vertices >> o.indices;
+    return s;
 }

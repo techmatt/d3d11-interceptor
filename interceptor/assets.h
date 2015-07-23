@@ -67,6 +67,7 @@ struct VertexLayout
         positionOffset = -1;
         colorOffset = -1;
         tex0Offset = -1;
+        blendOffset = -1;
 
         for (int elem = 0; elem < (int)NumElements; elem++)
         {
@@ -81,6 +82,9 @@ struct VertexLayout
             if (string(desc.SemanticName) == string("TEXCOORD"))
                 tex0Offset = desc.AlignedByteOffset;
 
+            if (string(desc.SemanticName) == string("BLENDINDICES"))
+                blendOffset = desc.AlignedByteOffset;
+            
             htmlDescription += string(desc.SemanticName) + "-" + to_string(desc.SemanticIndex);
             htmlDescription += ", offset=" + to_string(desc.AlignedByteOffset);
             htmlDescription += ", format=" + to_string(desc.Format);
@@ -91,6 +95,7 @@ struct VertexLayout
     int positionOffset;
     int colorOffset;
     int tex0Offset;
+    int blendOffset;
     string htmlDescription;
 };
 
@@ -102,9 +107,10 @@ struct MyD3DAssets
     void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result);
     void readBuffer(ID3D11Buffer *inputBuffer, vector<BYTE> &result);
 
-    vec3f transformObjectToWorldGamecube(const vec3f &basePos) const;
+    vec3f transformObjectToWorldGamecube(const vec3f &basePos, int blendMatrixStart) const;
 
     void loadVSConstantBuffer();
+    void loadPSConstantBuffer();
     void loadPSTexture(int textureIndex);
 
     VertexBufferState getActiveVertexBuffer();
@@ -115,8 +121,11 @@ struct MyD3DAssets
     myD3D11Device *device;
     myD3D11DeviceContext *context;
 
-    vector<float> VSBufferStorage;
+    vector<BYTE> VSBufferStorage;
     UINT VSBufferSize;
+
+    vector<BYTE> PSBufferStorage;
+    UINT PSBufferSize;
 
     Bitmap PSTexture;
 

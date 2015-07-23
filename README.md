@@ -32,6 +32,22 @@ struct VertexShaderConstants
        float4 pixelcentercorrection;
 };
 
+struct PixelShaderConstants
+{
+	int4 colors[4];
+	int4 kcolors[4];
+	int4 alpha;
+	float4 texdims[8];
+	int4 zbias[2];
+	int4 indtexscale[2];
+	int4 indtexmtx[6];
+	int4 fogcolor;
+	int4 fogi;
+	float4 fogf[2];
+	float4 zslope;
+	float4 efbscale;
+};
+
 ----
 
 struct Light

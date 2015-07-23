@@ -18,6 +18,7 @@
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\localizedObjectLearner.cpp" />
     <ClCompile Include="..\shared\objectCollection.cpp" />
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="vizzer.cpp" />
