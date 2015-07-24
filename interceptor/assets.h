@@ -41,9 +41,18 @@ struct BufferCPU
     {
         data.resize(size);
         GPUHandle = _GPUHandle;
+        mappedResource.RowPitch = (UINT)size;
+        mappedResource.DepthPitch = (UINT)size;
+        mappedResource.pData = (void *)data.data();
+        mapped = false;
     }
     vector<BYTE> data;
     ID3D11Buffer* GPUHandle;
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+    bool mapped;
+    D3D11_MAP mapType;
+    UINT mapFlags;
 };
 
 struct VertexBufferState
