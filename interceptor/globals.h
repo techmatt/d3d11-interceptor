@@ -1,5 +1,6 @@
 
 struct MyD3DAssets;
+struct DrawParameters;
 
 template<class T>
 inline string pointerToString(T *ptr)
@@ -32,7 +33,8 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
+    void recordDrawColor(MyD3DAssets &assets, const DrawParameters &params);
+    void recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params);
     void beginFrameCapture();
     void endFrameCapture();
 
@@ -56,6 +58,7 @@ struct Logger
     Bitmap prevCaptureImage;
 
     ObjectCollection frameCaptureObjects;
+    LocalizedObject objectStore;
 };
 
 extern Logger *g_logger;

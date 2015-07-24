@@ -4,12 +4,19 @@
 const int textureOutputCount = 0;
 const bool outputImages = false;
 
-void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+void Logger::recordDrawColor(MyD3DAssets &assets, const DrawParameters &params)
+{
+    objectStore.load(assets, params);
+}
+
+void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 {
     if (capturingFrame)
     {
         LocalizedObject object;
-        object.loadFromDrawIndexed(assets, IndexCount, StartIndexLocation, BaseVertexLocation);
+
+        object.load(assets, params);
+        
         if (object.vertices.size() > 0)
             frameCaptureObjects.objects.push_back(object);
 
@@ -17,12 +24,6 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         const auto &indexBuffer = assets.getActiveIndexBuffer();
         const auto &vertexBuffer = assets.getActiveVertexBuffer();
         
-        /*string constantList;
-        for (size_t i = 0; i < assets.VSBufferSize / 4; i++)
-            constantList += to_string(assets.VSBufferStorage[i]) + " ";*/
-        
-        //g_logger->logFrameCaptureFile << "constants: " << constantList << endl;
-
         const string imagePrefix = "render" + util::zeroPad(frameRenderIndex, 5);
         const string frameImageFile = imagePrefix + "_frame.png";
         const string frameDeltaImageFile = imagePrefix + "_delta.png";
@@ -82,9 +83,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
             logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
         
-        logFrameCaptureHtml << "<td>" << IndexCount << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << StartIndexLocation << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << BaseVertexLocation << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << params.IndexCount << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << params.StartIndexLocation << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << params.BaseVertexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((vertexBuffer.buffer == nullptr) ? "invalid" : to_string(vertexBuffer.buffer->data.size())) + " " + pointerToString(vertexBuffer.buffer->GPUHandle) << "</td>" << endl;
@@ -92,9 +93,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         logFrameCaptureHtml << "<td>" << vertexBuffer.stride << "</td>" << endl;
 
         string v0Data = "<none>";
-        if (BaseVertexLocation != -1 && vertexBuffer.buffer != nullptr && indexBuffer.buffer != nullptr)
+        if (params.BaseVertexLocation != -1 && vertexBuffer.buffer != nullptr && indexBuffer.buffer != nullptr)
         {
-            const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + StartIndexLocation;
+            const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
             
             const BYTE *vertexData = vertexBuffer.buffer->data.data();
 
@@ -111,9 +112,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
                 v0Data += layout->htmlDescription;
                 v0Data += "data:<br />";
 
-                for (int indexIndex = 0; indexIndex < min((int)IndexCount, 16); indexIndex++)
+                for (int indexIndex = 0; indexIndex < min((int)params.IndexCount, 16); indexIndex++)
                 {
-                    const int curIndex = indexDataStart[indexIndex] + BaseVertexLocation;
+                    const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
                     const BYTE *vertexStart = (const BYTE *)(vertexData + (vertexBuffer.stride * curIndex));
 
                     if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))

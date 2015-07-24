@@ -200,7 +200,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "DrawIndexed-" << g_logger->frameRenderIndex << " IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
-        g_logger->recordDrawEvent(*assets, IndexCount, StartIndexLocation, BaseVertexLocation);
+        g_logger->recordDrawEvent(*assets, DrawParameters(IndexCount, StartIndexLocation, BaseVertexLocation));
     }
 }
 
@@ -215,7 +215,7 @@ void myD3D11DeviceContext::Draw(UINT  VertexCount, UINT  StartVertexLocation)
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "Draw vertexCount=" << VertexCount << ", StartVertexLocation=" << StartVertexLocation << endl;
-        g_logger->recordDrawEvent(*assets, 0, 0, -1);
+        g_logger->recordDrawEvent(*assets, DrawParameters(VertexCount, StartVertexLocation, -1));
     }
 }
 
