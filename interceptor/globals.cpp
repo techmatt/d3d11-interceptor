@@ -85,9 +85,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, UINT IndexCount, UINT StartInd
         logFrameCaptureHtml << "<td>" << IndexCount << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << StartIndexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << BaseVertexLocation << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->handle) << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << ((vertexBuffer.buffer == nullptr) ? "invalid" : to_string(vertexBuffer.buffer->data.size())) + " " + pointerToString(vertexBuffer.buffer->handle) << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << ((vertexBuffer.buffer == nullptr) ? "invalid" : to_string(vertexBuffer.buffer->data.size())) + " " + pointerToString(vertexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << vertexBuffer.offset << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << vertexBuffer.stride << "</td>" << endl;
 

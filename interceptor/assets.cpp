@@ -176,9 +176,8 @@ const BufferCPU* MyD3DAssets::loadAndCacheBuffer(ID3D11Buffer *buffer)
     if (cachedBuffers.count((UINT64)buffer) == 0)
     {
         if (g_logger->logInterfaceCalls) g_logger->log("*** Creating vertex buffer: " + pointerToString(buffer));
-        BufferCPU *cpu = new BufferCPU();
+        BufferCPU *cpu = new BufferCPU(0, buffer);
         readBuffer(buffer, cpu->data);
-        cpu->handle = buffer;
         cachedBuffers[(UINT64)buffer] = cpu;
     }
     

@@ -11,11 +11,6 @@ void LocalizedObject::toMesh(TriMeshf &mesh)
         return (v.x != 0.0f);
     };
     
-    if (drawIndex == 200)
-    {
-        int a = 5;
-    }
-
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {
         const vec3f &v0 = vertices[triIndex + 0].worldPos;

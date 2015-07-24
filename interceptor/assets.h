@@ -37,13 +37,13 @@ class myD3D11DeviceContext;
 
 struct BufferCPU
 {
-    BufferCPU()
+    BufferCPU(size_t size, ID3D11Buffer* _GPUHandle)
     {
-        dirty = false;
+        data.resize(size);
+        GPUHandle = _GPUHandle;
     }
-    bool dirty;
     vector<BYTE> data;
-    const void* handle;
+    ID3D11Buffer* GPUHandle;
 };
 
 struct VertexBufferState
@@ -131,6 +131,7 @@ struct MyD3DAssets
 
     VertexLayout *activeVertexLayout;
     map<UINT64, VertexLayout*> vertexLayouts;
+    map<UINT64, BufferCPU*> buffers;
 
     map<UINT, ID3D11Buffer*> stagingBuffersBySize;
     map<UINT64, ID3D11Texture2D*> stagingTexturesBySize;
