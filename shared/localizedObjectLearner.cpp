@@ -25,7 +25,11 @@ void LocalizedObject::toMesh(TriMeshf &mesh)
         {
             vec3f normal = math::triangleNormal(v0, v1, v2);
 
-            if ((normal | vec3f(1.0f, 1.0f, 1.0f)) < 0.0f) normal = -normal;
+            normal.x = abs(normal.x);
+            normal.y = abs(normal.y);
+            normal.z = abs(normal.z);
+
+            //if ((normal | vec3f(1.0f, 1.0f, 1.0f)) < 0.0f) normal = -normal;
             
             vec3f triColor = normal.getNormalized() * 0.5f + vec3f(0.5f);
 

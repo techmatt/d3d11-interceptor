@@ -226,15 +226,25 @@ HRESULT myD3D11DeviceContext::Map(ID3D11Resource *  pResource, UINT  Subresource
 
     UINT64 ptr = (UINT64)pResource;
     if (capturingAllBuffers &&
-        (MapType == D3D11_MAP_WRITE_NO_OVERWRITE || MapType == D3D11_MAP_WRITE_DISCARD) &&
+        (MapType == D3D11_MAP_WRITE_NO_OVERWRITE || MapType == D3D11_MAP_WRITE_DISCARD || MapType == D3D11_MAP_WRITE ||
+         MapType == (D3D11_MAP)1234) &&
         assets->buffers.count(ptr) > 0)
     {
         auto &buffer = *assets->buffers.find(ptr)->second;
-        *pMappedResource = buffer.mappedResource;
-        buffer.mapped = true;
-        buffer.mapType = MapType;
-        buffer.mapFlags = MapFlags;
-        return S_OK;
+
+        bool shim = (buffer.data.size() < 1024 * 1024 || MapType == (D3D11_MAP)1234);
+        
+        if (shim)
+        {
+            *pMappedResource = buffer.mappedResource;
+            if (MapType != (D3D11_MAP)1234)
+            {
+                buffer.mapped = true;
+                buffer.mapType = MapType;
+                buffer.mapFlags = MapFlags;
+            }
+            return S_OK;
+        }
     }
 
     HRESULT result = base->Map(pResource, Subresource, MapType, MapFlags, pMappedResource);
@@ -256,6 +266,7 @@ void myD3D11DeviceContext::Unmap(ID3D11Resource *  pResource, UINT  Subresource)
             D3D11_MAPPED_SUBRESOURCE mappedResource;
             base->Map(pResource, Subresource, buffer.mapType, buffer.mapFlags, &mappedResource);
             memcpy(mappedResource.pData, buffer.mappedResource.pData, buffer.mappedResource.RowPitch);
+            buffer.mapped = false;
         }
     }
 

@@ -45,16 +45,8 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
     indices.clear();
 
     assets.loadVSConstantBuffer();
-    //assets.loadPSConstantBuffer();
-    //assets.loadPSTexture(0);
     const auto &indexBuffer = assets.getActiveIndexBuffer();
     const auto &vertexBuffer = assets.getActiveVertexBuffer();
-
-    /*PixelShaderConstants &PSConstants = *((PixelShaderConstants *)assets.PSBufferStorage.data());
-    for (int i = 0; i < 4; i++)
-        PSColors.push_back(PSConstants.colors[i]);
-    for (int i = 0; i < 4; i++)
-        PSColors.push_back(PSConstants.kcolors[i]);*/
 
     if (vertexBuffer.buffer != nullptr && indexBuffer.buffer != nullptr && assets.activeVertexLayout != nullptr && assets.activeVertexLayout->positionOffset != -1)
     {
@@ -66,8 +58,13 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             const int curIndex = indexDataStart[indexIndex] + BaseVertexLocation;
             const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
             
+            LocalizedObjectVertex localizedVertex;
+            localizedVertex.worldPos = vec3f::origin;
+
             if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
             {
+                vertices.push_back(localizedVertex);
+                indices.push_back(curIndex);
                 continue;
             }
 
@@ -75,8 +72,6 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             const int bOffset = assets.activeVertexLayout->blendOffset;
             
             const float *pStart = (const float *)(curVertex + pOffset);
-            
-            LocalizedObjectVertex localizedVertex;
 
             int blendMatrixIndex = -1;
             if (bOffset != -1)
@@ -88,7 +83,8 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             localizedVertex.worldPos = assets.transformObjectToWorldGamecube(basePos, blendMatrixIndex);
 
-            if (localizedVertex.worldPos.x != localizedVertex.worldPos.x) localizedVertex.worldPos = vec3f(0.0f, 0.0f, 0.0f);
+            if (basePos.x == 0.0f || localizedVertex.worldPos.x != localizedVertex.worldPos.x)
+                localizedVertex.worldPos = vec3f(0.0f, 0.0f, 0.0f);
             
             vertices.push_back(localizedVertex);
             indices.push_back(curIndex);

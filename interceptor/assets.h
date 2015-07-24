@@ -124,7 +124,8 @@ struct MyD3DAssets
 
     VertexBufferState getActiveVertexBuffer();
     IndexBufferState getActiveIndexBuffer();
-    const BufferCPU* loadAndCacheBuffer(ID3D11Buffer *inputBuffer);
+    const BufferCPU* loadBufferFromGPU(ID3D11Buffer *inputBuffer);
+    const BufferCPU* getBuffer(ID3D11Buffer *inputBuffer);
 
     myDXGISwapChain *swapChain;
     myD3D11Device *device;
@@ -144,5 +145,4 @@ struct MyD3DAssets
 
     map<UINT, ID3D11Buffer*> stagingBuffersBySize;
     map<UINT64, ID3D11Texture2D*> stagingTexturesBySize;
-    map<UINT64, BufferCPU*> cachedBuffers;
 };

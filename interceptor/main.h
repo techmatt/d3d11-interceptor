@@ -8,7 +8,7 @@ using namespace ml;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
-const bool capturingAllBuffers = false;
+const bool capturingAllBuffers = true;
 
 #include <windows.h>
 #include <d3d11.h>

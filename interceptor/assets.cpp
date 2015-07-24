@@ -42,7 +42,6 @@ vec3f MyD3DAssets::transformObjectToWorldGamecube(const vec3f &basePos, int blen
         m2 = constants.transformmatrices[blendMatrixStart + 2];
     }
     
-
     vec3f worldPos(m0 | rawPos,
                    m1 | rawPos,
                    m2 | rawPos);
@@ -153,7 +152,7 @@ VertexBufferState MyD3DAssets::getActiveVertexBuffer()
     VertexBufferState result;
     ID3D11Buffer *buffer;
     context->base->IAGetVertexBuffers(0, 1, &buffer, &result.stride, &result.offset);
-    result.buffer = loadAndCacheBuffer(buffer);
+    result.buffer = getBuffer(buffer);
     buffer->Release();
     return result;
 }
@@ -163,30 +162,36 @@ IndexBufferState MyD3DAssets::getActiveIndexBuffer()
     IndexBufferState result;
     ID3D11Buffer *buffer;
     context->base->IAGetIndexBuffer(&buffer, nullptr, &result.offset);
-    result.buffer = loadAndCacheBuffer(buffer);
+    result.buffer = getBuffer(buffer);
     buffer->Release();
     return result;
 }
 
-const BufferCPU* MyD3DAssets::loadAndCacheBuffer(ID3D11Buffer *buffer)
+const BufferCPU* MyD3DAssets::getBuffer(ID3D11Buffer *buffer)
+{
+    if (buffers.count((UINT64)buffer) == 0)
+    {
+        g_logger->logErrorFile << "buffer not found: " << pointerToString(buffer) << endl;
+        return nullptr;
+    }
+    return buffers.find((UINT64)buffer)->second;
+}
+
+const BufferCPU* MyD3DAssets::loadBufferFromGPU(ID3D11Buffer *buffer)
 {
     if (buffer == nullptr)
         return nullptr;
 
-    if (cachedBuffers.count((UINT64)buffer) == 0)
+    if (buffers.count((UINT64)buffer) == 0)
     {
         if (g_logger->logInterfaceCalls) g_logger->log("*** Creating vertex buffer: " + pointerToString(buffer));
-        BufferCPU *cpu = new BufferCPU(0, buffer);
-        readBuffer(buffer, cpu->data);
-        cachedBuffers[(UINT64)buffer] = cpu;
+        buffers[(UINT64)buffer] = new BufferCPU(0, buffer);
     }
     
-    //if (cachedBuffers.find((UINT64)buffer)->second->dirty)
-    {
-        readBuffer(buffer, cachedBuffers.find((UINT64)buffer)->second->data);
-    }
-
-    return cachedBuffers.find((UINT64)buffer)->second;
+    BufferCPU *cpu = buffers[(UINT64)buffer];
+    readBuffer(buffer, cpu->data);
+    
+    return cpu;
 }
 
 void MyD3DAssets::loadPSTexture(int textureIndex)
