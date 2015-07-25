@@ -22,7 +22,10 @@ private:
     ObjectCollection objects;
 
     vector<D3D11TriMesh> objectMeshes;
+    vector<D3D11TriMesh> objectBoxMeshes;
 	
+    bool bboxMode;
+
     D3D11Font m_font;
     FrameTimer m_timer;
 

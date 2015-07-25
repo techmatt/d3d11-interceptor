@@ -35,14 +35,14 @@ bool MyD3DAssets::viewportFullScreen()
     return (viewport.Width == 640 && viewport.Height == 480);
 }
 
-vec3f MyD3DAssets::transformObjectToWorldGamecube(const vec3f &basePos, int blendMatrixStart) const
+vec3f MyD3DAssets::transformObjectToWorldGamecube(const BufferCPU *VSConstants, const vec3f &basePos, int blendMatrixStart) const
 {
-    if (VSBufferSize < sizeof(VertexShaderConstantsGamecube))
+    if (VSConstants->data.size() < sizeof(VertexShaderConstantsGamecube))
     {
         return vec3f::origin;
     }
 
-    const VertexShaderConstantsGamecube &constants = *((const VertexShaderConstantsGamecube *)VSBufferStorage.data());
+    const VertexShaderConstantsGamecube &constants = *((const VertexShaderConstantsGamecube *)VSConstants->data.data());
 
     vec4f rawPos(basePos, 1.0f);
 
@@ -107,30 +107,77 @@ ID3D11Texture2D* MyD3DAssets::getStagingTexture(ID3D11Texture2D *baseTexture)
     return stagingTexturesBySize[combinedSize];
 }
 
-void MyD3DAssets::loadVSConstantBuffer()
+const BufferCPU* MyD3DAssets::getVSConstantBuffer()
+{
+    ID3D11Buffer *constantBuffer = nullptr;
+    context->base->VSGetConstantBuffers(0, 1, &constantBuffer);
+
+    if (constantBuffer == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (buffers.count((UINT64)constantBuffer) == 0)
+    {
+        g_logger->logErrorFile << "Failed to find buffer: " << constantBuffer << endl;
+        constantBuffer->Release();
+        return nullptr;
+    }
+
+    constantBuffer->Release();
+    return buffers.find((UINT64)constantBuffer)->second;
+}
+
+const BufferCPU* MyD3DAssets::getPSConstantBuffer()
+{
+    ID3D11Buffer *constantBuffer = nullptr;
+    context->base->PSGetConstantBuffers(0, 1, &constantBuffer);
+
+    if (constantBuffer == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (buffers.count((UINT64)constantBuffer) == 0)
+    {
+        g_logger->logErrorFile << "Failed to find buffer: " << constantBuffer << endl;
+        constantBuffer->Release();
+        return nullptr;
+    }
+
+    constantBuffer->Release();
+    return buffers.find((UINT64)constantBuffer)->second;
+}
+
+/*void MyD3DAssets::loadVSConstantBuffer()
 {
     ID3D11Buffer *constantBuffer = nullptr;
     context->base->VSGetConstantBuffers(0, 1, &constantBuffer);
 
     if (constantBuffer != nullptr)
     {
-        ID3D11Buffer *stagingBuffer = getStagingBuffer(constantBuffer);
+        if (buffers.count((UINT64)constantBuffer) == 0)
+        {
+            g_logger->logErrorFile << "Failed to find buffer: " << constantBuffer << endl;
 
-        context->base->CopyResource(stagingBuffer, constantBuffer);
+            ID3D11Buffer *stagingBuffer = getStagingBuffer(constantBuffer);
 
-        D3D11_MAPPED_SUBRESOURCE mappedResource;
-        context->base->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+            context->base->CopyResource(stagingBuffer, constantBuffer);
 
-        if (VSBufferStorage.size() < mappedResource.RowPitch)
-            VSBufferStorage.resize(mappedResource.RowPitch);
+            D3D11_MAPPED_SUBRESOURCE mappedResource;
+            context->base->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
 
-        VSBufferSize = mappedResource.RowPitch;
+            if (VSBufferStorage.size() < mappedResource.RowPitch)
+                VSBufferStorage.resize(mappedResource.RowPitch);
 
-        memcpy(VSBufferStorage.data(), mappedResource.pData, mappedResource.RowPitch);
+            VSBufferSize = mappedResource.RowPitch;
 
-        context->base->Unmap(stagingBuffer, 0);
-        
-        constantBuffer->Release();
+            memcpy(VSBufferStorage.data(), mappedResource.pData, mappedResource.RowPitch);
+
+            context->base->Unmap(stagingBuffer, 0);
+
+            constantBuffer->Release();
+        }
     }
 }
 
@@ -159,7 +206,7 @@ void MyD3DAssets::loadPSConstantBuffer()
 
         constantBuffer->Release();
     }
-}
+}*/
 
 VertexBufferState MyD3DAssets::getActiveVertexBuffer()
 {

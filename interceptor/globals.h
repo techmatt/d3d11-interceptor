@@ -71,7 +71,6 @@ struct Logger
     Bitmap prevCaptureImage;
 
     ObjectCollection frameCaptureObjects;
-    LocalizedObject objectStore;
 };
 
 extern Logger *g_logger;

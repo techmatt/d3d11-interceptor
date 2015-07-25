@@ -1,6 +1,8 @@
 
 #include "main.h"
 
+const float sizeThreshold = 30.0f;
+
 void Vizzer::init(ApplicationData &app)
 {	
     const string shaderDir = "../../frameworkD3D11/shaders/";
@@ -21,12 +23,26 @@ void Vizzer::init(ApplicationData &app)
     colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
 
     objectMeshes.resize(objects.objects.size());
+    objectBoxMeshes.resize(objects.objects.size());
+
     for (int objectIndex = 0; objectIndex < objects.objects.size(); objectIndex++)
     {
+        const auto &o = objects.objects[objectIndex];
         TriMeshf mesh;
-        objects.objects[objectIndex].toMesh(colorMap, mesh);
+        o.toMesh(colorMap, mesh);
         objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+
+        const vec3f extent = o.data.boundingBox.getExtent();
+        const float maxDim = max(max(extent.x, extent.y), extent.z);
+        if (maxDim > sizeThreshold)
+        {
+            continue;
+        }
+
+        objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.data.boundingBox, vec4f(o.signatureColor(colorMap), 1.0f)));
     }
+
+    bboxMode = false;
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -46,9 +62,19 @@ void Vizzer::render(ApplicationData &app)
         }
     }*/
 
-    for (auto &m : objectMeshes)
+    if (bboxMode)
     {
-        assets.renderMesh(m, m_camera.getCameraPerspective());
+        for (auto &m : objectBoxMeshes)
+        {
+            assets.renderMesh(m, m_camera.getCameraPerspective());
+        }
+    }
+    else
+    {
+        for (auto &m : objectMeshes)
+        {
+            assets.renderMesh(m, m_camera.getCameraPerspective());
+        }
     }
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
@@ -62,6 +88,7 @@ void Vizzer::resize(ApplicationData &app)
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
+    if (key == KEY_TAB) bboxMode = !bboxMode;
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)

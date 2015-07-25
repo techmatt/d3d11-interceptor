@@ -116,10 +116,10 @@ struct MyD3DAssets
     void readTexture(ID3D11Texture2D *inputTexture, Bitmap &result);
     void readBuffer(ID3D11Buffer *inputBuffer, vector<BYTE> &result);
 
-    vec3f transformObjectToWorldGamecube(const vec3f &basePos, int blendMatrixStart) const;
+    vec3f transformObjectToWorldGamecube(const BufferCPU *VSConstants, const vec3f &basePos, int blendMatrixStart) const;
 
-    void loadVSConstantBuffer();
-    void loadPSConstantBuffer();
+    const BufferCPU* getVSConstantBuffer();
+    const BufferCPU* getPSConstantBuffer();
     void loadPSTexture(int textureIndex);
 
     VertexBufferState getActiveVertexBuffer();
@@ -134,11 +134,13 @@ struct MyD3DAssets
     myD3D11Device *device;
     myD3D11DeviceContext *context;
 
-    vector<BYTE> VSBufferStorage;
+
+
+    /*vector<BYTE> VSBufferStorage;
     UINT VSBufferSize;
 
     vector<BYTE> PSBufferStorage;
-    UINT PSBufferSize;
+    UINT PSBufferSize;*/
 
     Bitmap PSTexture;
 

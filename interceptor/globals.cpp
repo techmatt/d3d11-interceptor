@@ -9,7 +9,7 @@ void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &pa
     static const int frameSignatureCaptureFrequency = 200;
     capturingColorSignature = false;
 
-    if (!assets.viewportFullScreen() || frameIndex % frameSignatureCaptureFrequency != 0)
+    if (!assets.viewportFullScreen() || (!capturingFrame && frameIndex % frameSignatureCaptureFrequency != 0))
     {
         return;
     }
@@ -58,12 +58,12 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
     {
         LocalizedObject object;
 
-        object.load(assets, params);
+        object.load(assets, params, true);
         
         if (object.vertices.size() > 0)
             frameCaptureObjects.objects.push_back(object);
 
-        assets.loadVSConstantBuffer();
+        const BufferCPU *VSConstants = assets.getVSConstantBuffer();
         const auto &indexBuffer = assets.getActiveIndexBuffer();
         const auto &vertexBuffer = assets.getActiveVertexBuffer();
         
@@ -127,7 +127,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
             logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
         
         auto viewport = assets.getViewport();
-        logFrameCaptureHtml << "<td>" << object.signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << object.data.signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << params.IndexCount << ", " << params.StartIndexLocation << ", " << params.BaseVertexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;
@@ -169,7 +169,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
                     {
                         const float *posStart = (const float *)(vertexStart + layout->positionOffset);
                         const vec3f basePos(posStart[1], posStart[2], posStart[3]);
-                        const vec3f worldPos = assets.transformObjectToWorldGamecube(basePos, -1);
+                        const vec3f worldPos = assets.transformObjectToWorldGamecube(VSConstants, basePos, -1);
                         v0Data += "world=" + worldPos.toString(", ") + " ";
                     }
 
