@@ -2,20 +2,168 @@
 #include "Main.h"
 
 const int textureOutputCount = 0;
-const bool outputImages = false;
+const bool outputImages = true;
 
-void Logger::recordDrawColor(MyD3DAssets &assets, const DrawParameters &params)
+void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &params)
 {
-    objectStore.load(assets, params);
+    if (!assets.viewportFullScreen())
+    {
+        return;
+    }
+
+    params.signature = LocalizedObject::computeSignature(assets, params);
+}
+
+void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params)
+{
+    if (!assets.viewportFullScreen())
+    {
+        return;
+    }
+
+    const UINT64 signature = LocalizedObject::computeSignature(assets, params);
+
+    assets.loadVSConstantBuffer();
+    const auto &indexBuffer = assets.getActiveIndexBuffer();
+    const auto &vertexBuffer = assets.getActiveVertexBuffer();
+
+    const string imagePrefix = "render" + util::zeroPad(frameRenderIndex, 5);
+    const string frameImageFile = imagePrefix + "_frame.png";
+    const string frameDeltaImageFile = imagePrefix + "_delta.png";
+    const string texImageFile = imagePrefix + "_tex";
+
+    if (outputImages)
+    {
+        Bitmap image;
+        assets.context->readRenderTarget(image);
+        LodePNG::save(image, g_logger->captureDir + frameImageFile);
+
+        if (prevCaptureImage.getDimensions() == image.getDimensions())
+        {
+            Bitmap deltaImage = image;
+            for (auto &p : deltaImage)
+            {
+                if (p.value == prevCaptureImage(p.x, p.y))
+                    p.value = vec4uc(0, 0, 0, 255);
+            }
+
+            LodePNG::save(deltaImage, g_logger->captureDir + frameDeltaImageFile);
+        }
+
+        prevCaptureImage = image;
+    }
+
+    auto modifyImage = [](Bitmap &b)
+    {
+        if (b.size() == 0) return;
+        for (auto &p : b)
+        {
+            p.value.r = unsigned char((int)p.value.r * (int)p.value.a / 255);
+            p.value.g = unsigned char((int)p.value.g * (int)p.value.a / 255);
+            p.value.b = unsigned char((int)p.value.b * (int)p.value.a / 255);
+            p.value.a = 255;
+        }
+    };
+
+    for (int textureIndex = 0; textureIndex < textureOutputCount; textureIndex++)
+    {
+        assets.loadPSTexture(textureIndex);
+        modifyImage(assets.PSTexture);
+        if (assets.PSTexture.size() > 0 && outputImages)
+            LodePNG::save(assets.PSTexture, g_logger->captureDir + texImageFile + to_string(textureIndex) + ".png");
+    }
+
+    auto makeHTMLImage = [](const string &filename)
+    {
+        return "<img src=\"" + filename + "\" />";
+    };
+
+    logFrameCaptureHtml << "<tr>" << endl;
+    logFrameCaptureHtml << "<td>" << frameRenderIndex << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << makeHTMLImage(frameImageFile) << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << makeHTMLImage(frameDeltaImageFile) << "</td>" << endl;
+
+    for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
+        logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
+
+    auto viewport = assets.getViewport();
+    logFrameCaptureHtml << "<td>" << signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << params.IndexCount << ", " << params.StartIndexLocation << ", " << params.BaseVertexLocation << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
+    //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << ((vertexBuffer.buffer == nullptr) ? "invalid" : to_string(vertexBuffer.buffer->data.size())) + " " + pointerToString(vertexBuffer.buffer->GPUHandle) << "</td>" << endl;
+    //logFrameCaptureHtml << "<td>" << vertexBuffer.offset << "</td>" << endl;
+    logFrameCaptureHtml << "<td>" << vertexBuffer.stride << "</td>" << endl;
+
+    string v0Data = "<none>";
+    if (params.BaseVertexLocation != -1 && vertexBuffer.buffer != nullptr && indexBuffer.buffer != nullptr)
+    {
+        const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
+
+        const BYTE *vertexData = vertexBuffer.buffer->data.data();
+
+        v0Data = "";
+
+        const auto *layout = assets.activeVertexLayout;
+
+        if (layout == nullptr)
+        {
+            v0Data = "layout not found";
+        }
+        else
+        {
+            v0Data += layout->htmlDescription;
+            v0Data += "data:<br />";
+
+            for (int indexIndex = 0; indexIndex < min((int)params.IndexCount, 32); indexIndex++)
+            {
+                const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
+                const BYTE *vertexStart = (const BYTE *)(vertexData + (vertexBuffer.stride * curIndex));
+
+                if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
+                {
+                    continue;
+                }
+
+                if (vertexBuffer.stride / 4 >= 4)
+                {
+                    const float *posStart = (const float *)(vertexStart + layout->positionOffset);
+                    const vec3f basePos(posStart[1], posStart[2], posStart[3]);
+                    const vec3f worldPos = assets.transformObjectToWorldGamecube(basePos, -1);
+                    v0Data += "world=" + worldPos.toString(", ") + " ";
+                }
+
+                v0Data += "index=" + to_string(curIndex) + " ";
+
+                if (layout->blendOffset != -1)
+                {
+                    int blendIndex = 0;
+                    const vec4uc *blendStart = (const vec4uc *)(vertexStart + layout->blendOffset);
+                    v0Data += "blendIndex=" + blendStart[0].toString(", ") + " ";
+                }
+
+                for (int i = 0; i < (int)vertexBuffer.stride / 4; i++)
+                {
+                    v0Data += to_string(((const float *)vertexStart)[i]) + ", ";
+                }
+                v0Data += "<br />";
+            }
+        }
+    }
+
+    logFrameCaptureHtml << "<td>" << v0Data << "</td>" << endl;
+    logFrameCaptureHtml << "</tr>" << endl;
 }
 
 void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 {
-    if (capturingFrame)
+    if (capturingFrame && assets.viewportFullScreen())
     {
         LocalizedObject object;
 
         object.load(assets, params);
+
+        const UINT64 signature = LocalizedObject::computeSignature(assets, params);
         
         if (object.vertices.size() > 0)
             frameCaptureObjects.objects.push_back(object);
@@ -83,9 +231,9 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
         for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
             logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
         
-        logFrameCaptureHtml << "<td>" << params.IndexCount << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << params.StartIndexLocation << "</td>" << endl;
-        logFrameCaptureHtml << "<td>" << params.BaseVertexLocation << "</td>" << endl;
+        auto viewport = assets.getViewport();
+        logFrameCaptureHtml << "<td>" << signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << params.IndexCount << ", " << params.StartIndexLocation << ", " << params.BaseVertexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((vertexBuffer.buffer == nullptr) ? "invalid" : to_string(vertexBuffer.buffer->data.size())) + " " + pointerToString(vertexBuffer.buffer->GPUHandle) << "</td>" << endl;
@@ -112,7 +260,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
                 v0Data += layout->htmlDescription;
                 v0Data += "data:<br />";
 
-                for (int indexIndex = 0; indexIndex < min((int)params.IndexCount, 16); indexIndex++)
+                for (int indexIndex = 0; indexIndex < min((int)params.IndexCount, 32); indexIndex++)
                 {
                     const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
                     const BYTE *vertexStart = (const BYTE *)(vertexData + (vertexBuffer.stride * curIndex));
@@ -174,9 +322,8 @@ void Logger::beginFrameCapture()
     logFrameCaptureHtml << "<td>Delta Frame</td>" << endl;
     for (int texIndex = 0; texIndex < textureOutputCount; texIndex++)
         logFrameCaptureHtml << "<td>Texture " << texIndex << "</td>" << endl;
-    logFrameCaptureHtml << "<td>Index Count</td>" << endl;
-    logFrameCaptureHtml << "<td>Start Index</td>" << endl;
-    logFrameCaptureHtml << "<td>Base Vertex Location</td>" << endl;
+    logFrameCaptureHtml << "<td>Signature</td>" << endl;
+    logFrameCaptureHtml << "<td>Draw Params</td>" << endl;
     logFrameCaptureHtml << "<td>IBuffer Size</td>" << endl;
     //logFrameCaptureHtml << "<td>IBuffer Offset</td>" << endl;
     logFrameCaptureHtml << "<td>VBuffer Size</td>" << endl;

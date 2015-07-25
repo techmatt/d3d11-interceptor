@@ -127,6 +127,9 @@ struct MyD3DAssets
     const BufferCPU* loadBufferFromGPU(ID3D11Buffer *inputBuffer);
     const BufferCPU* getBuffer(ID3D11Buffer *inputBuffer);
 
+    D3D11_VIEWPORT getViewport();
+    bool viewportFullScreen();
+
     myDXGISwapChain *swapChain;
     myD3D11Device *device;
     myD3D11DeviceContext *context;

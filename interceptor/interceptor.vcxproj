@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClInclude Include="..\shared\localizedObject.h" />
     <ClInclude Include="..\shared\objectCollection.h" />
+    <ClInclude Include="..\shared\signatureColorMap.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="d3d11Device.h" />
     <ClInclude Include="d3d11DeviceContext.h" />
@@ -104,6 +105,7 @@
   <ItemGroup>
     <ClCompile Include="..\shared\localizedObjectInterceptor.cpp" />
     <ClCompile Include="..\shared\objectCollection.cpp" />
+    <ClCompile Include="..\shared\signatureColorMap.cpp" />
     <ClCompile Include="assets.cpp" />
     <ClCompile Include="d3d11Device.cpp" />
     <ClCompile Include="d3d11DeviceContext.cpp" />

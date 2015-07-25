@@ -37,6 +37,63 @@ struct PixelShaderConstants
     vec4f efbscale;
 };
 
+UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParameters &params)
+{
+    UINT64 sum = 0;
+    //string description;
+
+    const auto &indexBuffer = assets.getActiveIndexBuffer();
+    const auto &vertexBuffer = assets.getActiveVertexBuffer();
+    
+    const int signatureIndexStart = 16;
+
+    if (vertexBuffer.buffer == nullptr || indexBuffer.buffer == nullptr ||
+        assets.activeVertexLayout == nullptr || assets.activeVertexLayout->tex0Offset == -1)
+    {
+        return 0;
+    }
+
+    if (params.BaseVertexLocation == -1)
+    {
+        return 0;
+    }
+    else
+    {
+        const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
+        const BYTE *vertexData = vertexBuffer.buffer->data.data();
+
+        int prevIndex = -999;
+        for (int indexIndex = signatureIndexStart; indexIndex < min(32, (int)params.IndexCount); indexIndex++)
+        {
+            const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
+            const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
+
+            if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
+            {
+                continue;
+            }
+
+            bool valid = (curIndex == prevIndex + 1);
+            if (valid)
+            {
+                const int tOffset = assets.activeVertexLayout->tex0Offset;
+                const UINT32 *tStartI = (const UINT32 *)(curVertex + tOffset);
+
+                sum += UINT64(tStartI[0]);
+                sum += UINT64(tStartI[1]);
+
+                //const float *tStartF = (const float *)(curVertex + tOffset);
+                //result += to_string(tStartF[0]) + ", " + to_string(tStartF[1]) + "<br/>";
+            }
+
+            prevIndex = curIndex;
+        }
+    }
+
+    //result = "sum=" + to_string(sum) + "<br/>" + result;
+    return sum;
+}
+
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params)
 {
     drawIndex = g_logger->frameRenderIndex;
@@ -45,6 +102,8 @@ void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params)
     indices.clear();
 
     assets.loadVSConstantBuffer();
+
+    signature = computeSignature(assets, params);
 
     if (params.BaseVertexLocation == -1)
         loadFromDraw(assets, params.IndexCount, params.StartIndexLocation);

@@ -33,7 +33,8 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void recordDrawColor(MyD3DAssets &assets, const DrawParameters &params);
+    void recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &params);
+    void recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params);
     void recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params);
     void beginFrameCapture();
     void endFrameCapture();

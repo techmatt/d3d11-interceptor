@@ -21,6 +21,20 @@ struct VertexShaderConstantsGamecube
     vec4f pixelcentercorrection;
 };
 
+D3D11_VIEWPORT MyD3DAssets::getViewport()
+{
+    UINT viewportCount = 1;
+    D3D11_VIEWPORT result;
+    context->base->RSGetViewports(&viewportCount, &result);
+    return result;
+}
+
+bool MyD3DAssets::viewportFullScreen()
+{
+    D3D11_VIEWPORT viewport = getViewport();
+    return (viewport.Width == 640 && viewport.Height == 480);
+}
+
 vec3f MyD3DAssets::transformObjectToWorldGamecube(const vec3f &basePos, int blendMatrixStart) const
 {
     if (VSBufferSize < sizeof(VertexShaderConstantsGamecube))

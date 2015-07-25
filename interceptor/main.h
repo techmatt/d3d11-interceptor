@@ -18,6 +18,7 @@ const bool capturingAllBuffers = true;
 #include "../shared/gameAIInterface.h"
 #include "../shared/localizedObject.h"
 #include "../shared/objectCollection.h"
+#include "../shared/signatureColorMap.h"
 
 #include "globals.h"
 

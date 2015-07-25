@@ -23,10 +23,13 @@
       <Filter>Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\localizedObject.h">
-      <Filter>Infrastructure</Filter>
+      <Filter>Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\objectCollection.h">
-      <Filter>Infrastructure</Filter>
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\signatureColorMap.h">
+      <Filter>Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -57,11 +60,14 @@
     <ClCompile Include="util.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\objectCollection.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
     <ClCompile Include="..\shared\localizedObjectInterceptor.cpp">
-      <Filter>Infrastructure</Filter>
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\objectCollection.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\signatureColorMap.cpp">
+      <Filter>Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +77,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="logs">
-      <UniqueIdentifier>{1315ab2b-008e-4adb-9fae-b30855927d8a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="D3D">
       <UniqueIdentifier>{9dd08b89-b613-4384-bbf0-0d6f66cf6b05}</UniqueIdentifier>
     </Filter>
@@ -82,6 +85,9 @@
     </Filter>
     <Filter Include="Infrastructure">
       <UniqueIdentifier>{af2d10a3-2051-402a-9bd3-500bac873185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{1315ab2b-008e-4adb-9fae-b30855927d8a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
