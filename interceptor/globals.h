@@ -63,6 +63,7 @@ struct Logger
     string captureDir;
 
     SignatureColorMap colorMap;
+    bool capturingColorSignature;
     Bitmap preRenderImage;
     Bitmap postRenderImage;
     int newSignaturesThisFrame;

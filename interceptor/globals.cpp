@@ -6,22 +6,31 @@ const bool outputImages = true;
 
 void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &params)
 {
-    if (!assets.viewportFullScreen())
+    static const int frameSignatureCaptureFrequency = 200;
+    capturingColorSignature = false;
+
+    if (!assets.viewportFullScreen() || frameIndex % frameSignatureCaptureFrequency != 0)
     {
         return;
     }
 
     params.signature = LocalizedObject::computeSignature(assets, params);
-
-    if (params.signature != 0 && g_logger->colorMap.colors.count(params.signature) == 0)
+    if (params.signature == 0)
     {
+        return;
+    }
+
+    auto result = g_logger->colorMap.colors.find(params.signature);
+    if (result == g_logger->colorMap.colors.end() || result->second.pixelCount <= 4)
+    {
+        capturingColorSignature = true;
         assets.context->readRenderTarget(preRenderImage);
     }
 }
 
 void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params)
 {
-    if (!assets.viewportFullScreen() || params.signature == 0 || g_logger->colorMap.colors.count(params.signature) != 0)
+    if (!capturingColorSignature)
     {
         return;
     }
@@ -39,11 +48,8 @@ void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParamet
         }
     }
 
-    //if (diffCount > 0)
-    {
-        g_logger->newSignaturesThisFrame++;
-        colorMap.record(params.signature, diffCount == 0 ? vec3f::origin : diffSum / (float)diffCount, diffCount);
-    }
+    g_logger->newSignaturesThisFrame++;
+    colorMap.record(params.signature, diffCount == 0 ? vec3f::origin : diffSum / (float)diffCount, diffCount);
 }
 
 void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
@@ -53,8 +59,6 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
         LocalizedObject object;
 
         object.load(assets, params);
-
-        const UINT64 signature = LocalizedObject::computeSignature(assets, params);
         
         if (object.vertices.size() > 0)
             frameCaptureObjects.objects.push_back(object);
@@ -123,7 +127,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
             logFrameCaptureHtml << "<td>" << makeHTMLImage(texImageFile + to_string(texIndex) + ".png") << "</td>" << endl;
         
         auto viewport = assets.getViewport();
-        logFrameCaptureHtml << "<td>" << signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
+        logFrameCaptureHtml << "<td>" << object.signature << "<br />" << "viewport: " << viewport.Width << "," << viewport.Height << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << params.IndexCount << ", " << params.StartIndexLocation << ", " << params.BaseVertexLocation << "</td>" << endl;
         logFrameCaptureHtml << "<td>" << ((indexBuffer.buffer == nullptr) ? "invalid" : to_string(indexBuffer.buffer->data.size())) + " " + pointerToString(indexBuffer.buffer->GPUHandle) << "</td>" << endl;
         //logFrameCaptureHtml << "<td>" << indexBuffer.offset << "</td>" << endl;

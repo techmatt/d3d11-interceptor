@@ -1,5 +1,6 @@
 
 struct MyD3DAssets;
+struct SignatureColorMap;
 
 struct DrawParameters
 {
@@ -28,7 +29,7 @@ struct LocalizedObject
     void load(MyD3DAssets &assets, const DrawParameters &params);
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
     void loadFromDraw(MyD3DAssets &assets, UINT  VertexCount, UINT  StartVertexLocation);
-    void toMesh(TriMeshf &mesh);
+    void toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh);
 
     int drawIndex;
     UINT64 signature;
@@ -38,12 +39,12 @@ struct LocalizedObject
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const LocalizedObject& o) {
-    s << o.drawIndex << o.vertices << o.indices;
+    s << o.drawIndex << o.signature << o.vertices << o.indices;
     return s;
 }
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, LocalizedObject& o) {
-    s >> o.drawIndex >> o.vertices >> o.indices;
+    s >> o.drawIndex >> o.signature >> o.vertices >> o.indices;
     return s;
 }

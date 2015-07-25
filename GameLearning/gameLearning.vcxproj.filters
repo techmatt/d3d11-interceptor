@@ -27,6 +27,9 @@
     <ClInclude Include="vizzer.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\signatureColorMap.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -42,6 +45,9 @@
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\shared\localizedObjectLearner.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\signatureColorMap.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
   </ItemGroup>

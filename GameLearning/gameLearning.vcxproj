@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="..\shared\localizedObject.h" />
     <ClInclude Include="..\shared\objectCollection.h" />
+    <ClInclude Include="..\shared\signatureColorMap.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="vizzer.h" />
@@ -20,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\shared\localizedObjectLearner.cpp" />
     <ClCompile Include="..\shared\objectCollection.cpp" />
+    <ClCompile Include="..\shared\signatureColorMap.cpp" />
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="vizzer.cpp" />
     <ClCompile Include="winMain.cpp" />

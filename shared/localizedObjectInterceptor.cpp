@@ -97,6 +97,7 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params)
 {
     drawIndex = g_logger->frameRenderIndex;
+    signature = computeSignature(assets, params);
 
     vertices.clear();
     indices.clear();

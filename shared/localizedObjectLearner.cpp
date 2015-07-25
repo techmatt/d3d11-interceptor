@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-void LocalizedObject::toMesh(TriMeshf &mesh)
+void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh)
 {
     vector<TriMeshf::Vertexf> meshVertices;
     vector<unsigned int> meshIndices;
@@ -11,6 +11,17 @@ void LocalizedObject::toMesh(TriMeshf &mesh)
         return (v.x != 0.0f);
     };
     
+    vec3f color(1.0f, 0.0f, 1.0f);
+
+    if (colorMap.colors.count(signature) > 0)
+    {
+        auto &entry = colorMap.colors.find(signature)->second;
+        if (entry.pixelCount == 0)
+            color = vec3f(0.0f, 1.0f, 1.0f);
+        else
+            color = entry.color;
+    }
+
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {
         const vec3f &v0 = vertices[triIndex + 0].worldPos;
@@ -29,9 +40,9 @@ void LocalizedObject::toMesh(TriMeshf &mesh)
             normal.y = abs(normal.y);
             normal.z = abs(normal.z);
 
-            //if ((normal | vec3f(1.0f, 1.0f, 1.0f)) < 0.0f) normal = -normal;
-            
-            vec3f triColor = normal.getNormalized() * 0.5f + vec3f(0.5f);
+            float shading = max(max(normal.x, normal.y), normal.z);
+            //vec3f triColor = normal.getNormalized() * 0.5f + vec3f(0.5f);
+            vec3f triColor = color * shading;
 
             for (int vIndex = 0; vIndex < 3; vIndex++)
             {

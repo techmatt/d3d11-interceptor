@@ -17,11 +17,14 @@ void Vizzer::init(ApplicationData &app)
 
     objects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
 
+    SignatureColorMap colorMap;
+    colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
+
     objectMeshes.resize(objects.objects.size());
     for (int objectIndex = 0; objectIndex < objects.objects.size(); objectIndex++)
     {
         TriMeshf mesh;
-        objects.objects[objectIndex].toMesh(mesh);
+        objects.objects[objectIndex].toMesh(colorMap, mesh);
         objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
     }
 }

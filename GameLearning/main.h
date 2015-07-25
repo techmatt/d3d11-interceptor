@@ -17,5 +17,6 @@ using namespace std;
 
 #include "../shared/localizedObject.h"
 #include "../shared/objectCollection.h"
+#include "../shared/signatureColorMap.h"
 
 #include "vizzer.h"
