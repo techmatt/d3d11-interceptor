@@ -39,6 +39,12 @@ struct Logger
     void beginFrameCapture();
     void endFrameCapture();
 
+    string colorMapFilename()
+    {
+        return logDir + "../signatureColorMap.dat";
+    }
+
+    ofstream logSignatureFile;
     ofstream logInputLayoutFile;
     ofstream logErrorFile;
     ofstream logInterfaceFile;
@@ -55,6 +61,11 @@ struct Logger
 
     string logDir;
     string captureDir;
+
+    SignatureColorMap colorMap;
+    Bitmap preRenderImage;
+    Bitmap postRenderImage;
+    int newSignaturesThisFrame;
 
     Bitmap prevCaptureImage;
 

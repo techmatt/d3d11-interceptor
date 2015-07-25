@@ -189,7 +189,13 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (g_logger->logInterfaceCalls) g_logger->logInterfaceFile << "DrawIndexed" << endl;
     if (g_logger->logDrawCalls) g_logger->logDrawFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
     
+    DrawParameters params(IndexCount, StartIndexLocation, BaseVertexLocation);
+    
+    g_logger->recordSignatureColorPreDraw(*assets, params);
+
     base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
+
+    g_logger->recordSignatureColorPostDraw(*assets, params);
 
     const bool reportAIRender = g_logger->capturingFrame;
     if (reportAIRender)
@@ -200,7 +206,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (g_logger->capturingFrame)
     {
         g_logger->logFrameCaptureFile << "DrawIndexed-" << g_logger->frameRenderIndex << " IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
-        g_logger->recordDrawEvent(*assets, DrawParameters(IndexCount, StartIndexLocation, BaseVertexLocation));
+        g_logger->recordDrawEvent(*assets, params);
     }
 }
 

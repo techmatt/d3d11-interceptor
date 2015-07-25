@@ -66,9 +66,16 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
         g_logger->endFrameCapture();
     }
 
+    if (g_logger->newSignaturesThisFrame > 0)
+    {
+        g_logger->logSignatureFile << "Frame " << g_logger->frameIndex << " has " << g_logger->newSignaturesThisFrame << " new signatures" << endl;
+        g_logger->colorMap.save(g_logger->colorMapFilename());
+    }
+
     HRESULT result = base->Present(SyncInterval, Flags);
     g_logger->frameIndex++;
     g_logger->frameRenderIndex = 0;
+    g_logger->newSignaturesThisFrame = 0;
 
     g_state->AI->newFrameStart(g_logger->frameIndex);
 

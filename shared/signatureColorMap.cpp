@@ -10,6 +10,7 @@ void SignatureColorMap::save(const string &filename) const
 
 void SignatureColorMap::load(const string &filename)
 {
+    if (!util::fileExists(filename)) return;
     BinaryDataStreamFile file(filename, false);
     file >> colors;
     file.closeStream();
