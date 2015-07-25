@@ -14,3 +14,33 @@ void ObjectCollection::load(const string &filename)
     file >> objects;
     file.closeStream();
 }
+
+void FrameCollection::save(const string &filename) const
+{
+    BinaryDataStreamFile file(filename, true);
+
+    file << frames.size();
+    for (FrameObjectData *frame : frames)
+    {
+        file << frame->objects;
+    }
+    file.closeStream();
+}
+
+void FrameCollection::load(const string &filename)
+{
+    BinaryDataStreamFile file(filename, false);
+
+    size_t frameCount = -1;
+    file >> frameCount;
+
+    frames.resize(frameCount);
+    for (int i = 0; i < frameCount; i++)
+    {
+        FrameObjectData *frame = new FrameObjectData();
+        file >> frame->objects;
+        frames[i] = frame;
+    }
+
+    file.closeStream();
+}

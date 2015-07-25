@@ -16,8 +16,8 @@ struct Logger
     Logger()
     {
         frameIndex = 0;
-        logInterfaceCalls = true;
-        logDrawCalls = true;
+        logInterfaceCalls = false;
+        logDrawCalls = false;
         capturingFrame = false;
     }
 
@@ -33,7 +33,7 @@ struct Logger
         logDrawFile << s << endl;
     }
 
-    void recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &params);
+    void recordSignatureColorPreDraw(MyD3DAssets &assets, const DrawParameters &params);
     void recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params);
     void recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params);
     void beginFrameCapture();
@@ -57,10 +57,7 @@ struct Logger
     long frameIndex;
     long frameRenderIndex;
 
-    bool capturingFrame;
-
     string logDir;
-    string captureDir;
 
     SignatureColorMap colorMap;
     bool capturingColorSignature;
@@ -68,9 +65,19 @@ struct Logger
     Bitmap postRenderImage;
     int newSignaturesThisFrame;
 
+    //
+    // Single frame capture state
+    //
+    bool capturingFrame;
+    string captureDir;
     Bitmap prevCaptureImage;
-
     ObjectCollection frameCaptureObjects;
+
+    //
+    // All frame capture state
+    //
+    FrameObjectData *curFrame;
+    FrameCollection allFrames;
 };
 
 extern Logger *g_logger;

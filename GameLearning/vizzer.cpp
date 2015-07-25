@@ -17,17 +17,17 @@ void Vizzer::init(ApplicationData &app)
 
     m_world = mat4f::identity();
 
-    objects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
+    //singleCaptureObjects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
+    allFrames.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\allFrames.dat)");
 
-    SignatureColorMap colorMap;
     colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
 
-    objectMeshes.resize(objects.objects.size());
-    objectBoxMeshes.resize(objects.objects.size());
+    objectMeshes.resize(singleCaptureObjects.objects.size());
+    objectBoxMeshes.resize(singleCaptureObjects.objects.size());
 
-    for (int objectIndex = 0; objectIndex < objects.objects.size(); objectIndex++)
+    for (int objectIndex = 0; objectIndex < singleCaptureObjects.objects.size(); objectIndex++)
     {
-        const auto &o = objects.objects[objectIndex];
+        const auto &o = singleCaptureObjects.objects[objectIndex];
         TriMeshf mesh;
         o.toMesh(colorMap, mesh);
         objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
@@ -39,10 +39,12 @@ void Vizzer::init(ApplicationData &app)
             continue;
         }
 
-        objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.data.boundingBox, vec4f(o.signatureColor(colorMap), 1.0f)));
+        objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.data.boundingBox, vec4f(colorMap.getColor(o.data.signature), 1.0f)));
     }
 
-    bboxMode = false;
+    frameIndex = 0;
+
+    bboxMode = true;
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -78,6 +80,10 @@ void Vizzer::render(ApplicationData &app)
     }
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Frame " + to_string(frameIndex) + " / " + to_string(allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
+
+    const FrameObjectData &frame = *allFrames.frames[frameIndex];
+    m_font.drawString(app.graphics, "Object count: " + to_string(frame.objects.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -107,6 +113,31 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
     if(key == KEY_DOWN) m_camera.lookUp(-theta);
     if(key == KEY_LEFT) m_camera.lookRight(theta);
     if(key == KEY_RIGHT) m_camera.lookRight(-theta);
+
+    int frameDelta = 0;
+    if (key == KEY_O) frameDelta = -1;
+    if (key == KEY_P) frameDelta = 1;
+
+    if (frameDelta != 0)
+    {
+        frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        const FrameObjectData &frame = *allFrames.frames[frameIndex];
+
+        objectBoxMeshes.resize(frame.objects.size());
+        int objectIndex = 0;
+        for (auto &o : frame.objects)
+        {
+            const vec3f extent = o.boundingBox.getExtent();
+            const float maxDim = max(max(extent.x, extent.y), extent.z);
+            if (maxDim > sizeThreshold)
+            {
+                //continue;
+            }
+
+            objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.boundingBox, vec4f(colorMap.getColor(o.signature), 1.0f)));
+            objectIndex++;
+        }
+    }
 }
 
 void Vizzer::mouseDown(ApplicationData &app, MouseButtonType button)

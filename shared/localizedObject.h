@@ -45,7 +45,6 @@ struct LocalizedObject
     // Learner functions
     //
     void toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const;
-    vec3f signatureColor(const SignatureColorMap &colorMap) const;
 
     LocalizedObjectData data;
     vector<LocalizedObjectVertex> vertices;

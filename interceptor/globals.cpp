@@ -4,18 +4,17 @@
 const int textureOutputCount = 0;
 const bool outputImages = true;
 
-void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, DrawParameters &params)
+void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, const DrawParameters &params)
 {
     static const int frameSignatureCaptureFrequency = 200;
     capturingColorSignature = false;
 
-    if (!assets.viewportFullScreen() || (!capturingFrame && frameIndex % frameSignatureCaptureFrequency != 0))
+    if (params.signature == 0)
     {
         return;
     }
 
-    params.signature = LocalizedObject::computeSignature(assets, params);
-    if (params.signature == 0)
+    if (!assets.viewportFullScreen() || (!capturingFrame && frameIndex % frameSignatureCaptureFrequency != 0))
     {
         return;
     }
@@ -258,6 +257,8 @@ void initGlobalLogger()
 
     g_logger->colorMap.load(g_logger->colorMapFilename());
     g_logger->logSignatureFile << "initial signature color count = " << g_logger->colorMap.colors.size() << endl;
+
+    g_logger->curFrame = new FrameObjectData();
 }
 
 void initGlobalState()

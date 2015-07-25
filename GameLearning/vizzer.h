@@ -19,11 +19,15 @@ public:
 private:
     D3D11AssetRenderer assets;
 
-    ObjectCollection objects;
+    SignatureColorMap colorMap;
+    ObjectCollection singleCaptureObjects;
+    FrameCollection allFrames;
 
     vector<D3D11TriMesh> objectMeshes;
     vector<D3D11TriMesh> objectBoxMeshes;
 	
+    int frameIndex;
+
     bool bboxMode;
 
     D3D11Font m_font;

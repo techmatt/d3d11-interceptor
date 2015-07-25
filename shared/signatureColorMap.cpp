@@ -1,6 +1,22 @@
 
 #include "Main.h"
 
+vec3f SignatureColorMap::getColor(UINT64 signature) const
+{
+    vec3f color(1.0f, 0.0f, 1.0f);
+
+    if (colors.count(signature) > 0)
+    {
+        auto &entry = colors.find(signature)->second;
+        if (entry.pixelCount == 0)
+            color = vec3f(0.0f, 1.0f, 1.0f);
+        else
+            color = entry.color;
+    }
+
+    return color;
+}
+
 void SignatureColorMap::save(const string &filename) const
 {
     BinaryDataStreamFile file(filename, true);

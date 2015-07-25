@@ -1,22 +1,6 @@
 
 #include "main.h"
 
-vec3f LocalizedObject::signatureColor(const SignatureColorMap &colorMap) const
-{
-    vec3f color(1.0f, 0.0f, 1.0f);
-
-    if (colorMap.colors.count(data.signature) > 0)
-    {
-        auto &entry = colorMap.colors.find(data.signature)->second;
-        if (entry.pixelCount == 0)
-            color = vec3f(0.0f, 1.0f, 1.0f);
-        else
-            color = entry.color;
-    }
-
-    return color;
-}
-
 void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const
 {
     vector<TriMeshf::Vertexf> meshVertices;
@@ -27,7 +11,7 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
         return (v.x != 0.0f);
     };
     
-    const vec3f color = signatureColor(colorMap);
+    const vec3f color = colorMap.getColor(data.signature);
 
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {

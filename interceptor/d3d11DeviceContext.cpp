@@ -191,11 +191,28 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     
     DrawParameters params(IndexCount, StartIndexLocation, BaseVertexLocation);
     
-    g_logger->recordSignatureColorPreDraw(*assets, params);
+    if (assets->viewportFullScreen())
+    {
+        params.signature = LocalizedObject::computeSignature(*assets, params);
+    }
+
+    if (params.signature != 0)
+    {
+        g_logger->recordSignatureColorPreDraw(*assets, params);
+
+        LocalizedObjectData data;
+        data.signature = params.signature;
+        data.boundingBox = LocalizedObject::computeBoundingBox(*assets, params);
+        data.drawIndex = g_logger->frameRenderIndex;
+        g_logger->curFrame->objects.push_back(data);
+    }
 
     base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 
-    g_logger->recordSignatureColorPostDraw(*assets, params);
+    if (params.signature != 0)
+    {
+        g_logger->recordSignatureColorPostDraw(*assets, params);
+    }
 
     const bool reportAIRender = g_logger->capturingFrame;
     if (reportAIRender)
