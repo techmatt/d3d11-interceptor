@@ -14,6 +14,7 @@
     <ClInclude Include="..\shared\localizedObject.h" />
     <ClInclude Include="..\shared\objectCollection.h" />
     <ClInclude Include="..\shared\signatureColorMap.h" />
+    <ClInclude Include="frameProcessing.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="vizzer.h" />
@@ -22,9 +23,13 @@
     <ClCompile Include="..\shared\localizedObjectLearner.cpp" />
     <ClCompile Include="..\shared\objectCollection.cpp" />
     <ClCompile Include="..\shared\signatureColorMap.cpp" />
+    <ClCompile Include="frameProcessing.cpp" />
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="vizzer.cpp" />
     <ClCompile Include="winMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="clusters.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>

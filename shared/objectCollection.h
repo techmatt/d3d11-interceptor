@@ -9,7 +9,15 @@ struct ObjectCollection
 
 struct FrameObjectData
 {
+    map<UINT64, const LocalizedObjectData*> makeSignatureMap() const
+    {
+        map<UINT64, const LocalizedObjectData*> result;
+        for (const LocalizedObjectData &o : objects)
+            result[o.signature] = &o;
+        return result;
+    }
     vector<LocalizedObjectData> objects;
+    vector<LocalizedObject> objectMeshes;
 };
 
 struct FrameCollection

@@ -10,6 +10,9 @@
     <Filter Include="UI">
       <UniqueIdentifier>{1e6e8584-c28c-4717-94d0-efd4f536a471}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Learning">
+      <UniqueIdentifier>{13827184-1dda-49a8-ac44-01919881e9db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -29,6 +32,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\signatureColorMap.h">
       <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="frameProcessing.h">
+      <Filter>Learning</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,5 +56,11 @@
     <ClCompile Include="..\shared\signatureColorMap.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
+    <ClCompile Include="frameProcessing.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="clusters.txt" />
   </ItemGroup>
 </Project>

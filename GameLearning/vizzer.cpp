@@ -2,6 +2,7 @@
 #include "main.h"
 
 const float sizeThreshold = 30.0f;
+//const float sizeThreshold = numeric_limits<float>::max();
 
 void Vizzer::init(ApplicationData &app)
 {	
@@ -45,6 +46,8 @@ void Vizzer::init(ApplicationData &app)
     frameIndex = 0;
 
     bboxMode = true;
+
+    FrameProcessing::alignFrames(*allFrames.frames[700], *allFrames.frames[705]);
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -121,6 +124,11 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
     if (frameDelta != 0)
     {
         frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        if (GetAsyncKeyState(VK_SHIFT))
+        {
+            while (allFrames.frames[frameIndex]->objectMeshes.size() == 0)
+                frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        }
         const FrameObjectData &frame = *allFrames.frames[frameIndex];
 
         objectBoxMeshes.resize(frame.objects.size());
@@ -131,11 +139,20 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
             const float maxDim = max(max(extent.x, extent.y), extent.z);
             if (maxDim > sizeThreshold)
             {
-                //continue;
+                continue;
             }
 
             objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.boundingBox, vec4f(colorMap.getColor(o.signature), 1.0f)));
             objectIndex++;
+        }
+
+        objectMeshes.resize(frame.objectMeshes.size());
+        for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
+        {
+            const auto &o = frame.objectMeshes[objectIndex];
+            TriMeshf mesh;
+            o.toMesh(colorMap, mesh);
+            objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
         }
     }
 }

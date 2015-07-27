@@ -9,7 +9,7 @@ struct DrawParameters
         IndexCount = _IndexCount;
         StartIndexLocation = _StartIndexLocation;
         BaseVertexLocation = _BaseVertexLocation;
-        signature = (UINT64)-1;
+        signature = 0;
     }
     UINT IndexCount;
     UINT StartIndexLocation;
@@ -27,6 +27,7 @@ struct LocalizedObjectData : public BinaryDataSerialize< LocalizedObjectData >
 {
     int drawIndex;
     UINT64 signature;
+    vec3f centroid;
     bbox3f boundingBox;
 };
 
@@ -36,7 +37,7 @@ struct LocalizedObject
     // Interceptor functions
     //
     static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params);
-    static bbox3f computeBoundingBox(MyD3DAssets &assets, const DrawParameters &params);
+    static void computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result);
     void load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData);
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
     void loadFromDraw(MyD3DAssets &assets, UINT  VertexCount, UINT  StartVertexLocation);

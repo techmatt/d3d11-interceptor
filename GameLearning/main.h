@@ -19,4 +19,6 @@ using namespace std;
 #include "../shared/objectCollection.h"
 #include "../shared/signatureColorMap.h"
 
+#include "frameProcessing.h"
+
 #include "vizzer.h"

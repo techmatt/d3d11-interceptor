@@ -202,9 +202,16 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
 
         LocalizedObjectData data;
         data.signature = params.signature;
-        data.boundingBox = LocalizedObject::computeBoundingBox(*assets, params);
+        LocalizedObject::computeBoundingInfo(*assets, params, data);
         data.drawIndex = g_logger->frameRenderIndex;
         g_logger->curFrame->objects.push_back(data);
+
+        if (keyFrameCaptureRate != 0 && g_logger->frameIndex % keyFrameCaptureRate == 0)
+        {
+            LocalizedObject object;
+            object.load(*assets, params, true);
+            g_logger->curFrame->objectMeshes.push_back(object);
+        }
     }
 
     base->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);

@@ -94,21 +94,23 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
     return sum;
 }
 
-bbox3f LocalizedObject::computeBoundingBox(MyD3DAssets &assets, const DrawParameters &params)
+void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result)
 {
-    bbox3f result;
+    bbox3f bbox;
+    vec3f centroid = vec3f::origin;
+    int centroidCount = 0;
 
     const auto &indexBuffer = assets.getActiveIndexBuffer();
     const auto &vertexBuffer = assets.getActiveVertexBuffer();
     const BufferCPU *VSConstants = assets.getVSConstantBuffer();
 
-    const int bboxIndexStart = 16;
+    const int bboxIndexStart = 8;
 
     if (vertexBuffer.buffer == nullptr || indexBuffer.buffer == nullptr ||
         assets.activeVertexLayout == nullptr || assets.activeVertexLayout->positionOffset == -1 ||
         params.BaseVertexLocation == -1)
     {
-        return result;
+        return;
     }
 
     const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
@@ -143,21 +145,28 @@ bbox3f LocalizedObject::computeBoundingBox(MyD3DAssets &assets, const DrawParame
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             const vec3f worldPos = assets.transformObjectToWorldGamecube(VSConstants, basePos, blendMatrixIndex);
 
-            if (basePos.x != 0.0f && worldPos.x == worldPos.x)
-                result.include(worldPos);
+            if (worldPos.x == worldPos.x)
+            {
+                centroidCount++;
+                centroid += worldPos;
+                bbox.include(worldPos);
+            }
         }
 
         prevIndex = curIndex;
     }
 
-    return result;
+    if (centroidCount == 0) centroidCount = 1;
+
+    result.boundingBox = bbox;
+    result.centroid = centroid / (float)centroidCount;
 }
 
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData)
 {
     data.drawIndex = g_logger->frameRenderIndex;
     data.signature = computeSignature(assets, params);
-    data.boundingBox = computeBoundingBox(assets, params);
+    computeBoundingInfo(assets, params, data);
 
     if (loadVertexData)
     {
@@ -260,9 +269,6 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             localizedVertex.worldPos = assets.transformObjectToWorldGamecube(VSConstants, basePos, blendMatrixIndex);
 
-            if (basePos.x == 0.0f || localizedVertex.worldPos.x != localizedVertex.worldPos.x)
-                localizedVertex.worldPos = vec3f(0.0f, 0.0f, 0.0f);
-            
             vertices.push_back(localizedVertex);
             indices.push_back(curIndex);
         }
