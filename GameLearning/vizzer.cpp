@@ -56,13 +56,17 @@ void Vizzer::init(ApplicationData &app)
 
     bboxMode = true;
 
+    frameAObjectIndex = 0;
     comparisonFrameA = allFrames.frames[498];
     comparisonFrameB = allFrames.frames[598];
 
+    auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
+
+    if (alignment.size > 0)
+        comparisonFrameB->transform(alignment.transform.getInverse());
+
     makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
-
-    FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -71,7 +75,7 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
-    if (bboxMode)
+    /*if (bboxMode)
     {
         for (auto &m : curFrameBoxMeshes)
         {
@@ -84,6 +88,28 @@ void Vizzer::render(ApplicationData &app)
         {
             assets.renderMesh(m, m_camera.getCameraPerspective());
         }
+    }*/
+
+    const UINT64 targetSignature = comparisonFrameA->objects[frameAObjectIndex].signature;
+
+    for (int meshIndex = 0; meshIndex < comparisonMeshesA.size(); meshIndex++)
+    {
+        const D3D11TriMesh &m = comparisonMeshesA[meshIndex];
+        vec3f color(1.0f, 1.0f, 1.0f);
+        if (comparisonFrameA->objects[meshIndex].signature == targetSignature)
+            color = vec3f(1.0f, 0.0f, 0.0f);
+        if (meshIndex == frameAObjectIndex)
+            color = vec3f(0.0f, 1.0f, 0.0f);
+        assets.renderMesh(m, m_camera.getCameraPerspective(), color);
+    }
+
+    for (int meshIndex = 0; meshIndex < comparisonMeshesB.size(); meshIndex++)
+    {
+        const D3D11TriMesh &m = comparisonMeshesB[meshIndex];
+        vec3f color(1.0f, 1.0f, 1.0f);
+        if (comparisonFrameB->objects[meshIndex].signature == targetSignature)
+            color = vec3f(0.0f, 0.0f, 1.0f);
+        assets.renderMesh(m, m_camera.getCameraPerspective(), color);
     }
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
@@ -91,6 +117,8 @@ void Vizzer::render(ApplicationData &app)
 
     const FrameObjectData &frame = *allFrames.frames[frameIndex];
     m_font.drawString(app.graphics, "Object count: " + to_string(frame.objects.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
+
+    m_font.drawString(app.graphics, "Target object index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objects.size()), vec2i(10, 80), 24.0f, RGBColor::Red);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -102,6 +130,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
     if (key == KEY_TAB) bboxMode = !bboxMode;
+
+    if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objects.size());
+    if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objects.size());
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)

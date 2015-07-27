@@ -5,9 +5,15 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
 {
     const int correspondenceGroupSize = 3;
     const float clusterThreshold = 0.1f;
+    const float minObjectSize = 20.0f;
     const bool outputClusters = true;
 
-    map<UINT64, const LocalizedObjectData*> destMap = dest.makeSignatureMap();
+    auto getMaxDim = [](const vec3f &v)
+    {
+        return max(max(v.x, v.y), v.z);
+    };
+
+    map<UINT64, const LocalizedObjectData*> destMap = dest.makeUniqueSignatureMap();
     
     ofstream file("clusters.txt");
 
@@ -17,7 +23,9 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
         for (int i = 0; i < correspondenceGroupSize; i++)
         {
             const auto &o = source.objects[startSourceIndex + i];
-            if (destMap.count(o.signature) == 0)
+            if (destMap.count(o.signature) == 0 ||
+                destMap[o.signature] == nullptr ||
+                getMaxDim(destMap[o.signature]->boundingBox.getExtent()) < minObjectSize)
                 return make_pair(false, mat4f::identity());
 
             sourcePoints[i] = o.centroid;
