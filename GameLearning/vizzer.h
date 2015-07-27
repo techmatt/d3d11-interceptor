@@ -17,15 +17,20 @@ public:
 	void resize(ApplicationData &app);
 
 private:
+    void makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes, vector<D3D11TriMesh> &boxMeshes);
+
     D3D11AssetRenderer assets;
 
     SignatureColorMap colorMap;
-    ObjectCollection singleCaptureObjects;
     FrameCollection allFrames;
 
-    vector<D3D11TriMesh> objectMeshes;
-    vector<D3D11TriMesh> objectBoxMeshes;
+    vector<D3D11TriMesh> curFrameMeshes;
+    vector<D3D11TriMesh> curFrameBoxMeshes;
 	
+    FrameObjectData *comparisonFrameA, *comparisonFrameB;
+    vector<D3D11TriMesh> comparisonMeshesA;
+    vector<D3D11TriMesh> comparisonMeshesB;
+
     int frameIndex;
 
     bool bboxMode;

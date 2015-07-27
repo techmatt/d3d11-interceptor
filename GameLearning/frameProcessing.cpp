@@ -3,7 +3,7 @@
 
 FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source, const FrameObjectData &dest)
 {
-    const int correspondenceGroupSize = 4;
+    const int correspondenceGroupSize = 3;
     const float clusterThreshold = 0.1f;
     const bool outputClusters = true;
 
@@ -14,14 +14,14 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
     auto attemptAlignment = [&](int startSourceIndex)
     {
         vector<vec3f> sourcePoints(correspondenceGroupSize), destPoints(correspondenceGroupSize);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < correspondenceGroupSize; i++)
         {
             const auto &o = source.objects[startSourceIndex + i];
             if (destMap.count(o.signature) == 0)
                 return make_pair(false, mat4f::identity());
 
-            sourcePoints.push_back(o.centroid);
-            destPoints.push_back(destMap[o.signature]->centroid);
+            sourcePoints[i] = o.centroid;
+            destPoints[i] = destMap[o.signature]->centroid;
         }
         const mat4f result = EigenWrapperf::kabsch(sourcePoints, destPoints);
 

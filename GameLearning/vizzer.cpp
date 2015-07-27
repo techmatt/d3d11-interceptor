@@ -4,6 +4,35 @@
 const float sizeThreshold = 30.0f;
 //const float sizeThreshold = numeric_limits<float>::max();
 
+void Vizzer::makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes, vector<D3D11TriMesh> &boxMeshes)
+{
+    boxMeshes.clear();
+    boxMeshes.resize(frame.objects.size());
+    int objectIndex = 0;
+    for (auto &o : frame.objects)
+    {
+        const vec3f extent = o.boundingBox.getExtent();
+        const float maxDim = max(max(extent.x, extent.y), extent.z);
+        if (maxDim > sizeThreshold)
+        {
+            continue;
+        }
+
+        boxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.boundingBox, vec4f(colorMap.getColor(o.signature), 1.0f)));
+        objectIndex++;
+    }
+
+    meshes.clear();
+    meshes.resize(frame.objectMeshes.size());
+    for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
+    {
+        const auto &o = frame.objectMeshes[objectIndex];
+        TriMeshf mesh;
+        o.toMesh(colorMap, mesh);
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+    }
+}
+
 void Vizzer::init(ApplicationData &app)
 {	
     const string shaderDir = "../../frameworkD3D11/shaders/";
@@ -23,31 +52,17 @@ void Vizzer::init(ApplicationData &app)
 
     colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
 
-    objectMeshes.resize(singleCaptureObjects.objects.size());
-    objectBoxMeshes.resize(singleCaptureObjects.objects.size());
-
-    for (int objectIndex = 0; objectIndex < singleCaptureObjects.objects.size(); objectIndex++)
-    {
-        const auto &o = singleCaptureObjects.objects[objectIndex];
-        TriMeshf mesh;
-        o.toMesh(colorMap, mesh);
-        objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
-
-        const vec3f extent = o.data.boundingBox.getExtent();
-        const float maxDim = max(max(extent.x, extent.y), extent.z);
-        if (maxDim > sizeThreshold)
-        {
-            continue;
-        }
-
-        objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.data.boundingBox, vec4f(colorMap.getColor(o.data.signature), 1.0f)));
-    }
-
     frameIndex = 0;
 
     bboxMode = true;
 
-    FrameProcessing::alignFrames(*allFrames.frames[700], *allFrames.frames[705]);
+    comparisonFrameA = allFrames.frames[498];
+    comparisonFrameB = allFrames.frames[598];
+
+    makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
+    makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
+
+    FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -56,27 +71,16 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
-    /*for (auto &o : objects.objects)
-    {
-        if (o.drawIndex == 447)
-            int a = 5;
-        for (auto &v : o.vertices)
-        {
-            vec4i material = o.PSColors[5];
-            assets.renderSphere(m_camera.getCameraPerspective(), v.worldPos, 0.2f, vec3f(material.getVec3()) / 255.0f);
-        }
-    }*/
-
     if (bboxMode)
     {
-        for (auto &m : objectBoxMeshes)
+        for (auto &m : curFrameBoxMeshes)
         {
             assets.renderMesh(m, m_camera.getCameraPerspective());
         }
     }
     else
     {
-        for (auto &m : objectMeshes)
+        for (auto &m : curFrameMeshes)
         {
             assets.renderMesh(m, m_camera.getCameraPerspective());
         }
@@ -131,29 +135,7 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
         }
         const FrameObjectData &frame = *allFrames.frames[frameIndex];
 
-        objectBoxMeshes.resize(frame.objects.size());
-        int objectIndex = 0;
-        for (auto &o : frame.objects)
-        {
-            const vec3f extent = o.boundingBox.getExtent();
-            const float maxDim = max(max(extent.x, extent.y), extent.z);
-            if (maxDim > sizeThreshold)
-            {
-                continue;
-            }
-
-            objectBoxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.boundingBox, vec4f(colorMap.getColor(o.signature), 1.0f)));
-            objectIndex++;
-        }
-
-        objectMeshes.resize(frame.objectMeshes.size());
-        for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
-        {
-            const auto &o = frame.objectMeshes[objectIndex];
-            TriMeshf mesh;
-            o.toMesh(colorMap, mesh);
-            objectMeshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
-        }
+        makeFrameMeshes(app, frame, curFrameMeshes, curFrameBoxMeshes);
     }
 }
 
