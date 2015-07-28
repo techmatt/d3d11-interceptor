@@ -37,11 +37,11 @@ struct PixelShaderConstants
     vec4f efbscale;
 };
 
-UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParameters &params)
+UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParameters &params, string &debugDesc)
 {
     UINT64 sum = 0;
-    //string description;
 
+    const BufferCPU *VSConstants = assets.getVSConstantBuffer();
     const auto &indexBuffer = assets.getActiveIndexBuffer();
     const auto &vertexBuffer = assets.getActiveVertexBuffer();
     
@@ -57,48 +57,53 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
     {
         return 0;
     }
-    else
+    
+    const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
+    const BYTE *vertexData = vertexBuffer.buffer->data.data();
+
+    int prevIndex = -999;
+    for (int indexIndex = signatureIndexStart; indexIndex < min(signatureIndexStart + 16, (int)params.IndexCount); indexIndex++)
     {
-        const WORD *indexDataStart = (WORD *)indexBuffer.buffer->data.data() + params.StartIndexLocation;
-        const BYTE *vertexData = vertexBuffer.buffer->data.data();
+        const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
+        const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
 
-        int prevIndex = -999;
-        for (int indexIndex = signatureIndexStart; indexIndex < min(32, (int)params.IndexCount); indexIndex++)
+        bool valid = (curIndex == prevIndex + 1);
+        if (valid)
         {
-            const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
-            const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
-
             if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
             {
-                continue;
+                debugDesc += "overflow: vBuffer size=" + to_string(vertexBuffer.buffer->data.size()) + ", stride=" + to_string(vertexBuffer.stride) + ", curIndex+1=" + to_string(curIndex + 1);
+                return 1;
             }
 
-            bool valid = (curIndex == prevIndex + 1);
-            if (valid)
-            {
-                const int tOffset = assets.activeVertexLayout->tex0Offset;
-                const UINT32 *tStartI = (const UINT32 *)(curVertex + tOffset);
+            const int tOffset = assets.activeVertexLayout->tex0Offset;
+            const UINT32 *tStartI = (const UINT32 *)(curVertex + tOffset);
 
-                sum += UINT64(tStartI[0]);
-                sum += UINT64(tStartI[1]);
+            sum += UINT64(tStartI[0]);
+            sum += UINT64(tStartI[1]);
 
-                //const float *tStartF = (const float *)(curVertex + tOffset);
-                //result += to_string(tStartF[0]) + ", " + to_string(tStartF[1]) + "<br/>";
-            }
-
-            prevIndex = curIndex;
+            const float *tStartF = (const float *)(curVertex + tOffset);
+            debugDesc += to_string(tStartF[0]) + ", " + to_string(tStartF[1]) + "; ";
         }
+
+        prevIndex = curIndex;
     }
 
-    //result = "sum=" + to_string(sum) + "<br/>" + result;
     return sum;
 }
 
 void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result)
 {
-    bbox3f bbox;
     vec3f centroid = vec3f::origin;
     int centroidCount = 0;
+
+    const float nan = numeric_limits<float>::quiet_NaN();
+    for (int i = 0; i < LocalizedObjectData::vertexStoreCount; i++)
+        result.vertices[i] = vec3f(nan, nan, nan);
+
+    int vertexStoreIndex = 0;
+    const int vertexStoreStride = max(1, (int)params.IndexCount / LocalizedObjectData::vertexStoreCount);
+    int vertexStoreRemaining = 10;
 
     const auto &indexBuffer = assets.getActiveIndexBuffer();
     const auto &vertexBuffer = assets.getActiveVertexBuffer();
@@ -119,6 +124,7 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
     int prevIndex = -999;
     for (int indexIndex = bboxIndexStart; indexIndex < (int)params.IndexCount; indexIndex++)
     {
+        if (vertexStoreRemaining > 0) vertexStoreRemaining--;
         const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
         const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
 
@@ -149,7 +155,12 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
             {
                 centroidCount++;
                 centroid += worldPos;
-                bbox.include(worldPos);
+
+                if (vertexStoreRemaining == 0 && vertexStoreIndex != LocalizedObjectData::vertexStoreCount)
+                {
+                    result.vertices[vertexStoreIndex++] = worldPos;
+                    vertexStoreRemaining = vertexStoreStride;
+                }
             }
         }
 
@@ -158,14 +169,15 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
 
     if (centroidCount == 0) centroidCount = 1;
 
-    result.boundingBox = bbox;
     result.centroid = centroid / (float)centroidCount;
 }
 
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData)
 {
+    signatureDebug = "init";
+
     data.drawIndex = g_logger->frameRenderIndex;
-    data.signature = computeSignature(assets, params);
+    data.signature = computeSignature(assets, params, signatureDebug);
     computeBoundingInfo(assets, params, data);
 
     if (loadVertexData)
@@ -196,6 +208,7 @@ void LocalizedObject::loadFromDraw(MyD3DAssets &assets, UINT  VertexCount, UINT 
 
             LocalizedObjectVertex localizedVertex;
             localizedVertex.worldPos = vec3f::origin;
+            localizedVertex.tex0 = vec2f(0.0f, 0.0f);
 
             if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
             {
@@ -246,6 +259,7 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
             
             LocalizedObjectVertex localizedVertex;
             localizedVertex.worldPos = vec3f::origin;
+            localizedVertex.tex0 = vec2f::origin;
 
             if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
             {
@@ -256,9 +270,8 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
 
             const int pOffset = assets.activeVertexLayout->positionOffset;
             const int bOffset = assets.activeVertexLayout->blendOffset;
+            const int tOffset = assets.activeVertexLayout->tex0Offset;
             
-            const float *pStart = (const float *)(curVertex + pOffset);
-
             int blendMatrixIndex = -1;
             if (bOffset != -1)
             {
@@ -266,8 +279,15 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, 
                 blendMatrixIndex = blendIndices.x;
             }
 
+            const float *pStart = (const float *)(curVertex + pOffset);
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             localizedVertex.worldPos = assets.transformObjectToWorldGamecube(VSConstants, basePos, blendMatrixIndex);
+
+            if (tOffset != -1)
+            {
+                const float *tStart = (const float *)(curVertex + tOffset);
+                localizedVertex.tex0 = vec2f(tStart[0], tStart[1]);
+            }
 
             vertices.push_back(localizedVertex);
             indices.push_back(curIndex);

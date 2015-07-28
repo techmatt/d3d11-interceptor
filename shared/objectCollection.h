@@ -21,6 +21,7 @@ struct FrameObjectData
         }
         return result;
     }
+
     void transform(const mat4f &m)
     {
         for (LocalizedObjectData &o : objects)

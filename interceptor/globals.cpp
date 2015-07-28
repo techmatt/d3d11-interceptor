@@ -156,36 +156,42 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 
                 for (int indexIndex = 0; indexIndex < min((int)params.IndexCount, 32); indexIndex++)
                 {
+                    string vertexPrefix = "V" + to_string(indexIndex) + " ";
+
                     const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
-                    const BYTE *vertexStart = (const BYTE *)(vertexData + (vertexBuffer.stride * curIndex));
+                    const BYTE *curVertex = (vertexData + (vertexBuffer.stride * curIndex));
 
                     if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
                     {
+                        v0Data += "*out of bounds*<br />";
                         continue;
                     }
 
-                    if (vertexBuffer.stride / 4 >= 4)
+                    const int pOffset = assets.activeVertexLayout->positionOffset;
+                    const int bOffset = assets.activeVertexLayout->blendOffset;
+                    const int tOffset = assets.activeVertexLayout->tex0Offset;
+                    
+                    int blendMatrixIndex = -1;
+                    if (bOffset != -1)
                     {
-                        const float *posStart = (const float *)(vertexStart + layout->positionOffset);
-                        const vec3f basePos(posStart[1], posStart[2], posStart[3]);
-                        const vec3f worldPos = assets.transformObjectToWorldGamecube(VSConstants, basePos, -1);
-                        v0Data += "world=" + worldPos.toString(", ") + " ";
+                        vec4uc blendIndices = *((const vec4uc *)(curVertex + bOffset));
+                        blendMatrixIndex = blendIndices.x;
                     }
 
-                    v0Data += "index=" + to_string(curIndex) + " ";
+                    const float *pStart = (const float *)(curVertex + pOffset);
+                    const vec3f basePos(pStart[0], pStart[1], pStart[2]);
+                    vec3f pos = assets.transformObjectToWorldGamecube(VSConstants, basePos, blendMatrixIndex);
 
-                    if (layout->blendOffset != -1)
+                    vec2f tex = vec2f::origin;
+                    if (tOffset != -1)
                     {
-                        int blendIndex = 0;
-                        const vec4uc *blendStart = (const vec4uc *)(vertexStart + layout->blendOffset);
-                        v0Data += "blendIndex=" + blendStart[0].toString(", ") + " ";
+                        const float *tStart = (const float *)(curVertex + tOffset);
+                        tex = vec2f(tStart[0], tStart[1]);
                     }
 
-                    for (int i = 0; i < (int)vertexBuffer.stride / 4; i++)
-                    {
-                        v0Data += to_string(((const float *)vertexStart)[i]) + ", ";
-                    }
-                    v0Data += "<br />";
+                    v0Data += vertexPrefix + "world=" + pos.toString(", ") + " <br/>";
+                    v0Data += vertexPrefix + "index=" + to_string(curIndex) + " <br/>";
+                    v0Data += vertexPrefix + "tex=" + tex.toString(", ") + " <br/>";
                 }
             }
         }

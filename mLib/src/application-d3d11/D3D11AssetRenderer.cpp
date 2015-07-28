@@ -34,7 +34,7 @@ void D3D11AssetRenderer::renderMesh(const D3D11TriMesh &mesh, const mat4f &camer
 
 void D3D11AssetRenderer::renderCylinder(const mat4f &cameraPerspective, const vec3f &p0, const vec3f &p1, float radius, const vec3f &color)
 {
-    renderMesh(m_cylinder, cameraPerspective, mat4f::translation(p0) * mat4f::face(vec3f::eZ, p1 - p0) * mat4f::scale(1.0f, 1.0f, vec3f::dist(p0, p1)), color);
+    renderMesh(m_cylinder, cameraPerspective, mat4f::translation(p0) * mat4f::face(vec3f::eZ, p1 - p0) * mat4f::scale(radius, radius, vec3f::dist(p0, p1)), color);
 }
 
 void D3D11AssetRenderer::renderSphere(const mat4f &cameraPerspective, const vec3f &center, float radius, const vec3f &color)

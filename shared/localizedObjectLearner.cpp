@@ -1,6 +1,61 @@
 
 #include "main.h"
 
+UINT64 LocalizedObject::computeSignatureFromVertices() const
+{
+    UINT64 sum = 0;
+    const int signatureIndexStart = 16;
+
+    const unsigned short firstIndex = indices[0];
+    
+    int prevIndex = -999;
+    for (int indexIndex = signatureIndexStart; indexIndex < min(signatureIndexStart + 16, (int)indices.size()); indexIndex++)
+    {
+        const int curIndex = indices[indexIndex];
+        
+        bool valid = (curIndex == prevIndex + 1);
+        if (valid)
+        {
+            const vec2f tex = vertices[indexIndex].tex0;
+            const UINT32 *tStartI = (const UINT32 *)&tex;
+
+            sum += UINT64(tStartI[0]);
+            sum += UINT64(tStartI[1]);
+        }
+
+        prevIndex = curIndex;
+    }
+
+    return sum;
+}
+
+void LocalizedObject::saveDescription(const string &filename) const
+{
+    ofstream file(filename);
+
+    file << "signature in data = " << data.signature << endl;
+    file << "signature from vertices = " << computeSignatureFromVertices() << endl;
+    file << "signature debug:" << endl << signatureDebug << endl;
+    file << "vertices:" << endl;
+    for (auto &v : vertices)
+    {
+        file << "pos = " << v.worldPos << ", tex = " << v.tex0 << endl;
+    }
+
+    file << endl << endl;
+    file << "indices:" << endl;
+    for (auto &i : indices)
+    {
+        file << i << endl;
+    }
+    
+    /*
+    LocalizedObjectData data;
+    vector<LocalizedObjectVertex> vertices;
+    vector<unsigned short> indices;
+    */
+}
+
 void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const
 {
     vector<TriMeshf::Vertexf> meshVertices;
@@ -31,7 +86,9 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
             normal.y = abs(normal.y);
             normal.z = abs(normal.z);
 
-            float shading = max(max(normal.x, normal.y), normal.z);
+            normal = normal;
+
+            float shading = max(max(normal.x, normal.y), normal.z) * 1.25f;
             //vec3f triColor = normal.getNormalized() * 0.5f + vec3f(0.5f);
             vec3f triColor = color * shading;
 

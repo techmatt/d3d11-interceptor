@@ -29,7 +29,10 @@
     <ClCompile Include="winMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="alignment.txt" />
     <Text Include="clusters.txt" />
+    <Text Include="objA.txt" />
+    <Text Include="objB.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>

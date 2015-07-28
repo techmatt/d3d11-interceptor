@@ -1,39 +1,85 @@
 
 #include "main.h"
 
-FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source, const FrameObjectData &dest)
+void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 {
-    const int correspondenceGroupSize = 3;
-    const float clusterThreshold = 0.1f;
-    const float minObjectSize = 20.0f;
-    const bool outputClusters = true;
+    ofstream file("alignment.txt");
 
+    const int minClusterSize = 1;
+
+    for (int frameIndex = 0; frameIndex < frames.frames.size() - 1; frameIndex++)
+    {
+        FrameObjectData &frameA = *frames.frames[frameIndex];
+        FrameObjectData &frameB = *frames.frames[frameIndex + 1];
+
+        FrameAlignmentCluster alignment = alignFrames(frameA, frameB);
+
+        file << "align " << frameIndex + 1 << " to " << frameIndex << ", size=" << alignment.size << endl;
+        file << "transform:" << endl << alignment.transform << endl << endl;
+        
+        if (alignment.size >= minClusterSize)
+        {
+            frameB.transform(alignment.transform.getInverse());
+        }
+    }
+}
+
+vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const FrameObjectData &source, const FrameObjectData &dest)
+{
+    vector<FrameAlignmentCorrespondence> result;
+
+    const float minObjectSize = 20.0f;
+    
     auto getMaxDim = [](const vec3f &v)
     {
         return max(max(v.x, v.y), v.z);
     };
 
     map<UINT64, const LocalizedObjectData*> destMap = dest.makeUniqueSignatureMap();
-    
-    ofstream file("clusters.txt");
 
-    auto attemptAlignment = [&](int startSourceIndex)
+    for (const LocalizedObjectData &o : source.objects)
+    {
+        if (destMap.count(o.signature) != 0 && destMap[o.signature] != nullptr &&
+            getMaxDim(destMap[o.signature]->boundingBox.getExtent()) >= minObjectSize)
+        {
+            FrameAlignmentCorrespondence correspondence;
+            correspondence.source = &o;
+            correspondence.dest = destMap[o.signature];
+            result.push_back(correspondence);
+        }
+    }
+
+    return result;
+}
+
+FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source, const FrameObjectData &dest)
+{
+    const int correspondenceGroupSize = 6;
+    const float clusterThreshold = 0.1f;
+    const bool outputClusters = true;
+
+    ofstream file;
+    if(outputClusters)
+        file.open("clusters.txt");
+
+    const vector<FrameAlignmentCorrespondence> correspondences = getCorrespondences(source, dest);
+
+    auto attemptAlignment = [&](int correspondenceStartIndex)
     {
         vector<vec3f> sourcePoints(correspondenceGroupSize), destPoints(correspondenceGroupSize);
         for (int i = 0; i < correspondenceGroupSize; i++)
         {
-            const auto &o = source.objects[startSourceIndex + i];
-            if (destMap.count(o.signature) == 0 ||
-                destMap[o.signature] == nullptr ||
-                getMaxDim(destMap[o.signature]->boundingBox.getExtent()) < minObjectSize)
-                return make_pair(false, mat4f::identity());
-
-            sourcePoints[i] = o.centroid;
-            destPoints[i] = destMap[o.signature]->centroid;
+            const auto &correspondence = correspondences[correspondenceStartIndex + i];
+            sourcePoints[i] = correspondence.source->centroid;
+            destPoints[i] = correspondence.dest->centroid;
         }
-        const mat4f result = EigenWrapperf::kabsch(sourcePoints, destPoints);
 
-        return make_pair(true, result);
+        mat3f m(sourcePoints[0], sourcePoints[1], sourcePoints[2]);
+        mat3f m2 = m.getTranspose() * m;
+        auto system = m2.eigenSystem();
+
+        mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints);
+        return alignment;
     };
 
     auto compareMatrices = [](const mat4f &a, const mat4f &b)
@@ -45,11 +91,24 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
     };
 
     vector<mat4f> candidateAlignments;
-    for (int sourceIndex = 0; sourceIndex < source.objects.size() - correspondenceGroupSize; sourceIndex++)
+    for (int sourceIndex = 0; sourceIndex < correspondences.size() - correspondenceGroupSize; sourceIndex++)
     {
-        auto result = attemptAlignment(sourceIndex);
-        if (result.first)
-            candidateAlignments.push_back(result.second);
+        const mat4f alignment = attemptAlignment(sourceIndex);
+        candidateAlignments.push_back(alignment);
+
+        if (fabs(alignment(0, 3) - -30.9165f) < 0.01f)
+        {
+            const mat4f alignment2 = attemptAlignment(sourceIndex);
+        }
+    }
+
+    if (outputClusters)
+    {
+        file << candidateAlignments.size() << " candidates" << endl << endl;
+        for (const mat4f &m : candidateAlignments)
+        {
+            file << m << endl << endl;
+        }
     }
 
     if (candidateAlignments.size() == 0)
@@ -68,10 +127,12 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
         cluster.transform = candidateAlignments[0];
         cluster.size = 1;
 
+        if (outputClusters) file << endl << "new cluster" << endl;
         for (int i = 1; i < candidateAlignments.size(); i++)
         {
             const float dist = compareMatrices(cluster.transform, candidateAlignments[i]);
-            file << dist << endl;
+
+            if (outputClusters) file << "dist vs " << i << ": " << dist << endl;
             if (dist < clusterThreshold)
             {
                 cluster.size++;

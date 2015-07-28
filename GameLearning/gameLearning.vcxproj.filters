@@ -62,5 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="clusters.txt" />
+    <Text Include="alignment.txt" />
+    <Text Include="objA.txt" />
+    <Text Include="objB.txt" />
   </ItemGroup>
 </Project>

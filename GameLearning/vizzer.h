@@ -28,9 +28,12 @@ private:
     vector<D3D11TriMesh> curFrameBoxMeshes;
 	
     int frameAObjectIndex;
+    int frameBObjectIndex;
     FrameObjectData *comparisonFrameA, *comparisonFrameB;
     vector<D3D11TriMesh> comparisonMeshesA;
     vector<D3D11TriMesh> comparisonMeshesB;
+
+    vector<FrameAlignmentCorrespondence> correspondences;
 
     int frameIndex;
 

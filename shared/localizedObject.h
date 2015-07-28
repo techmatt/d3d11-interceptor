@@ -21,14 +21,17 @@ struct DrawParameters
 struct LocalizedObjectVertex : public BinaryDataSerialize< LocalizedObjectVertex >
 {
     vec3f worldPos;
+    vec2f tex0;
 };
 
 struct LocalizedObjectData : public BinaryDataSerialize< LocalizedObjectData >
 {
+    static const int vertexStoreCount = 6;
+
     int drawIndex;
     UINT64 signature;
     vec3f centroid;
-    bbox3f boundingBox;
+    vec3f vertices[vertexStoreCount];
 };
 
 struct LocalizedObject
@@ -36,7 +39,7 @@ struct LocalizedObject
     //
     // Interceptor functions
     //
-    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params);
+    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params, string &debugDesc);
     static void computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result);
     void load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData);
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
@@ -45,21 +48,24 @@ struct LocalizedObject
     //
     // Learner functions
     //
+    void saveDescription(const string &filename) const;
+    UINT64 computeSignatureFromVertices() const;
     void toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const;
 
     LocalizedObjectData data;
+    string signatureDebug;
     vector<LocalizedObjectVertex> vertices;
-    vector<unsigned short> indices;
+    vector<int> indices;
 };
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const LocalizedObject& o) {
-    s << o.data << o.vertices << o.indices;
+    s << o.data << o.vertices << o.indices << o.signatureDebug;
     return s;
 }
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, LocalizedObject& o) {
-    s >> o.data >> o.vertices >> o.indices;
+    s >> o.data >> o.vertices >> o.indices >> o.signatureDebug;
     return s;
 }

@@ -1,8 +1,8 @@
 
 #include "main.h"
 
-const float sizeThreshold = 30.0f;
-//const float sizeThreshold = numeric_limits<float>::max();
+//const float sizeThreshold = 30.0f;
+const float sizeThreshold = numeric_limits<float>::max();
 
 void Vizzer::makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes, vector<D3D11TriMesh> &boxMeshes)
 {
@@ -57,13 +57,22 @@ void Vizzer::init(ApplicationData &app)
     bboxMode = true;
 
     frameAObjectIndex = 0;
-    comparisonFrameA = allFrames.frames[498];
-    comparisonFrameB = allFrames.frames[598];
+    frameBObjectIndex = 0;
+    comparisonFrameA = allFrames.frames[20];
+    comparisonFrameB = allFrames.frames[21];
+
+    comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
 
     auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
 
-    if (alignment.size > 0)
-        comparisonFrameB->transform(alignment.transform.getInverse());
+    //if (alignment.size > 0)
+    //    comparisonFrameB->transform(alignment.transform.getInverse());
+
+    //auto alignment2 = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
+
+    //correspondences = FrameProcessing::getCorrespondences(*comparisonFrameA, *comparisonFrameB);
+
+    FrameProcessing::alignAllFrames(allFrames);
 
     makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
@@ -75,7 +84,7 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
-    /*if (bboxMode)
+    if (bboxMode)
     {
         for (auto &m : curFrameBoxMeshes)
         {
@@ -88,9 +97,9 @@ void Vizzer::render(ApplicationData &app)
         {
             assets.renderMesh(m, m_camera.getCameraPerspective());
         }
-    }*/
+    }
 
-    const UINT64 targetSignature = comparisonFrameA->objects[frameAObjectIndex].signature;
+    /*const UINT64 targetSignature = comparisonFrameA->objects[frameAObjectIndex].signature;
 
     for (int meshIndex = 0; meshIndex < comparisonMeshesA.size(); meshIndex++)
     {
@@ -109,8 +118,18 @@ void Vizzer::render(ApplicationData &app)
         vec3f color(1.0f, 1.0f, 1.0f);
         if (comparisonFrameB->objects[meshIndex].signature == targetSignature)
             color = vec3f(0.0f, 0.0f, 1.0f);
+        if (meshIndex == frameBObjectIndex)
+            color = vec3f(0.0f, 0.75f, 0.0f);
         assets.renderMesh(m, m_camera.getCameraPerspective(), color);
     }
+
+    for (auto &c : correspondences)
+    {
+        const vec3f color = vec3f(0.8f, 0.8f, 0.8f);
+        assets.renderSphere(m_camera.getCameraPerspective(), c.source->centroid, 2.0f, color);
+        assets.renderSphere(m_camera.getCameraPerspective(), c.dest->centroid, 2.0f, color);
+        assets.renderCylinder(m_camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
+    }*/
 
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
     m_font.drawString(app.graphics, "Frame " + to_string(frameIndex) + " / " + to_string(allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
@@ -118,7 +137,8 @@ void Vizzer::render(ApplicationData &app)
     const FrameObjectData &frame = *allFrames.frames[frameIndex];
     m_font.drawString(app.graphics, "Object count: " + to_string(frame.objects.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
 
-    m_font.drawString(app.graphics, "Target object index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objects.size()), vec2i(10, 80), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objects.size()) + " sig=" + to_string(comparisonFrameA->objects[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objects.size()) + " sig=" + to_string(comparisonFrameB->objects[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -133,6 +153,15 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objects.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objects.size());
+
+    if (key == KEY_N) frameBObjectIndex = math::mod(frameBObjectIndex - 1, comparisonFrameB->objects.size());
+    if (key == KEY_M) frameBObjectIndex = math::mod(frameBObjectIndex + 1, comparisonFrameB->objects.size());
+
+    if (key == KEY_C)
+    {
+        comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("objA.txt");
+        comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("objB.txt");
+    }
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)

@@ -170,6 +170,11 @@ public:
 		return sqrt((v0.array[0]-v1.array[0])*(v0.array[0]-v1.array[0]) + (v0.array[1]-v1.array[1])*(v0.array[1]-v1.array[1]));
 	}
 
+    inline std::string toString(const std::string &separator) const {
+        return std::to_string(x) + separator +
+            std::to_string(y);
+    }
+
     static inline void normalize(const vec2& v) {
         return v.getNormalized();
     }

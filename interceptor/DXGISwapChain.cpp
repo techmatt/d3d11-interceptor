@@ -77,7 +77,7 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
         g_logger->logSignatureFile << "Frame " << g_logger->frameIndex << " has " << g_logger->curFrame->objects.size() << " objects" << endl;
         g_logger->allFrames.frames.push_back(g_logger->curFrame);
 
-        if (g_logger->frameIndex == 1464)
+        if (g_logger->frameIndex == frameDumpIndex)
             g_logger->allFrames.save(g_logger->logDir + "allFrames.dat");
 
         g_logger->curFrame = new FrameObjectData();
@@ -90,6 +90,7 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
 
     g_state->AI->newFrameStart(g_logger->frameIndex);
 
+    //if (GetAsyncKeyState(VK_F8) || g_logger->frameIndex == 20 || g_logger->frameIndex == 21)
     if (GetAsyncKeyState(VK_F8))
     {
         g_logger->beginFrameCapture();
