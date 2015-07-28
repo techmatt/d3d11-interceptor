@@ -193,8 +193,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     
     if (assets->viewportFullScreen())
     {
-        string debugDesc;
-        params.signature = LocalizedObject::computeSignature(*assets, params, debugDesc);
+        params.signature = LocalizedObject::computeSignature(*assets, params);
     }
 
     if (params.signature != 0)

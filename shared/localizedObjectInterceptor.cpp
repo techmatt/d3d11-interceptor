@@ -37,7 +37,7 @@ struct PixelShaderConstants
     vec4f efbscale;
 };
 
-UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParameters &params, string &debugDesc)
+UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParameters &params)
 {
     UINT64 sum = 0;
 
@@ -72,7 +72,7 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
         {
             if (vertexBuffer.buffer->data.size() < vertexBuffer.stride * (curIndex + 1))
             {
-                debugDesc += "overflow: vBuffer size=" + to_string(vertexBuffer.buffer->data.size()) + ", stride=" + to_string(vertexBuffer.stride) + ", curIndex+1=" + to_string(curIndex + 1);
+                //debugDesc += "overflow: vBuffer size=" + to_string(vertexBuffer.buffer->data.size()) + ", stride=" + to_string(vertexBuffer.stride) + ", curIndex+1=" + to_string(curIndex + 1);
                 return 1;
             }
 
@@ -83,7 +83,7 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
             sum += UINT64(tStartI[1]);
 
             const float *tStartF = (const float *)(curVertex + tOffset);
-            debugDesc += to_string(tStartF[0]) + ", " + to_string(tStartF[1]) + "; ";
+            //debugDesc += to_string(tStartF[0]) + ", " + to_string(tStartF[1]) + "; ";
         }
 
         prevIndex = curIndex;
@@ -94,6 +94,7 @@ UINT64 LocalizedObject::computeSignature(MyD3DAssets &assets, const DrawParamete
 
 void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result)
 {
+    bbox3f bbox;
     vec3f centroid = vec3f::origin;
     int centroidCount = 0;
 
@@ -153,6 +154,7 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
 
             if (worldPos.x == worldPos.x)
             {
+                bbox.include(worldPos);
                 centroidCount++;
                 centroid += worldPos;
 
@@ -170,14 +172,15 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
     if (centroidCount == 0) centroidCount = 1;
 
     result.centroid = centroid / (float)centroidCount;
+    result.bbox = bbox;
 }
 
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData)
 {
-    signatureDebug = "init";
+    //signatureDebug = "init";
 
     data.drawIndex = g_logger->frameRenderIndex;
-    data.signature = computeSignature(assets, params, signatureDebug);
+    data.signature = computeSignature(assets, params);
     computeBoundingInfo(assets, params, data);
 
     if (loadVertexData)

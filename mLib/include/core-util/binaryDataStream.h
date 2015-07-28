@@ -63,6 +63,23 @@ public:
 		}
 	}
 
+    template<class T>
+    void writePrimitiveVector(const std::vector<T> &v)
+    {
+        writeData(v.size());
+        writeData((const BYTE *)v.data(), sizeof(T) * v.size());
+    }
+
+    template<class T>
+    void readPrimitiveVector(std::vector<T> &v)
+    {
+        size_t size;
+        readData(&size);
+        v.clear();
+        v.resize(size);
+        readData((BYTE *)v.data(), sizeof(T) * v.size());
+    }
+
 	//! clears the read offset: copies all data to the front of the data array and frees all unnecessary memory
 	void clearReadOffset() {
 		m_DataBuffer.clearReadOffset();

@@ -31,6 +31,7 @@ struct LocalizedObjectData : public BinaryDataSerialize< LocalizedObjectData >
     int drawIndex;
     UINT64 signature;
     vec3f centroid;
+    bbox3f bbox;
     vec3f vertices[vertexStoreCount];
 };
 
@@ -39,7 +40,7 @@ struct LocalizedObject
     //
     // Interceptor functions
     //
-    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params, string &debugDesc);
+    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params);
     static void computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result);
     void load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData);
     void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
@@ -53,19 +54,23 @@ struct LocalizedObject
     void toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const;
 
     LocalizedObjectData data;
-    string signatureDebug;
+    //string signatureDebug;
     vector<LocalizedObjectVertex> vertices;
     vector<int> indices;
 };
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const LocalizedObject& o) {
-    s << o.data << o.vertices << o.indices << o.signatureDebug;
+    s << o.data;
+    s.writePrimitiveVector(o.vertices);
+    s.writePrimitiveVector(o.indices);
     return s;
 }
 
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, LocalizedObject& o) {
-    s >> o.data >> o.vertices >> o.indices >> o.signatureDebug;
+    s >> o.data;
+    s.readPrimitiveVector(o.vertices);
+    s.readPrimitiveVector(o.indices);
     return s;
 }
