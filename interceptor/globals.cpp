@@ -81,7 +81,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
         
         if (object.vertices.size() > 0)
         {
-            frameCaptureObjects.frames[0]->objects.push_back(object.data);
+            frameCaptureObjects.frames[0]->objectData.push_back(object.data);
             frameCaptureObjects.frames[0]->objectMeshes.push_back(object);
         }
 

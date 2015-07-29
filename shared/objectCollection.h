@@ -20,6 +20,9 @@ struct FrameObjectData
         for (LocalizedObjectData &o : objectData)
         {
             o.centroid = m * o.centroid;
+            for (auto &v : o.vertices)
+                if (!isnan(v.x))
+                    v = m * v;
         }
         for (LocalizedObject &o : objectMeshes)
         {

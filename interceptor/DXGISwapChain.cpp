@@ -72,9 +72,9 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
         g_logger->colorMap.save(g_logger->colorMapFilename());
     }
 
-    if (g_logger->curFrame->objects.size() > 0)
+    if (g_logger->curFrame->objectData.size() > 0)
     {
-        g_logger->logSignatureFile << "Frame " << g_logger->frameIndex << " has " << g_logger->curFrame->objects.size() << " objects" << endl;
+        g_logger->logSignatureFile << "Frame " << g_logger->frameIndex << " has " << g_logger->curFrame->objectData.size() << " objects" << endl;
         g_logger->allFrames.frames.push_back(g_logger->curFrame);
 
         if (g_logger->frameIndex == frameDumpIndex)

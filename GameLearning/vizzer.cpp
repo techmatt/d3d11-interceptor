@@ -33,7 +33,6 @@ void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObje
         const LocalizedObject *geometry = geoDatabase.loadGeometry(o.signature);
         if (geometry != nullptr)
         {
-            const auto &debugA = frame.objectMeshes[objectIndex];
             TriMeshf mesh;
             geometry->toMesh(colorMap, mesh);
             mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
@@ -95,7 +94,7 @@ void Vizzer::init(ApplicationData &app)
 
     //correspondences = FrameProcessing::getCorrespondences(*comparisonFrameA, *comparisonFrameB);
 
-    //FrameProcessing::alignAllFrames(allFrames);
+    FrameProcessing::alignAllFrames(allFrames);
 
     //makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     //makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);

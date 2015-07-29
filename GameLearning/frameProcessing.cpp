@@ -26,7 +26,7 @@ void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 {
     ofstream file("alignment.txt");
 
-    const int minClusterSize = 1;
+    const int minClusterSize = 4;
 
     for (int frameIndex = 0; frameIndex < frames.frames.size() - 1; frameIndex++)
     {
@@ -77,7 +77,7 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
 {
     const int correspondenceGroupSize = 6;
     const float clusterThreshold = 0.1f;
-    const bool outputClusters = true;
+    const bool outputClusters = false;
 
     ofstream file;
     if(outputClusters)
@@ -107,6 +107,14 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
             result = max(result, fabs(a.matrix[i] - b.matrix[i]));
         return result;
     };
+
+    if (correspondences.size() < correspondenceGroupSize)
+    {
+        FrameAlignmentCluster result;
+        result.size = 0;
+        result.transform = mat4f::identity();
+        return result;
+    }
 
     vector<mat4f> candidateAlignments;
     for (int sourceIndex = 0; sourceIndex < correspondences.size() - correspondenceGroupSize; sourceIndex++)

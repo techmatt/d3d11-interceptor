@@ -205,7 +205,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
         data.signature = params.signature;
         LocalizedObject::computeBoundingInfo(*assets, params, buffers, data);
         data.drawIndex = g_logger->frameRenderIndex;
-        g_logger->curFrame->objects.push_back(data);
+        g_logger->curFrame->objectData.push_back(data);
 
         if (keyFrameCaptureRate != 0 && g_logger->frameIndex % keyFrameCaptureRate == 0)
         {
