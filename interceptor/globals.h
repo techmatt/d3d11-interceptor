@@ -71,7 +71,7 @@ struct Logger
     bool capturingFrame;
     string captureDir;
     Bitmap prevCaptureImage;
-    ObjectCollection frameCaptureObjects;
+    FrameCollection frameCaptureObjects;
 
     //
     // All frame capture state

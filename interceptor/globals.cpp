@@ -55,12 +55,17 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 {
     if (capturingFrame && assets.viewportFullScreen())
     {
+        GPUDrawBuffers buffers(assets);
+
         LocalizedObject object;
 
-        object.load(assets, params, true);
+        object.load(assets, params, buffers, true);
         
         if (object.vertices.size() > 0)
-            frameCaptureObjects.objects.push_back(object);
+        {
+            frameCaptureObjects.frames[0]->objects.push_back(object.data);
+            frameCaptureObjects.frames[0]->objectMeshes.push_back(object);
+        }
 
         const BufferCPU *VSConstants = assets.getVSConstantBuffer();
         const auto &indexBuffer = assets.getActiveIndexBuffer();
@@ -206,7 +211,8 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 void Logger::beginFrameCapture()
 {
     capturingFrame = true;
-    frameCaptureObjects.objects.clear();
+    frameCaptureObjects.frames.clear();
+    frameCaptureObjects.frames.push_back(new FrameObjectData());
     logDrawFile << "Capturing frame " << frameIndex << endl;
     captureDir = logDir + "capture" + util::zeroPad(frameIndex, 6) + "/";
     util::makeDirectory(captureDir);

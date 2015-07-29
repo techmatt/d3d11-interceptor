@@ -40,7 +40,7 @@ vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const F
     for (const LocalizedObjectData &o : source.objects)
     {
         if (destMap.count(o.signature) != 0 && destMap[o.signature] != nullptr &&
-            getMaxDim(destMap[o.signature]->boundingBox.getExtent()) >= minObjectSize)
+            getMaxDim(destMap[o.signature]->bbox.getExtent()) >= minObjectSize)
         {
             FrameAlignmentCorrespondence correspondence;
             correspondence.source = &o;

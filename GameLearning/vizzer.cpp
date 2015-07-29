@@ -11,14 +11,14 @@ void Vizzer::makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame,
     int objectIndex = 0;
     for (auto &o : frame.objects)
     {
-        const vec3f extent = o.boundingBox.getExtent();
+        const vec3f extent = o.bbox.getExtent();
         const float maxDim = max(max(extent.x, extent.y), extent.z);
         if (maxDim > sizeThreshold)
         {
             continue;
         }
 
-        boxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.boundingBox, vec4f(colorMap.getColor(o.signature), 1.0f)));
+        boxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(colorMap.getColor(o.signature), 1.0f)));
         objectIndex++;
     }
 
@@ -58,10 +58,10 @@ void Vizzer::init(ApplicationData &app)
 
     frameAObjectIndex = 0;
     frameBObjectIndex = 0;
-    comparisonFrameA = allFrames.frames[20];
-    comparisonFrameB = allFrames.frames[21];
+    comparisonFrameA = allFrames.frames[125];
+    comparisonFrameB = allFrames.frames[126];
 
-    comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
+    //comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
 
     auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
 
@@ -72,7 +72,7 @@ void Vizzer::init(ApplicationData &app)
 
     //correspondences = FrameProcessing::getCorrespondences(*comparisonFrameA, *comparisonFrameB);
 
-    FrameProcessing::alignAllFrames(allFrames);
+    //FrameProcessing::alignAllFrames(allFrames);
 
     makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
@@ -84,6 +84,7 @@ void Vizzer::render(ApplicationData &app)
 
     m_world = m_world * mat4f::rotationZ(1.0f);
 
+    const FrameObjectData &frame = *allFrames.frames[frameIndex];
     if (bboxMode)
     {
         for (auto &m : curFrameBoxMeshes)
@@ -93,9 +94,15 @@ void Vizzer::render(ApplicationData &app)
     }
     else
     {
-        for (auto &m : curFrameMeshes)
+        for (int meshIndex = 0; meshIndex < curFrameMeshes.size(); meshIndex++)
         {
-            assets.renderMesh(m, m_camera.getCameraPerspective());
+            const UINT64 signature = frame.objects[meshIndex].signature;
+            const int r = util::hash32(signature) & 255;
+            const int g = util::hash32(signature * 458 + 58) & 255;
+            const int b = util::hash32(signature * 127 + 13) & 255;
+            const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
+            const vec3f color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
+            assets.renderMesh(curFrameMeshes[meshIndex], m_camera.getCameraPerspective(), color);
         }
     }
 
@@ -109,6 +116,7 @@ void Vizzer::render(ApplicationData &app)
             color = vec3f(1.0f, 0.0f, 0.0f);
         if (meshIndex == frameAObjectIndex)
             color = vec3f(0.0f, 1.0f, 0.0f);
+
         assets.renderMesh(m, m_camera.getCameraPerspective(), color);
     }
 
@@ -121,9 +129,9 @@ void Vizzer::render(ApplicationData &app)
         if (meshIndex == frameBObjectIndex)
             color = vec3f(0.0f, 0.75f, 0.0f);
         assets.renderMesh(m, m_camera.getCameraPerspective(), color);
-    }
+    }*/
 
-    for (auto &c : correspondences)
+    /*for (auto &c : correspondences)
     {
         const vec3f color = vec3f(0.8f, 0.8f, 0.8f);
         assets.renderSphere(m_camera.getCameraPerspective(), c.source->centroid, 2.0f, color);
@@ -134,7 +142,6 @@ void Vizzer::render(ApplicationData &app)
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
     m_font.drawString(app.graphics, "Frame " + to_string(frameIndex) + " / " + to_string(allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
 
-    const FrameObjectData &frame = *allFrames.frames[frameIndex];
     m_font.drawString(app.graphics, "Object count: " + to_string(frame.objects.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
 
     m_font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objects.size()) + " sig=" + to_string(comparisonFrameA->objects[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
@@ -162,6 +169,23 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("objA.txt");
         comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("objB.txt");
     }
+
+    int frameDelta = 0;
+    if (key == KEY_O) frameDelta = -1;
+    if (key == KEY_P) frameDelta = 1;
+
+    if (frameDelta != 0)
+    {
+        frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        if (GetAsyncKeyState(VK_SHIFT))
+        {
+            while (allFrames.frames[frameIndex]->objectMeshes.size() == 0)
+                frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        }
+        const FrameObjectData &frame = *allFrames.frames[frameIndex];
+
+        makeFrameMeshes(app, frame, curFrameMeshes, curFrameBoxMeshes);
+    }
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)
@@ -180,23 +204,6 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
     if(key == KEY_DOWN) m_camera.lookUp(-theta);
     if(key == KEY_LEFT) m_camera.lookRight(theta);
     if(key == KEY_RIGHT) m_camera.lookRight(-theta);
-
-    int frameDelta = 0;
-    if (key == KEY_O) frameDelta = -1;
-    if (key == KEY_P) frameDelta = 1;
-
-    if (frameDelta != 0)
-    {
-        frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
-        if (GetAsyncKeyState(VK_SHIFT))
-        {
-            while (allFrames.frames[frameIndex]->objectMeshes.size() == 0)
-                frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
-        }
-        const FrameObjectData &frame = *allFrames.frames[frameIndex];
-
-        makeFrameMeshes(app, frame, curFrameMeshes, curFrameBoxMeshes);
-    }
 }
 
 void Vizzer::mouseDown(ApplicationData &app, MouseButtonType button)

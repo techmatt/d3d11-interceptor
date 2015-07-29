@@ -1,6 +1,7 @@
 
 struct MyD3DAssets;
 struct SignatureColorMap;
+struct GPUDrawBuffers;
 
 struct DrawParameters
 {
@@ -40,11 +41,13 @@ struct LocalizedObject
     //
     // Interceptor functions
     //
-    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params);
-    static void computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, LocalizedObjectData &result);
-    void load(MyD3DAssets &assets, const DrawParameters &params, bool loadVertexData);
-    void loadFromDrawIndexed(MyD3DAssets &assets, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
-    void loadFromDraw(MyD3DAssets &assets, UINT  VertexCount, UINT  StartVertexLocation);
+    static int computeIndexSkip(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers);
+    static UINT64 computeSignature(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers);
+    static void computeBoundingInfo(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers, LocalizedObjectData &result);
+
+    void load(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers, bool loadVertexData);
+    void loadFromDrawIndexed(MyD3DAssets &assets, const GPUDrawBuffers &buffers, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
+    void loadFromDraw(MyD3DAssets &assets, const GPUDrawBuffers &buffers, UINT  VertexCount, UINT  StartVertexLocation);
 
     //
     // Learner functions

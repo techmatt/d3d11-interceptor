@@ -31,6 +31,9 @@
     <ClInclude Include="..\shared\signatureColorMap.h">
       <Filter>Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\geometryDatabase.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d11Device.cpp">
@@ -67,6 +70,9 @@
       <Filter>Shared</Filter>
     </ClCompile>
     <ClCompile Include="..\shared\signatureColorMap.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\geometryDatabase.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
   </ItemGroup>

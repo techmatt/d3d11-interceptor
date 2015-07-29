@@ -15,12 +15,11 @@ const int keyFrameCaptureRate = 1;
 #include <windows.h>
 #include <d3d11.h>
 
-#include "util.h"
-
 #include "../shared/gameAIInterface.h"
 #include "../shared/localizedObject.h"
 #include "../shared/objectCollection.h"
 #include "../shared/signatureColorMap.h"
+#include "../shared/geometryDatabase.h"
 
 #include "globals.h"
 
@@ -28,3 +27,5 @@ const int keyFrameCaptureRate = 1;
 #include "d3d11Device.h"
 #include "d3d11DeviceContext.h"
 #include "DXGISwapChain.h"
+
+#include "util.h"

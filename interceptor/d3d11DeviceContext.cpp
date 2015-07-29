@@ -190,10 +190,11 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
     if (g_logger->logDrawCalls) g_logger->logDrawFile << "DrawIndexed IndexCount=" << IndexCount << ", StartIndexLocation=" << StartIndexLocation << ", BaseVertexLocation=" << BaseVertexLocation << endl;
     
     DrawParameters params(IndexCount, StartIndexLocation, BaseVertexLocation);
-    
+    GPUDrawBuffers buffers(*assets);
+
     if (assets->viewportFullScreen())
     {
-        params.signature = LocalizedObject::computeSignature(*assets, params);
+        params.signature = LocalizedObject::computeSignature(*assets, params, buffers);
     }
 
     if (params.signature != 0)
@@ -202,14 +203,14 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
 
         LocalizedObjectData data;
         data.signature = params.signature;
-        LocalizedObject::computeBoundingInfo(*assets, params, data);
+        LocalizedObject::computeBoundingInfo(*assets, params, buffers, data);
         data.drawIndex = g_logger->frameRenderIndex;
         g_logger->curFrame->objects.push_back(data);
 
         if (keyFrameCaptureRate != 0 && g_logger->frameIndex % keyFrameCaptureRate == 0)
         {
             LocalizedObject object;
-            object.load(*assets, params, true);
+            object.load(*assets, params, buffers, true);
             g_logger->curFrame->objectMeshes.push_back(object);
         }
     }

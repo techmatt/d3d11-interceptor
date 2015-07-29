@@ -35,7 +35,7 @@ void LocalizedObject::saveDescription(const string &filename) const
 
     file << "signature in data = " << data.signature << endl;
     file << "signature from vertices = " << computeSignatureFromVertices() << endl;
-    file << "signature debug:" << endl << signatureDebug << endl;
+    //file << "signature debug:" << endl << signatureDebug << endl;
     file << "vertices:" << endl;
     for (auto &v : vertices)
     {
@@ -66,7 +66,8 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
         return (v.x != 0.0f);
     };
     
-    const vec3f color = colorMap.getColor(data.signature);
+    //const vec3f color = colorMap.getColor(data.signature);
+    const vec3f color(1.0f, 1.0f, 1.0f);
 
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {
