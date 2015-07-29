@@ -54,12 +54,12 @@ void Vizzer::init(ApplicationData &app)
 
     frameIndex = 0;
 
-    bboxMode = true;
+    bboxMode = false;
 
     frameAObjectIndex = 0;
     frameBObjectIndex = 0;
-    comparisonFrameA = allFrames.frames[125];
-    comparisonFrameB = allFrames.frames[126];
+    comparisonFrameA = allFrames.frames[115];
+    comparisonFrameB = allFrames.frames[116];
 
     //comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
 
@@ -96,13 +96,26 @@ void Vizzer::render(ApplicationData &app)
     {
         for (int meshIndex = 0; meshIndex < curFrameMeshes.size(); meshIndex++)
         {
-            const UINT64 signature = frame.objects[meshIndex].signature;
-            const int r = util::hash32(signature) & 255;
-            const int g = util::hash32(signature * 458 + 58) & 255;
-            const int b = util::hash32(signature * 127 + 13) & 255;
-            const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
-            const vec3f color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
+            vec3f color(1.0f, 1.0f, 1.0f);
+            if (useSignatureCorrespondenceDebugColoring)
+            {
+                const UINT64 signature = frame.objects[meshIndex].signature;
+                const int r = util::hash32(signature) & 255;
+                const int g = util::hash32(signature * 458 + 58) & 255;
+                const int b = util::hash32(signature * 127 + 13) & 255;
+                const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
+                const vec3f color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
+            }
             assets.renderMesh(curFrameMeshes[meshIndex], m_camera.getCameraPerspective(), color);
+
+            if (meshIndex == frameAObjectIndex)
+            {
+                const auto &v0 = frame.objectMeshes[meshIndex];
+                for (const vec3f &v : frame.objectMeshes[meshIndex].data.vertices)
+                {
+                    assets.renderSphere(m_camera.getCameraPerspective(), v, 0.4f, color);
+                }
+            }
         }
     }
 

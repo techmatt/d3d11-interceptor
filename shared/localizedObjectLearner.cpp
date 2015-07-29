@@ -57,12 +57,14 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
 
     auto vertexValid = [](const vec3f &v)
     {
-        return (v.x != 0.0f);
+        return (v.x == v.x && v.x != 0.0f);
     };
     
-    //const vec3f color = colorMap.getColor(data.signature);
-    const vec3f color(1.0f, 1.0f, 1.0f);
-
+    vec3f color(1.0f, 1.0f, 1.0f);
+    
+    if (!useSignatureCorrespondenceDebugColoring)
+        color = colorMap.getColor(data.signature);
+    
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {
         const vec3f &v0 = vertices[triIndex + 0].worldPos;
@@ -73,7 +75,8 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
         int i1 = indices[triIndex + 1];
         int i2 = indices[triIndex + 2];
 
-        if (i1 == i0 + 1 && i2 == i0 + 2 && vertexValid(v0) && vertexValid(v1) && vertexValid(v2))
+        //i1 == i0 + 1 && i2 == i0 + 2 && 
+        if (vertexValid(v0) && vertexValid(v1) && vertexValid(v2) && math::abs(i0 - i1) <= 3 && math::abs(i0 - i2) <= 3)
         {
             vec3f normal = math::triangleNormal(v0, v1, v2);
 
@@ -84,7 +87,6 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
             normal = normal;
 
             float shading = max(max(normal.x, normal.y), normal.z) * 1.25f;
-            //vec3f triColor = normal.getNormalized() * 0.5f + vec3f(0.5f);
             vec3f triColor = color * shading;
 
             for (int vIndex = 0; vIndex < 3; vIndex++)

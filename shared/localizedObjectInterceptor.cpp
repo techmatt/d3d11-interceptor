@@ -168,7 +168,7 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
         result.vertices[i] = vec3f(nan, nan, nan);
 
     const int indexSkip = computeIndexSkip(assets, params, buffers);
-
+    
     int vertexStoreIndex = 0;
     const int vertexStoreStride = max(1, ((int)params.IndexCount - indexSkip) / LocalizedObjectData::vertexStoreCount);
     int vertexStoreRemaining = 0;
@@ -190,18 +190,16 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
         const int curIndex = indexDataStart[indexIndex] + params.BaseVertexLocation;
         const BYTE *curVertex = (vertexData + (buffers.vertex.stride * curIndex));
 
-        if (buffers.vertex.buffer->data.size() < buffers.vertex.stride * (curIndex + 1))
-        {
-            continue;
-        }
-
         bool valid = (prevIndex == -999 || curIndex == prevIndex + 1);
         if (valid)
         {
+            if (buffers.vertex.buffer->data.size() < buffers.vertex.stride * (curIndex + 1))
+            {
+                continue;
+            }
+
             const int pOffset = assets.activeVertexLayout->positionOffset;
             const int bOffset = assets.activeVertexLayout->blendOffset;
-
-            const float *pStart = (const float *)(curVertex + pOffset);
 
             int blendMatrixIndex = -1;
             if (bOffset != -1)
@@ -210,10 +208,11 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
                 blendMatrixIndex = blendIndices.x;
             }
 
+            const float *pStart = (const float *)(curVertex + pOffset);
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             const vec3f worldPos = assets.transformObjectToWorldGamecube(buffers.VSConstants, basePos, blendMatrixIndex);
 
-            if (worldPos.x == worldPos.x)
+            //if (worldPos.x == worldPos.x)
             {
                 bbox.include(worldPos);
                 centroidCount++;
@@ -279,8 +278,6 @@ void LocalizedObject::loadFromDraw(MyD3DAssets &assets, const GPUDrawBuffers &bu
             const int pOffset = assets.activeVertexLayout->positionOffset;
             const int bOffset = assets.activeVertexLayout->blendOffset;
 
-            const float *pStart = (const float *)(curVertex + pOffset);
-
             int blendMatrixIndex = -1;
             if (bOffset != -1)
             {
@@ -288,6 +285,7 @@ void LocalizedObject::loadFromDraw(MyD3DAssets &assets, const GPUDrawBuffers &bu
                 blendMatrixIndex = blendIndices.x;
             }
 
+            const float *pStart = (const float *)(curVertex + pOffset);
             const vec3f basePos(pStart[0], pStart[1], pStart[2]);
             localizedVertex.worldPos = assets.transformObjectToWorldGamecube(buffers.VSConstants, basePos, blendMatrixIndex);
 
