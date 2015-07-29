@@ -5,7 +5,7 @@ struct FrameObjectData
     map<UINT64, const LocalizedObjectData*> makeUniqueSignatureMap() const
     {
         map<UINT64, const LocalizedObjectData*> result;
-        for (const LocalizedObjectData &o : objects)
+        for (const LocalizedObjectData &o : objectData)
         {
             if (result.count(o.signature) == 1)
                 result[o.signature] = nullptr;
@@ -17,7 +17,7 @@ struct FrameObjectData
 
     void transform(const mat4f &m)
     {
-        for (LocalizedObjectData &o : objects)
+        for (LocalizedObjectData &o : objectData)
         {
             o.centroid = m * o.centroid;
         }
@@ -30,7 +30,7 @@ struct FrameObjectData
             }
         }
     }
-    vector<LocalizedObjectData> objects;
+    vector<LocalizedObjectData> objectData;
     vector<LocalizedObject> objectMeshes;
 };
 

@@ -7,9 +7,9 @@ const float sizeThreshold = numeric_limits<float>::max();
 void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
     meshes.clear();
-    meshes.resize(frame.objects.size());
+    meshes.resize(frame.objectData.size());
     int objectIndex = 0;
-    for (auto &o : frame.objects)
+    for (auto &o : frame.objectData)
     {
         const vec3f extent = o.bbox.getExtent();
         const float maxDim = max(max(extent.x, extent.y), extent.z);
@@ -23,20 +23,27 @@ void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &fra
     }
 }
 
-void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
     meshes.clear();
-    meshes.resize(frame.objectMeshes.size());
-    for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
+    meshes.resize(frame.objectData.size());
+    int objectIndex = 0;
+    for (auto &o : frame.objectData)
     {
-        const auto &o = frame.objectMeshes[objectIndex];
-        TriMeshf mesh;
-        o.toMesh(colorMap, mesh);
-        meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+        const LocalizedObject *geometry = geoDatabase.loadGeometry(o.signature);
+        if (geometry != nullptr)
+        {
+            const auto &debugA = frame.objectMeshes[objectIndex];
+            TriMeshf mesh;
+            geometry->toMesh(colorMap, mesh);
+            mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
+            meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+        }
+        objectIndex++;
     }
 }
 
-void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
     meshes.clear();
     meshes.resize(frame.objectMeshes.size());
@@ -79,7 +86,7 @@ void Vizzer::init(ApplicationData &app)
 
     //comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
 
-    auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
+    //auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
 
     //if (alignment.size > 0)
     //    comparisonFrameB->transform(alignment.transform.getInverse());
@@ -103,26 +110,26 @@ void Vizzer::render(ApplicationData &app)
     const FrameObjectData &frame = *allFrames.frames[frameIndex];
     if (bboxMode)
     {
-        for (auto &m : curFrameBoxMeshes)
+        for (auto &m : curFrameMeshesRigidTransform)
         {
             assets.renderMesh(m, m_camera.getCameraPerspective());
         }
     }
     else
     {
-        for (int meshIndex = 0; meshIndex < curFrameMeshes.size(); meshIndex++)
+        for (int meshIndex = 0; meshIndex < curFrameMeshesFull.size(); meshIndex++)
         {
             vec3f color(1.0f, 1.0f, 1.0f);
             if (useSignatureCorrespondenceDebugColoring)
             {
-                const UINT64 signature = frame.objects[meshIndex].signature;
+                const UINT64 signature = frame.objectData[meshIndex].signature;
                 const int r = util::hash32(signature) & 255;
                 const int g = util::hash32(signature * 458 + 58) & 255;
                 const int b = util::hash32(signature * 127 + 13) & 255;
                 const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
                 color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
             }
-            assets.renderMesh(curFrameMeshes[meshIndex], m_camera.getCameraPerspective(), color);
+            assets.renderMesh(curFrameMeshesFull[meshIndex], m_camera.getCameraPerspective(), color);
 
             if (meshIndex == frameAObjectIndex)
             {
@@ -171,10 +178,10 @@ void Vizzer::render(ApplicationData &app)
     m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
     m_font.drawString(app.graphics, "Frame " + to_string(frameIndex) + " / " + to_string(allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
 
-    m_font.drawString(app.graphics, "Object count: " + to_string(frame.objects.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
 
-    m_font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objects.size()) + " sig=" + to_string(comparisonFrameA->objects[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
-    m_font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objects.size()) + " sig=" + to_string(comparisonFrameB->objects[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
+    m_font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -187,11 +194,11 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
     if (key == KEY_TAB) bboxMode = !bboxMode;
 
-    if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objects.size());
-    if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objects.size());
+    if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
+    if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());
 
-    if (key == KEY_N) frameBObjectIndex = math::mod(frameBObjectIndex - 1, comparisonFrameB->objects.size());
-    if (key == KEY_M) frameBObjectIndex = math::mod(frameBObjectIndex + 1, comparisonFrameB->objects.size());
+    if (key == KEY_N) frameBObjectIndex = math::mod(frameBObjectIndex - 1, comparisonFrameB->objectData.size());
+    if (key == KEY_M) frameBObjectIndex = math::mod(frameBObjectIndex + 1, comparisonFrameB->objectData.size());
 
     if (key == KEY_C)
     {
@@ -213,8 +220,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         }
         const FrameObjectData &frame = *allFrames.frames[frameIndex];
 
-        makeFrameMeshesBox(app, frame, curFrameBoxMeshes);
-        makeFrameMeshesFull(app, frame, curFrameMeshes);
+        makeFrameMeshesBox(app, frame, curFrameMeshesBox);
+        makeFrameMeshesFull(app, frame, curFrameMeshesFull);
+        makeFrameMeshesRigidTransform(app, frame, curFrameMeshesRigidTransform);
     }
 }
 

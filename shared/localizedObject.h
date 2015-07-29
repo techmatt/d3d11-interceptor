@@ -32,7 +32,7 @@ struct LocalizedObjectData : public BinaryDataSerialize< LocalizedObjectData >
     int getVertexCount() const
     {
         int result = vertexStoreCount;
-        while (result > 0 && vertices[result - 1].x != vertices[result - 1].x)
+        while (result > 0 && isnan(vertices[result - 1].x))
             result--;
         return result;
     }

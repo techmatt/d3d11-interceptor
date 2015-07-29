@@ -4,10 +4,12 @@
 mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const LocalizedObjectData &dest)
 {
     int vertexCount = source.getVertexCount();
+    
+    //MLIB_ASSERT_STR(vertexCount == dest.getVertexCount(), "inconsistent vertices");
 
-    MLIB_ASSERT_STR(vertexCount != dest.getVertexCount(), "inconsistent vertices");
-    MLIB_ASSERT_STR(vertexCount >= 3, "too few vertices");
-
+    if (vertexCount <= 2 || vertexCount != dest.getVertexCount())
+        return mat4f::identity();
+    
     vector<vec3f> sourcePoints(vertexCount), destPoints(vertexCount);
     for (int i = 0; i < vertexCount; i++)
     {
@@ -15,7 +17,8 @@ mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const Loc
         destPoints[i] = dest.vertices[i];
     }
 
-    mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints);
+    vec3f eigenvalues;
+    mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints, eigenvalues);
     return alignment;
 }
 
@@ -55,7 +58,7 @@ vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const F
 
     map<UINT64, const LocalizedObjectData*> destMap = dest.makeUniqueSignatureMap();
 
-    for (const LocalizedObjectData &o : source.objects)
+    for (const LocalizedObjectData &o : source.objectData)
     {
         if (destMap.count(o.signature) != 0 && destMap[o.signature] != nullptr &&
             getMaxDim(destMap[o.signature]->bbox.getExtent()) >= minObjectSize)
@@ -92,7 +95,8 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
             destPoints[i] = correspondence.dest->centroid;
         }
 
-        mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints);
+        vec3f eigenvalues;
+        mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints, eigenvalues);
         return alignment;
     };
 

@@ -50,7 +50,7 @@ struct GeometryDatabase
     {
         if (geometry.count(signature) == 0)
         {
-            const string filename = baseDir + to_string(signature);
+            const string filename = geometryDir + to_string(signature);
             const bool fileExists = util::fileExists(filename);
             geometry[signature] = GeometryDatabaseEntry(fileExists);
             if (fileExists)
@@ -59,6 +59,7 @@ struct GeometryDatabase
                 LocalizedObject *object = new LocalizedObject();
                 file >> *object;
                 file.closeStream();
+                geometry[signature].geometry = object;
             }
         }
         return geometry[signature].geometry;

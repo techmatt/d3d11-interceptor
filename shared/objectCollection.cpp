@@ -8,7 +8,7 @@ void FrameCollection::save(const string &filename) const
     file << frames.size();
     for (FrameObjectData *frame : frames)
     {
-        file << frame->objects << frame->objectMeshes;
+        file << frame->objectData << frame->objectMeshes;
     }
     file.closeStream();
 }
@@ -24,7 +24,7 @@ void FrameCollection::load(const string &filename)
     for (int i = 0; i < frameCount; i++)
     {
         FrameObjectData *frame = new FrameObjectData();
-        file >> frame->objects >> frame->objectMeshes;
+        file >> frame->objectData >> frame->objectMeshes;
         frames[i] = frame;
     }
 

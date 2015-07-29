@@ -27,8 +27,9 @@ private:
     SignatureColorMap colorMap;
     FrameCollection allFrames;
 
-    vector<D3D11TriMesh> curFrameMeshes;
-    vector<D3D11TriMesh> curFrameBoxMeshes;
+    vector<D3D11TriMesh> curFrameMeshesBox;
+    vector<D3D11TriMesh> curFrameMeshesFull;
+    vector<D3D11TriMesh> curFrameMeshesRigidTransform;
 	
     int frameAObjectIndex;
     int frameBObjectIndex;
