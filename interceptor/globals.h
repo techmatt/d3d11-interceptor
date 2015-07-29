@@ -59,7 +59,12 @@ struct Logger
 
     string logDir;
 
+    //
+    // Databases
+    //
     SignatureColorMap colorMap;
+    GeometryDatabase geoDatabase;
+
     bool capturingColorSignature;
     Bitmap preRenderImage;
     Bitmap postRenderImage;

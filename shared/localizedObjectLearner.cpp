@@ -48,12 +48,6 @@ void LocalizedObject::saveDescription(const string &filename) const
     {
         file << i << endl;
     }
-    
-    /*
-    LocalizedObjectData data;
-    vector<LocalizedObjectVertex> vertices;
-    vector<unsigned short> indices;
-    */
 }
 
 void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) const

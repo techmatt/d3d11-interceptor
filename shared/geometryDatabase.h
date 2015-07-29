@@ -15,7 +15,7 @@ struct GeometryDatabase
 {
     GeometryDatabase()
     {
-        dir = R"(C:\Code\d3d11-interceptor\Dolphin-x64\geometryDatabase)";
+        dir = R"(C:\Code\d3d11-interceptor\Dolphin-x64\geometryDatabase\)";
     }
     bool hasSignature(UINT64 signature)
     {
@@ -33,6 +33,8 @@ struct GeometryDatabase
         BinaryDataStreamFile file(filename, true);
         file << object;
         file.closeStream();
+
+        geometry[object.data.signature] = GeometryDatabaseEntry(true);
     }
 
     const LocalizedObject* loadGeometry(UINT64 signature)

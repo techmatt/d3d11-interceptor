@@ -49,6 +49,8 @@ struct LocalizedObject
     void loadFromDrawIndexed(MyD3DAssets &assets, const GPUDrawBuffers &buffers, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
     void loadFromDraw(MyD3DAssets &assets, const GPUDrawBuffers &buffers, UINT  VertexCount, UINT  StartVertexLocation);
 
+    void center();
+
     //
     // Learner functions
     //

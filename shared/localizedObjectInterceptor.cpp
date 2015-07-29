@@ -37,6 +37,19 @@ struct PixelShaderConstants
     vec4f efbscale;
 };
 
+void LocalizedObject::center()
+{
+    for (auto &v : vertices)
+    {
+        v.worldPos -= data.centroid;
+    }
+
+    for (auto &v : data.vertices)
+    {
+        v -= data.centroid;
+    }
+}
+
 int LocalizedObject::computeIndexSkip(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers)
 {
     if (buffers.vertex.buffer == nullptr || buffers.vertex.buffer == nullptr ||
@@ -225,8 +238,6 @@ void LocalizedObject::computeBoundingInfo(MyD3DAssets &assets, const DrawParamet
 
 void LocalizedObject::load(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers, bool loadVertexData)
 {
-    //signatureDebug = "init";
-
     data.drawIndex = g_logger->frameRenderIndex;
     data.signature = computeSignature(assets, params, buffers);
     computeBoundingInfo(assets, params, buffers, data);
@@ -293,10 +304,12 @@ void LocalizedObject::loadFromDrawIndexed(MyD3DAssets &assets, const GPUDrawBuff
 {
     if (buffers.vertex.buffer != nullptr && buffers.index.buffer != nullptr && assets.activeVertexLayout != nullptr && assets.activeVertexLayout->positionOffset != -1)
     {
+        const int indexSkip = computeIndexSkip(assets, DrawParameters(IndexCount, StartIndexLocation, BaseVertexLocation), buffers);
+
         const WORD *indexDataStart = (WORD *)buffers.index.buffer->data.data() + StartIndexLocation;
         const BYTE *vertexData = buffers.vertex.buffer->data.data();
 
-        for (int indexIndex = 0; indexIndex < (int)IndexCount; indexIndex++)
+        for (int indexIndex = indexSkip; indexIndex < (int)IndexCount; indexIndex++)
         {
             const int curIndex = indexDataStart[indexIndex] + BaseVertexLocation;
             const BYTE *curVertex = (vertexData + (buffers.vertex.stride * curIndex));
