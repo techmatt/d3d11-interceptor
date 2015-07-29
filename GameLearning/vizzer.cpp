@@ -4,10 +4,10 @@
 //const float sizeThreshold = 30.0f;
 const float sizeThreshold = numeric_limits<float>::max();
 
-void Vizzer::makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes, vector<D3D11TriMesh> &boxMeshes)
+void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
-    boxMeshes.clear();
-    boxMeshes.resize(frame.objects.size());
+    meshes.clear();
+    meshes.resize(frame.objects.size());
     int objectIndex = 0;
     for (auto &o : frame.objects)
     {
@@ -18,10 +18,26 @@ void Vizzer::makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame,
             continue;
         }
 
-        boxMeshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(colorMap.getColor(o.signature), 1.0f)));
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(colorMap.getColor(o.signature), 1.0f)));
         objectIndex++;
     }
+}
 
+void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+{
+    meshes.clear();
+    meshes.resize(frame.objectMeshes.size());
+    for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
+    {
+        const auto &o = frame.objectMeshes[objectIndex];
+        TriMeshf mesh;
+        o.toMesh(colorMap, mesh);
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+    }
+}
+
+void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+{
     meshes.clear();
     meshes.resize(frame.objectMeshes.size());
     for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
@@ -74,8 +90,8 @@ void Vizzer::init(ApplicationData &app)
 
     //FrameProcessing::alignAllFrames(allFrames);
 
-    makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
-    makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
+    //makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
+    //makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -197,7 +213,8 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         }
         const FrameObjectData &frame = *allFrames.frames[frameIndex];
 
-        makeFrameMeshes(app, frame, curFrameMeshes, curFrameBoxMeshes);
+        makeFrameMeshesBox(app, frame, curFrameBoxMeshes);
+        makeFrameMeshesFull(app, frame, curFrameMeshes);
     }
 }
 

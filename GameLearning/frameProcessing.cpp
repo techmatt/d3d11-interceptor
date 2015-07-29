@@ -1,6 +1,24 @@
 
 #include "main.h"
 
+mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const LocalizedObjectData &dest)
+{
+    int vertexCount = source.getVertexCount();
+
+    MLIB_ASSERT_STR(vertexCount != dest.getVertexCount(), "inconsistent vertices");
+    MLIB_ASSERT_STR(vertexCount >= 3, "too few vertices");
+
+    vector<vec3f> sourcePoints(vertexCount), destPoints(vertexCount);
+    for (int i = 0; i < vertexCount; i++)
+    {
+        sourcePoints[i] = source.vertices[i];
+        destPoints[i] = dest.vertices[i];
+    }
+
+    mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints);
+    return alignment;
+}
+
 void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 {
     ofstream file("alignment.txt");
@@ -73,10 +91,6 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
             sourcePoints[i] = correspondence.source->centroid;
             destPoints[i] = correspondence.dest->centroid;
         }
-
-        mat3f m(sourcePoints[0], sourcePoints[1], sourcePoints[2]);
-        mat3f m2 = m.getTranspose() * m;
-        auto system = m2.eigenSystem();
 
         mat4f alignment = EigenWrapperf::kabsch(sourcePoints, destPoints);
         return alignment;

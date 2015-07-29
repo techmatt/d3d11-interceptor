@@ -36,12 +36,12 @@
     <ClInclude Include="frameProcessing.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\geometryDatabase.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="winMain.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\shared\objectCollection.cpp">
@@ -58,6 +58,12 @@
     </ClCompile>
     <ClCompile Include="frameProcessing.cpp">
       <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\geometryDatabase.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

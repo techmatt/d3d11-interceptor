@@ -29,6 +29,14 @@ struct LocalizedObjectData : public BinaryDataSerialize< LocalizedObjectData >
 {
     static const int vertexStoreCount = 6;
 
+    int getVertexCount() const
+    {
+        int result = vertexStoreCount;
+        while (result > 0 && vertices[result - 1].x != vertices[result - 1].x)
+            result--;
+        return result;
+    }
+
     int drawIndex;
     UINT64 signature;
     vec3f centroid;

@@ -17,10 +17,13 @@ public:
 	void resize(ApplicationData &app);
 
 private:
-    void makeFrameMeshes(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes, vector<D3D11TriMesh> &boxMeshes);
+    void makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes);
+    void makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes);
+    void makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes);
 
     D3D11AssetRenderer assets;
 
+    GeometryDatabase geoDatabase;
     SignatureColorMap colorMap;
     FrameCollection allFrames;
 

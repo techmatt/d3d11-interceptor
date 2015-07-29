@@ -15,11 +15,14 @@ __declspec(dllimport) HRESULT WINAPI myD3D11CreateDevice(IDXGIAdapter* p0, D3D_D
 using namespace ml;
 using namespace std;
 
+typedef ColorImageR8G8B8A8 Bitmap;
+
 const bool useSignatureCorrespondenceDebugColoring = false;
 
 #include "../shared/localizedObject.h"
 #include "../shared/objectCollection.h"
 #include "../shared/signatureColorMap.h"
+#include "../shared/geometryDatabase.h"
 
 #include "frameProcessing.h"
 
