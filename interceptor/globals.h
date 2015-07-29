@@ -34,7 +34,7 @@ struct Logger
     }
 
     void recordSignatureColorPreDraw(MyD3DAssets &assets, const DrawParameters &params);
-    void recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params);
+    void recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers);
     void recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params);
     void beginFrameCapture();
     void endFrameCapture();

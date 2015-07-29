@@ -19,15 +19,15 @@ void Logger::recordSignatureColorPreDraw(MyD3DAssets &assets, const DrawParamete
         return;
     }
 
-    auto result = g_logger->colorMap.colors.find(params.signature);
-    if (result == g_logger->colorMap.colors.end() || result->second.pixelCount <= 4)
+    auto result = colorMap.colors.find(params.signature);
+    if (result == colorMap.colors.end() || result->second.pixelCount <= 4)
     {
         capturingColorSignature = true;
         assets.context->readRenderTarget(preRenderImage);
     }
 }
 
-void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params)
+void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParameters &params, const GPUDrawBuffers &buffers)
 {
     if (!capturingColorSignature)
     {
@@ -47,8 +47,26 @@ void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParamet
         }
     }
 
-    g_logger->newSignaturesThisFrame++;
+    newSignaturesThisFrame++;
     colorMap.record(params.signature, diffCount == 0 ? vec3f::origin : diffSum / (float)diffCount, diffCount);
+
+    if (!geoDatabase.hasSignature(params.signature))
+    {
+        LocalizedObject object;
+        object.load(assets, params, buffers, true);
+        object.center();
+        if (object.data.signature != params.signature) logErrorFile << "inconsistent signatures" << endl;
+
+        Bitmap diffImage = postRenderImage;
+        for (auto &p : diffImage)
+        {
+            if (p.value == preRenderImage(p.x, p.y))
+            {
+                p.value = vec4uc(0, 0, 0, 255);
+            }
+        }
+        geoDatabase.record(object, diffImage);
+    }
 }
 
 void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)

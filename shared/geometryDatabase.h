@@ -15,24 +15,33 @@ struct GeometryDatabase
 {
     GeometryDatabase()
     {
-        dir = R"(C:\Code\d3d11-interceptor\Dolphin-x64\geometryDatabase\)";
+        baseDir = R"(C:\Code\d3d11-interceptor\Dolphin-x64\geometryDatabase\)";
+        geometryDir = baseDir + "geometry/";
+        imagesDir = baseDir + "images/";
+        util::makeDirectory(baseDir);
+        util::makeDirectory(geometryDir);
+        util::makeDirectory(imagesDir);
     }
     bool hasSignature(UINT64 signature)
     {
         if (geometry.count(signature) == 0)
         {
-            const bool fileExists = util::fileExists(dir + to_string(signature));
+            const bool fileExists = util::fileExists(geometryDir + to_string(signature));
             geometry[signature] = GeometryDatabaseEntry(fileExists);
         }
         return geometry.find(signature)->second.fileExists;
     }
 
-    void record(const LocalizedObject &object)
+    void record(const LocalizedObject &object, const Bitmap &image)
     {
-        const string filename = dir + to_string(object.data.signature);
-        BinaryDataStreamFile file(filename, true);
+        const string geometryFilename = geometryDir + to_string(object.data.signature);
+        const string imageFilename = imagesDir + to_string(object.data.signature) + ".png";
+
+        BinaryDataStreamFile file(geometryFilename, true);
         file << object;
         file.closeStream();
+
+        LodePNG::save(image, imageFilename);
 
         geometry[object.data.signature] = GeometryDatabaseEntry(true);
     }
@@ -41,7 +50,7 @@ struct GeometryDatabase
     {
         if (geometry.count(signature) == 0)
         {
-            const string filename = dir + to_string(signature);
+            const string filename = baseDir + to_string(signature);
             const bool fileExists = util::fileExists(filename);
             geometry[signature] = GeometryDatabaseEntry(fileExists);
             if (fileExists)
@@ -55,6 +64,6 @@ struct GeometryDatabase
         return geometry[signature].geometry;
     }
 
-    string dir;
+    string baseDir, geometryDir, imagesDir;
     map<UINT64, GeometryDatabaseEntry> geometry;
 };

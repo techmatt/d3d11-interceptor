@@ -104,7 +104,7 @@ void Vizzer::render(ApplicationData &app)
                 const int g = util::hash32(signature * 458 + 58) & 255;
                 const int b = util::hash32(signature * 127 + 13) & 255;
                 const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
-                const vec3f color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
+                color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
             }
             assets.renderMesh(curFrameMeshes[meshIndex], m_camera.getCameraPerspective(), color);
 

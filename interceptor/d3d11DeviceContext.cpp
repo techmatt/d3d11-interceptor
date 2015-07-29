@@ -207,15 +207,6 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
         data.drawIndex = g_logger->frameRenderIndex;
         g_logger->curFrame->objects.push_back(data);
 
-        if (!g_logger->geoDatabase.hasSignature(params.signature))
-        {
-            LocalizedObject object;
-            object.load(*assets, params, buffers, true);
-            object.center();
-            if (object.data.signature != params.signature) g_logger->logErrorFile << "inconsistent signatures" << endl;
-            g_logger->geoDatabase.record(object);
-        }
-
         if (keyFrameCaptureRate != 0 && g_logger->frameIndex % keyFrameCaptureRate == 0)
         {
             LocalizedObject object;
@@ -228,7 +219,7 @@ void myD3D11DeviceContext::DrawIndexed(UINT  IndexCount, UINT  StartIndexLocatio
 
     if (params.signature != 0)
     {
-        g_logger->recordSignatureColorPostDraw(*assets, params);
+        g_logger->recordSignatureColorPostDraw(*assets, params, buffers);
     }
 
     const bool reportAIRender = g_logger->capturingFrame;
