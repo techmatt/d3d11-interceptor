@@ -13,6 +13,9 @@
     <Filter Include="Learning">
       <UniqueIdentifier>{13827184-1dda-49a8-ac44-01919881e9db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Logs">
+      <UniqueIdentifier>{5c134983-4148-4d73-b439-77f41e3e7cde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -38,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="..\shared\geometryDatabase.h">
       <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="segmentAnalyzer.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
+    <ClInclude Include="appState.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -65,11 +74,25 @@
     <ClCompile Include="main.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="segmentAnalyzer.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="clusters.txt" />
-    <Text Include="alignment.txt" />
-    <Text Include="objA.txt" />
-    <Text Include="objB.txt" />
+    <Text Include="clusters.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="alignment.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="objA.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="objB.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="segments.txt">
+      <Filter>Logs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

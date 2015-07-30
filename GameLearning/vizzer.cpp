@@ -18,7 +18,7 @@ void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &fra
             continue;
         }
 
-        meshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(colorMap.getColor(o.signature), 1.0f)));
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(state.colorMap.getColor(o.signature), 1.0f)));
         objectIndex++;
     }
 }
@@ -30,11 +30,11 @@ void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObje
     int objectIndex = 0;
     for (auto &o : frame.objectData)
     {
-        const LocalizedObject *geometry = geoDatabase.loadGeometry(o.signature);
+        const LocalizedObject *geometry = state.geoDatabase.loadGeometry(o.signature);
         if (geometry != nullptr)
         {
             TriMeshf mesh;
-            geometry->toMesh(colorMap, mesh);
+            geometry->toMesh(state.colorMap, mesh);
             mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
             meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
         }
@@ -50,7 +50,7 @@ void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &fr
     {
         const auto &o = frame.objectMeshes[objectIndex];
         TriMeshf mesh;
-        o.toMesh(colorMap, mesh);
+        o.toMesh(state.colorMap, mesh);
         meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
     }
 }
@@ -59,29 +59,20 @@ void Vizzer::init(ApplicationData &app)
 {	
     const string shaderDir = "../../frameworkD3D11/shaders/";
     
-    assets.init(app.graphics);
+    state.assets.init(app.graphics);
 
     vec3f eye(1.0f, 1.0f, 4.5f);
     vec3f worldUp(0.0f, 1.0f, 0.0f);
-    m_camera = Cameraf(-eye, worldUp, vec3f::origin, 60.0f, (float)app.window.getWidth() / app.window.getHeight(), 0.01f, 10000.0f, true);
+    state.camera = Cameraf(-eye, worldUp, vec3f::origin, 60.0f, (float)app.window.getWidth() / app.window.getHeight(), 0.01f, 10000.0f, true);
 
-    m_font.init(app.graphics, "Calibri");
+    font.init(app.graphics, "Calibri");
 
-    m_world = mat4f::identity();
+    state.ui.init("GameLearningUI.exe", "GameLearningUI");
 
     //singleCaptureObjects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
-    allFrames.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\allFrames.dat)");
+    state.allFrames.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\allFrames.dat)");
 
-    colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
-
-    frameIndex = 0;
-
-    bboxMode = false;
-
-    frameAObjectIndex = 0;
-    frameBObjectIndex = 0;
-    comparisonFrameA = allFrames.frames[115];
-    comparisonFrameB = allFrames.frames[116];
+    state.colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
 
     //comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
 
@@ -94,32 +85,41 @@ void Vizzer::init(ApplicationData &app)
 
     //correspondences = FrameProcessing::getCorrespondences(*comparisonFrameA, *comparisonFrameB);
 
-    FrameProcessing::alignAllFrames(allFrames);
+    FrameProcessing::alignAllFrames(state.allFrames);
+
+    state.analyzer.analyze(state.allFrames);
+    state.analyzer.dump("segments.txt");
 
     //makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     //makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
+
+    registerEventHandlers(app);
+}
+
+void Vizzer::registerEventHandlers(ApplicationData& app)
+{
+
 }
 
 void Vizzer::render(ApplicationData &app)
 {
-    m_timer.frame();
+    timer.frame();
 
-    m_world = m_world * mat4f::rotationZ(1.0f);
+    const FrameObjectData &frame = *state.allFrames.frames[state.curFrameIndex];
 
-    const FrameObjectData &frame = *allFrames.frames[frameIndex];
-    if (bboxMode)
+    if (state.showBBoxes)
     {
-        for (auto &m : curFrameMeshesRigidTransform)
+        for (auto &m : state.curFrameMeshesRigidTransform)
         {
-            assets.renderMesh(m, m_camera.getCameraPerspective());
+            state.assets.renderMesh(m, state.camera.getCameraPerspective());
         }
     }
-    else
+    else if (state.showFullMesh)
     {
-        for (int meshIndex = 0; meshIndex < curFrameMeshesFull.size(); meshIndex++)
+        for (int meshIndex = 0; meshIndex < state.curFrameMeshesFull.size(); meshIndex++)
         {
             vec3f color(1.0f, 1.0f, 1.0f);
-            if (useSignatureCorrespondenceDebugColoring)
+            /*if (useSignatureCorrespondenceDebugColoring)
             {
                 const UINT64 signature = frame.objectData[meshIndex].signature;
                 const int r = util::hash32(signature) & 255;
@@ -127,17 +127,17 @@ void Vizzer::render(ApplicationData &app)
                 const int b = util::hash32(signature * 127 + 13) & 255;
                 const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
                 color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
-            }
-            assets.renderMesh(curFrameMeshesFull[meshIndex], m_camera.getCameraPerspective(), color);
+            }*/
+            state.assets.renderMesh(state.curFrameMeshesFull[meshIndex], state.camera.getCameraPerspective(), color);
 
-            if (meshIndex == frameAObjectIndex)
+            /*if (meshIndex == frameAObjectIndex)
             {
                 const auto &v0 = frame.objectMeshes[meshIndex];
                 for (const vec3f &v : frame.objectMeshes[meshIndex].data.vertices)
                 {
-                    assets.renderSphere(m_camera.getCameraPerspective(), v, 0.4f, color);
+                    assets.renderSphere(state.camera.getCameraPerspective(), v, 0.4f, color);
                 }
-            }
+            }*/
         }
     }
 
@@ -152,7 +152,7 @@ void Vizzer::render(ApplicationData &app)
         if (meshIndex == frameAObjectIndex)
             color = vec3f(0.0f, 1.0f, 0.0f);
 
-        assets.renderMesh(m, m_camera.getCameraPerspective(), color);
+        assets.renderMesh(m, state.camera.getCameraPerspective(), color);
     }
 
     for (int meshIndex = 0; meshIndex < comparisonMeshesB.size(); meshIndex++)
@@ -163,37 +163,37 @@ void Vizzer::render(ApplicationData &app)
             color = vec3f(0.0f, 0.0f, 1.0f);
         if (meshIndex == frameBObjectIndex)
             color = vec3f(0.0f, 0.75f, 0.0f);
-        assets.renderMesh(m, m_camera.getCameraPerspective(), color);
+        assets.renderMesh(m, state.camera.getCameraPerspective(), color);
     }*/
 
     /*for (auto &c : correspondences)
     {
         const vec3f color = vec3f(0.8f, 0.8f, 0.8f);
-        assets.renderSphere(m_camera.getCameraPerspective(), c.source->centroid, 2.0f, color);
-        assets.renderSphere(m_camera.getCameraPerspective(), c.dest->centroid, 2.0f, color);
-        assets.renderCylinder(m_camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
+        assets.renderSphere(state.camera.getCameraPerspective(), c.source->centroid, 2.0f, color);
+        assets.renderSphere(state.camera.getCameraPerspective(), c.dest->centroid, 2.0f, color);
+        assets.renderCylinder(state.camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
     }*/
 
-    m_font.drawString(app.graphics, "FPS: " + convert::toString(m_timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
-    m_font.drawString(app.graphics, "Frame " + to_string(frameIndex) + " / " + to_string(allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(state.allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
 
-    m_font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
 
-    m_font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
-    m_font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
+    //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
+    //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
 }
 
 void Vizzer::resize(ApplicationData &app)
 {
-    m_camera.updateAspectRatio((float)app.window.getWidth() / app.window.getHeight());
+    state.camera.updateAspectRatio((float)app.window.getWidth() / app.window.getHeight());
 }
 
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
-    if (key == KEY_TAB) bboxMode = !bboxMode;
+    if (key == KEY_TAB) state.showFullMesh = !state.showFullMesh;
 
-    if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
+    /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());
 
     if (key == KEY_N) frameBObjectIndex = math::mod(frameBObjectIndex - 1, comparisonFrameB->objectData.size());
@@ -203,7 +203,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     {
         comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("objA.txt");
         comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("objB.txt");
-    }
+    }*/
 
     int frameDelta = 0;
     if (key == KEY_O) frameDelta = -1;
@@ -211,17 +211,17 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (frameDelta != 0)
     {
-        frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+        state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, state.allFrames.frames.size());
         if (GetAsyncKeyState(VK_SHIFT))
         {
-            while (allFrames.frames[frameIndex]->objectMeshes.size() == 0)
-                frameIndex = math::mod(frameIndex + frameDelta, allFrames.frames.size());
+            while (state.allFrames.frames[state.curFrameIndex]->objectMeshes.size() == 0)
+                state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, state.allFrames.frames.size());
         }
-        const FrameObjectData &frame = *allFrames.frames[frameIndex];
+        const FrameObjectData &frame = *state.allFrames.frames[state.curFrameIndex];
 
-        makeFrameMeshesBox(app, frame, curFrameMeshesBox);
-        makeFrameMeshesFull(app, frame, curFrameMeshesFull);
-        makeFrameMeshesRigidTransform(app, frame, curFrameMeshesRigidTransform);
+        makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
+        makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
+        makeFrameMeshesRigidTransform(app, frame, state.curFrameMeshesRigidTransform);
     }
 }
 
@@ -230,17 +230,17 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
     const float distance = 1.0f;
     const float theta = 5.0f;
 
-    if(key == KEY_S) m_camera.move(-distance);
-    if(key == KEY_W) m_camera.move(distance);
-    if(key == KEY_A) m_camera.strafe(-distance);
-    if(key == KEY_D) m_camera.strafe(distance);
-	if(key == KEY_E) m_camera.jump(distance);
-	if(key == KEY_Q) m_camera.jump(-distance);
+    if(key == KEY_S) state.camera.move(-distance);
+    if(key == KEY_W) state.camera.move(distance);
+    if(key == KEY_A) state.camera.strafe(-distance);
+    if(key == KEY_D) state.camera.strafe(distance);
+	if(key == KEY_E) state.camera.jump(distance);
+	if(key == KEY_Q) state.camera.jump(-distance);
 
-    if(key == KEY_UP) m_camera.lookUp(theta);
-    if(key == KEY_DOWN) m_camera.lookUp(-theta);
-    if(key == KEY_LEFT) m_camera.lookRight(theta);
-    if(key == KEY_RIGHT) m_camera.lookRight(-theta);
+    if(key == KEY_UP) state.camera.lookUp(theta);
+    if(key == KEY_DOWN) state.camera.lookUp(-theta);
+    if(key == KEY_LEFT) state.camera.lookRight(theta);
+    if(key == KEY_RIGHT) state.camera.lookRight(-theta);
 }
 
 void Vizzer::mouseDown(ApplicationData &app, MouseButtonType button)
@@ -251,7 +251,7 @@ void Vizzer::mouseDown(ApplicationData &app, MouseButtonType button)
 void Vizzer::mouseWheel(ApplicationData &app, int wheelDelta)
 {
     const float distance = 0.1f;
-    m_camera.move(distance * wheelDelta);
+    state.camera.move(distance * wheelDelta);
 }
 
 void Vizzer::mouseMove(ApplicationData &app)
@@ -263,14 +263,14 @@ void Vizzer::mouseMove(ApplicationData &app)
 
     if(app.input.mouse.buttons[MouseButtonRight])
     {
-        m_camera.strafe(-distance * posDelta.x);
-        m_camera.jump(distance * posDelta.y);
+        state.camera.strafe(-distance * posDelta.x);
+        state.camera.jump(distance * posDelta.y);
     }
 
     if(app.input.mouse.buttons[MouseButtonLeft])
     {
-        m_camera.lookRight(-theta * posDelta.x);
-        m_camera.lookUp(theta * posDelta.y);
+        state.camera.lookRight(-theta * posDelta.x);
+        state.camera.lookUp(theta * posDelta.y);
     }
 
 }

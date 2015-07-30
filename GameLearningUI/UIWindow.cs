@@ -15,8 +15,7 @@ namespace UIWindow
 {
     public partial class UIWindow : Form
     {
-        const string pipeBaseName = "SceneAssetViewer";
-        const string resultsDir = @"V:\data\synthesis\results\";
+        const string pipeBaseName = "GameLearningUI";
 
         NamedPipeServerStream server;
         NamedPipeClientStream client;
@@ -155,6 +154,11 @@ namespace UIWindow
                 SendMessage("terminate");
                 Close();
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

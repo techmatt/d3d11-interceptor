@@ -32,6 +32,7 @@
 #include "../src/core-util/timer.cpp"
 #include "../src/core-util/pipe.cpp"
 #include "../src/core-util/UIConnection.cpp"
+#include "../src/core-util/EventMap.cpp"
 
 //
 // core-multithreading source files

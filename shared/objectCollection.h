@@ -15,6 +15,16 @@ struct FrameObjectData
         return result;
     }
 
+    map<UINT64, vector<const LocalizedObjectData*> > makeCompleteSignatureMap() const
+    {
+        map<UINT64, vector<const LocalizedObjectData*> > result;
+        for (const LocalizedObjectData &o : objectData)
+        {
+            result[o.signature].push_back(&o);
+        }
+        return result;
+    }
+
     void transform(const mat4f &m)
     {
         for (LocalizedObjectData &o : objectData)
@@ -33,6 +43,7 @@ struct FrameObjectData
             }
         }
     }
+
     vector<LocalizedObjectData> objectData;
     vector<LocalizedObject> objectMeshes;
 };

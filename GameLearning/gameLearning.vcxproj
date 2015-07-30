@@ -15,9 +15,11 @@
     <ClInclude Include="..\shared\localizedObject.h" />
     <ClInclude Include="..\shared\objectCollection.h" />
     <ClInclude Include="..\shared\signatureColorMap.h" />
+    <ClInclude Include="appState.h" />
     <ClInclude Include="frameProcessing.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
+    <ClInclude Include="segmentAnalyzer.h" />
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +33,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="mLibSource.cpp" />
+    <ClCompile Include="segmentAnalyzer.cpp" />
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +41,7 @@
     <Text Include="clusters.txt" />
     <Text Include="objA.txt" />
     <Text Include="objB.txt" />
+    <Text Include="segments.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>
@@ -72,13 +76,13 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>./;../mLib/include/;../../mLibExternal/include/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;../../mLibExternal/libsWindows/lib64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\binLearning\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>./;../mLib/include/;../../mLibExternal/include/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;../../mLibExternal/libsWindows/lib64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\binLearning\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

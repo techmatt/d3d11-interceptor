@@ -187,3 +187,15 @@
 /GameLearning/alignment.txt
 /GameLearning/objA.txt
 /GameLearning/objB.txt
+/GameLearning/segments.txt
+/binLearning/Debug/gameLearning.exe
+/binLearning/Debug/gameLearning.ilk
+/binLearning/Debug/gameLearning.pdb
+/binLearning/Debug/gameLearningUI.exe
+/binLearning/Debug/gameLearningUI.exe.config
+/binLearning/Debug/gameLearningUI.pdb
+/binLearning/Release/gameLearning.exe
+/binLearning/Release/gameLearning.pdb
+/binLearning/Release/gameLearningUI.exe
+/binLearning/Release/gameLearningUI.exe.config
+/binLearning/Release/gameLearningUI.pdb
