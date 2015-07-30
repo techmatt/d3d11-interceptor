@@ -150,6 +150,8 @@ namespace ml
 #include "core-util/UIConnection.h"
 #include "core-util/EventMap.h"
 #include "core-util/sparseGrid3.h"
+#include "core-util/undirectedGraph.h"
+#include "core-util/directedGraph.h"
 #include "core-base/binaryGrid3.h"
 #include "core-base/baseImage.h"
 

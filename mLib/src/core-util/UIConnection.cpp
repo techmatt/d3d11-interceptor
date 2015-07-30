@@ -12,7 +12,7 @@ void UIConnection::init(const std::string &executableFile, const std::string &pi
 	}
 	m_readFromUIPipe.createPipe(pipeBaseName + "ReadFromUI", false);
 	m_writeToUIPipe.connectToLocalPipe(pipeBaseName + "WriteToUI");
-    std::cout << ("UI pipes created");
+    std::cout << "UI pipes created" << std::endl;
 }
 
 void UIConnection::readMessages()

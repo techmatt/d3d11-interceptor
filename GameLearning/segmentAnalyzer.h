@@ -42,6 +42,8 @@ struct SegmentStats
 {
     SegmentStats()
     {
+        signature = (UINT64)-1;
+        characterLabel = -1;
         frameCount = 0;
     }
     bool trackableSegment() const
@@ -51,12 +53,34 @@ struct SegmentStats
             dimensions.mean() < 30.0f &&
             distMoved.mean() > 0.1f);
     }
+
+    UINT64 signature;
     int frameCount;
+    int characterLabel;
+
     StatTracker instancesPerFrame;
     StatTracker triCount;
     StatTracker dimensions;
     StatTracker distMoved;
 };
+
+struct SegmentEdge
+{
+    StatTracker cooccurenceFrequency;
+    StatTracker cooccurenceDist;
+};
+
+struct CharacterSegment
+{
+    CharacterSegment() {}
+    CharacterSegment(UINT64 _signature)
+    {
+        signature = _signature;
+    }
+    UINT64 signature;
+};
+
+typedef UndirectedGraph<SegmentStats*, SegmentEdge> SegmentGraph;
 
 struct SegmentAnalyzer
 {
@@ -64,4 +88,10 @@ struct SegmentAnalyzer
     void dump(const string &filename);
 
     map<UINT64, SegmentStats> segments;
+    SegmentGraph segmentGraph;
+    vector< vector<CharacterSegment> > characterSegments;
+
+private:
+    void makeSegmentGraph(const FrameCollection &frames);
+    void assignCharacterLabels();
 };

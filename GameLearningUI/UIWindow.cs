@@ -180,5 +180,10 @@ namespace UIWindow
         {
             SendMessage("showTrackable " + checkBoxTrackable.Checked);
         }
+
+        private void checkBoxShowCharacterSegments_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showCharacterSegments " + checkBoxShowCharacterSegments.Checked);
+        }
     }
 }

@@ -4,10 +4,12 @@ struct AppState
     AppState()
     {
         curFrameIndex = 0;
+        curCharacterIndex = 0;
         showBBoxes = false;
         showFullMesh = false;
         showSelectionOnly = false;
         showTrackable = false;
+        showCharacterSegments = false;
         selectedSignature = (UINT64)-1;
     }
 
@@ -27,6 +29,7 @@ struct AppState
     SegmentAnalyzer analyzer;
 
     int curFrameIndex;
+    int curCharacterIndex;
 
     Cameraf camera;
 
@@ -36,4 +39,5 @@ struct AppState
     bool showFullMesh;
     bool showSelectionOnly;
     bool showTrackable;
+    bool showCharacterSegments;
 };

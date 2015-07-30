@@ -63,7 +63,10 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
     vec3f color(1.0f, 1.0f, 1.0f);
     
     if (!useSignatureCorrespondenceDebugColoring)
+    {
         color = colorMap.getColor(data.signature);
+        color += vec3f(0.2f, 0.2f, 0.2f);
+    }
     
     for (int triIndex = 0; triIndex < vertices.size() - 2; triIndex++)
     {

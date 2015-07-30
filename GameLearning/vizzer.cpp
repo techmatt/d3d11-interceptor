@@ -116,6 +116,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("showTrackable", [&](const vector<string> &params) {
         state.showTrackable = ml::util::convertTo<bool>(params[1]);
     });
+    state.eventMap.registerEvent("showCharacterSegments", [&](const vector<string> &params) {
+        state.showCharacterSegments = ml::util::convertTo<bool>(params[1]);
+    });
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -140,6 +143,7 @@ void Vizzer::render(ApplicationData &app)
     for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
     {
         const UINT64 signature = frame.objectData[meshIndex].signature;
+        const SegmentStats &segmentInfo = state.analyzer.segments[signature];
         vec3f color(1.0f, 1.0f, 1.0f);
         /*if (useSignatureCorrespondenceDebugColoring)
         {
@@ -151,15 +155,29 @@ void Vizzer::render(ApplicationData &app)
             color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
         }*/
         if (state.showTrackable)
-            if (state.analyzer.segments[signature].trackableSegment())
-                color = vec3f(0.5f, 0.5f, 1.0f);
+            if (segmentInfo.trackableSegment())
+                color = vec3f(0.3f, 0.3f, 1.3f);
             else
-                color = vec3f(1.0f, 0.5f, 0.5f);
+                color = vec3f(1.3f, 0.3f, 0.3f);
 
         if (signature == state.selectedSignature)
             color = vec3f(1.0f, 0.0f, 1.0f);
 
-        if (!state.showSelectionOnly || signature == state.selectedSignature)
+        bool selectedCharacter = false;
+        if (state.showCharacterSegments)
+        {
+            if (segmentInfo.characterLabel == state.curCharacterIndex)
+            {
+                selectedCharacter = true;
+                color = vec3f(0.3f, 0.3f, 1.3f);
+            }
+            else if (segmentInfo.characterLabel == -1)
+                color = vec3f(0.5f, 0.5f, 0.5f);
+            else
+                color = vec3f(1.3f, 0.3f, 0.3f);
+        }
+
+        if (!state.showSelectionOnly || signature == state.selectedSignature || selectedCharacter)
             state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective(), color);
 
         /*if (meshIndex == frameAObjectIndex)
@@ -210,6 +228,7 @@ void Vizzer::render(ApplicationData &app)
     font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(state.allFrames.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
 
     //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
     //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
@@ -223,6 +242,10 @@ void Vizzer::resize(ApplicationData &app)
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
+
+    if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
+    if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
+    
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());

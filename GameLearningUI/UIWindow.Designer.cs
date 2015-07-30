@@ -39,6 +39,7 @@
             this.checkBoxShowFullMesh = new System.Windows.Forms.CheckBox();
             this.checkBoxSelectionOnly = new System.Windows.Forms.CheckBox();
             this.checkBoxTrackable = new System.Windows.Forms.CheckBox();
+            this.checkBoxShowCharacterSegments = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // timerProcessMessages
@@ -128,12 +129,24 @@
             this.checkBoxTrackable.UseVisualStyleBackColor = true;
             this.checkBoxTrackable.CheckedChanged += new System.EventHandler(this.checkBoxTrackable_CheckedChanged);
             // 
+            // checkBoxShowCharacterSegments
+            // 
+            this.checkBoxShowCharacterSegments.AutoSize = true;
+            this.checkBoxShowCharacterSegments.Location = new System.Drawing.Point(12, 69);
+            this.checkBoxShowCharacterSegments.Name = "checkBoxShowCharacterSegments";
+            this.checkBoxShowCharacterSegments.Size = new System.Drawing.Size(134, 19);
+            this.checkBoxShowCharacterSegments.TabIndex = 3;
+            this.checkBoxShowCharacterSegments.Text = "Character segments";
+            this.checkBoxShowCharacterSegments.UseVisualStyleBackColor = true;
+            this.checkBoxShowCharacterSegments.CheckedChanged += new System.EventHandler(this.checkBoxShowCharacterSegments_CheckedChanged);
+            // 
             // UIWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 382);
             this.Controls.Add(this.checkBoxSelectionOnly);
+            this.Controls.Add(this.checkBoxShowCharacterSegments);
             this.Controls.Add(this.checkBoxTrackable);
             this.Controls.Add(this.checkBoxShowFullMesh);
             this.Controls.Add(this.checkBoxShowBoxes);
@@ -166,6 +179,7 @@
         private System.Windows.Forms.CheckBox checkBoxShowFullMesh;
         private System.Windows.Forms.CheckBox checkBoxSelectionOnly;
         private System.Windows.Forms.CheckBox checkBoxTrackable;
+        private System.Windows.Forms.CheckBox checkBoxShowCharacterSegments;
     }
 }
 
