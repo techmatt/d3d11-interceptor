@@ -6,6 +6,9 @@ struct AppState
         curFrameIndex = 0;
         showBBoxes = false;
         showFullMesh = false;
+        showSelectionOnly = false;
+        showTrackable = false;
+        selectedSignature = (UINT64)-1;
     }
 
     UIConnection ui;
@@ -27,6 +30,10 @@ struct AppState
 
     Cameraf camera;
 
+    UINT64 selectedSignature;
+
     bool showBBoxes;
     bool showFullMesh;
+    bool showSelectionOnly;
+    bool showTrackable;
 };

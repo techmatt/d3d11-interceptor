@@ -98,47 +98,78 @@ void Vizzer::init(ApplicationData &app)
 
 void Vizzer::registerEventHandlers(ApplicationData& app)
 {
-
+    state.eventMap.registerEvent("terminate", [&](const vector<string> &params) {
+        PostQuitMessage(0);
+    });
+    state.eventMap.registerEvent("loadSignature", [&](const vector<string> &params) {
+        state.selectedSignature = util::convertTo<UINT64>(params[1]);
+    });
+    state.eventMap.registerEvent("showBBoxes", [&](const vector<string> &params) {
+        state.showBBoxes = ml::util::convertTo<bool>(params[1]);
+    });
+    state.eventMap.registerEvent("showFullMesh", [&](const vector<string> &params) {
+        state.showFullMesh = ml::util::convertTo<bool>(params[1]);
+    });
+    state.eventMap.registerEvent("showSelectionOnly", [&](const vector<string> &params) {
+        state.showSelectionOnly = ml::util::convertTo<bool>(params[1]);
+    });
+    state.eventMap.registerEvent("showTrackable", [&](const vector<string> &params) {
+        state.showTrackable = ml::util::convertTo<bool>(params[1]);
+    });
 }
 
 void Vizzer::render(ApplicationData &app)
 {
     timer.frame();
 
+    state.eventMap.dispatchEvents(state.ui);
+
     const FrameObjectData &frame = *state.allFrames.frames[state.curFrameIndex];
 
+    vector<D3D11TriMesh> *meshesPtr = &state.curFrameMeshesRigidTransform;
     if (state.showBBoxes)
     {
-        for (auto &m : state.curFrameMeshesRigidTransform)
-        {
-            state.assets.renderMesh(m, state.camera.getCameraPerspective());
-        }
+        meshesPtr = &state.curFrameMeshesBox;
     }
-    else if (state.showFullMesh)
+    if (state.showFullMesh)
     {
-        for (int meshIndex = 0; meshIndex < state.curFrameMeshesFull.size(); meshIndex++)
-        {
-            vec3f color(1.0f, 1.0f, 1.0f);
-            /*if (useSignatureCorrespondenceDebugColoring)
-            {
-                const UINT64 signature = frame.objectData[meshIndex].signature;
-                const int r = util::hash32(signature) & 255;
-                const int g = util::hash32(signature * 458 + 58) & 255;
-                const int b = util::hash32(signature * 127 + 13) & 255;
-                const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
-                color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
-            }*/
-            state.assets.renderMesh(state.curFrameMeshesFull[meshIndex], state.camera.getCameraPerspective(), color);
+        meshesPtr = &state.curFrameMeshesFull;
+    }
+    auto &meshes = *meshesPtr;
 
-            /*if (meshIndex == frameAObjectIndex)
+    for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
+    {
+        const UINT64 signature = frame.objectData[meshIndex].signature;
+        vec3f color(1.0f, 1.0f, 1.0f);
+        /*if (useSignatureCorrespondenceDebugColoring)
+        {
+                
+            const int r = util::hash32(signature) & 255;
+            const int g = util::hash32(signature * 458 + 58) & 255;
+            const int b = util::hash32(signature * 127 + 13) & 255;
+            const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
+            color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
+        }*/
+        if (state.showTrackable)
+            if (state.analyzer.segments[signature].trackableSegment())
+                color = vec3f(0.5f, 0.5f, 1.0f);
+            else
+                color = vec3f(1.0f, 0.5f, 0.5f);
+
+        if (signature == state.selectedSignature)
+            color = vec3f(1.0f, 0.0f, 1.0f);
+
+        if (!state.showSelectionOnly || signature == state.selectedSignature)
+            state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective(), color);
+
+        /*if (meshIndex == frameAObjectIndex)
+        {
+            const auto &v0 = frame.objectMeshes[meshIndex];
+            for (const vec3f &v : frame.objectMeshes[meshIndex].data.vertices)
             {
-                const auto &v0 = frame.objectMeshes[meshIndex];
-                for (const vec3f &v : frame.objectMeshes[meshIndex].data.vertices)
-                {
-                    assets.renderSphere(state.camera.getCameraPerspective(), v, 0.4f, color);
-                }
-            }*/
-        }
+                assets.renderSphere(state.camera.getCameraPerspective(), v, 0.4f, color);
+            }
+        }*/
     }
 
     /*const UINT64 targetSignature = comparisonFrameA->objects[frameAObjectIndex].signature;
@@ -174,10 +205,11 @@ void Vizzer::render(ApplicationData &app)
         assets.renderCylinder(state.camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
     }*/
 
-    font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(state.allFrames.frames.size()), vec2i(10, 30), 24.0f, RGBColor::Red);
-
-    font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 55), 24.0f, RGBColor::Red);
+    int y = 0;
+    font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(state.allFrames.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
 
     //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
     //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
@@ -191,7 +223,6 @@ void Vizzer::resize(ApplicationData &app)
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
-    if (key == KEY_TAB) state.showFullMesh = !state.showFullMesh;
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());

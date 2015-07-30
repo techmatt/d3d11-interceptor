@@ -156,9 +156,29 @@ namespace UIWindow
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonLoadSignature_Click(object sender, EventArgs e)
         {
+            SendMessage("loadSignature " + textBoxSignature.Text);
+        }
 
+        private void checkBoxShowBoxes_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showBBoxes " + checkBoxShowBoxes.Checked);
+        }
+
+        private void checkBoxShowFullMesh_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showFullMesh " + checkBoxShowFullMesh.Checked);
+        }
+
+        private void checkBoxSelectionOnly_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showSelectionOnly " + checkBoxSelectionOnly.Checked);
+        }
+
+        private void checkBoxTrackable_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showTrackable " + checkBoxTrackable.Checked);
         }
     }
 }

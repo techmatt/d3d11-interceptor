@@ -25,6 +25,9 @@ namespace convert {
 	inline unsigned int toUInt(const std::string& s) {
 		return (unsigned int)toInt(s);
 	}
+    inline UINT64 toUInt64(const std::string& s) {
+        return std::stoull(s);
+    }
 	inline double toDouble(const std::string& s) {
 		return std::stod(s);
 	}
@@ -88,6 +91,9 @@ namespace convert {
 	template<>  inline void to<unsigned int>(const std::string& s, unsigned int& res) {
 		res = toUInt(s);
 	}
+    template<>  inline void to<UINT64>(const std::string& s, UINT64& res) {
+        res = toUInt64(s);
+    }
 	template<>  inline void to<double>(const std::string& s, double& res) {
 		res = toDouble(s);
 	}
