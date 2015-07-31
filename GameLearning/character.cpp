@@ -73,7 +73,7 @@ void Character::makeTransitionTables(const FrameCollection &frames)
         }
     }
 
-    ofstream fileA("transitionTo.txt");
+    ofstream fileA("logs/transitionTo.txt");
     for (auto &c : clusters)
     {
         fileA << c.index << " (" << c.observations << ")";
@@ -84,10 +84,10 @@ void Character::makeTransitionTables(const FrameCollection &frames)
         fileA << endl;
     }
 
-    ofstream fileB("transitionFrom.txt");
+    ofstream fileB("logs/transitionFrom.txt");
     for (auto &c : clusters)
     {
-        fileA << c.index << " (" << c.observations << ")";
+        fileB << c.index << " (" << c.observations << ")";
         for (auto &i : c.transitionsTo)
         {
             fileB << '\t' << i.first << " (" << i.second.frameCount << ")";
@@ -99,7 +99,7 @@ void Character::makeTransitionTables(const FrameCollection &frames)
 
 void Character::clusterAnimations()
 {
-    const double clusterDistThreshold = 0.2;
+    const double clusterDistThreshold = 0.5;
 
     cout << "Clustering animations" << endl;
 
@@ -107,8 +107,6 @@ void Character::clusterAnimations()
 
     for (auto &instance : allInstances)
         unassignedInstances.insert(&instance.second);
-
-    //ofstream file("clusters.txt");
 
     while (unassignedInstances.size() > 0)
     {

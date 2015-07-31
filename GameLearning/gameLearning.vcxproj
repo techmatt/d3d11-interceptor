@@ -42,6 +42,7 @@
   <ItemGroup>
     <Text Include="alignment.txt" />
     <Text Include="clusters.txt" />
+    <Text Include="learningParams.txt" />
     <Text Include="objA.txt" />
     <Text Include="objB.txt" />
     <Text Include="segments.txt" />

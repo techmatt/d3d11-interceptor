@@ -1,63 +1,21 @@
 
 #include "main.h"
 
-//const float sizeThreshold = 30.0f;
-const float sizeThreshold = numeric_limits<float>::max();
-
-void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
-{
-    meshes.clear();
-    meshes.resize(frame.objectData.size());
-    int objectIndex = 0;
-    for (auto &o : frame.objectData)
-    {
-        const vec3f extent = o.bbox.getExtent();
-        const float maxDim = max(max(extent.x, extent.y), extent.z);
-        if (maxDim > sizeThreshold)
-        {
-            continue;
-        }
-
-        meshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(state.colorMap.getColor(o.signature), 1.0f)));
-        objectIndex++;
-    }
-}
-
-void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
-{
-    meshes.clear();
-    meshes.resize(frame.objectData.size());
-    int objectIndex = 0;
-    for (auto &o : frame.objectData)
-    {
-        const LocalizedObject *geometry = state.geoDatabase.loadGeometry(o.signature);
-        if (geometry != nullptr)
-        {
-            TriMeshf mesh;
-            geometry->toMesh(state.colorMap, mesh);
-            mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
-            meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
-        }
-        objectIndex++;
-    }
-}
-
-void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
-{
-    meshes.clear();
-    meshes.resize(frame.objectMeshes.size());
-    for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
-    {
-        const auto &o = frame.objectMeshes[objectIndex];
-        TriMeshf mesh;
-        o.toMesh(state.colorMap, mesh);
-        meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
-    }
-}
-
 void Vizzer::init(ApplicationData &app)
 {	
-    const string shaderDir = "../../frameworkD3D11/shaders/";
+    //
+    // initialize parameters
+    //
+    ParameterFile params;
+    const string file = "learningParams.txt";
+    if (!util::fileExists(file))
+    {
+        cerr << "Parameter file not found: " << file << ", cwd=" << util::workingDirectory() << endl;
+        exit(-1);
+        return;
+    }
+    params.addParameterFile(file);
+    initLearningParams(params);
     
     state.assets.init(app.graphics);
 
@@ -69,27 +27,15 @@ void Vizzer::init(ApplicationData &app)
 
     state.ui.init("GameLearningUI.exe", "GameLearningUI");
 
-    //singleCaptureObjects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
-    state.allFrames.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\allFrames.dat)");
+    state.allFrames.load(learningParams().datasetDir + "rawFrames/allFrames.dat");
     //state.allFrames.frames.resize(500);
 
-    state.colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
-
-    //comparisonFrameB->transform(mat4f::translation(vec3f(0.0f, 0.0f, 100.0f)));
-
-    //auto alignment = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
-
-    //if (alignment.size > 0)
-    //    comparisonFrameB->transform(alignment.transform.getInverse());
-
-    //auto alignment2 = FrameProcessing::alignFrames(*comparisonFrameA, *comparisonFrameB);
-
-    //correspondences = FrameProcessing::getCorrespondences(*comparisonFrameA, *comparisonFrameB);
+    state.colorMap.load(learningParams().datasetDir + "signatureColorMap.dat");
 
     FrameProcessing::alignAllFrames(state.allFrames);
 
     state.analyzer.analyze(state.allFrames);
-    //state.analyzer.dump("segments.txt");
+    //state.analyzer.dump("logs/segments.txt");
 
     const int characterCount = (int)state.analyzer.characterSegments.size();
     for (int characterIndex = 0; characterIndex < characterCount; characterIndex++)
@@ -98,9 +44,6 @@ void Vizzer::init(ApplicationData &app)
         state.characters[characterIndex].load(state.allFrames, state.analyzer.characterSegments[characterIndex], characterIndex);
     }
     
-    //makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
-    //makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
-
     registerEventHandlers(app);
 }
 
@@ -280,8 +223,8 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (key == KEY_C)
     {
-        comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("objA.txt");
-        comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("objB.txt");
+        comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("logs/objA.txt");
+        comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("logs/objB.txt");
     }*/
 
     int frameDelta = 0;
@@ -352,4 +295,57 @@ void Vizzer::mouseMove(ApplicationData &app)
         state.camera.lookUp(theta * posDelta.y);
     }
 
+}
+
+void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+{
+    meshes.clear();
+    meshes.resize(frame.objectData.size());
+    int objectIndex = 0;
+    for (auto &o : frame.objectData)
+    {
+        const vec3f extent = o.bbox.getExtent();
+        const float maxDim = max(max(extent.x, extent.y), extent.z);
+        
+        const float sizeThreshold = numeric_limits<float>::max();
+        if (maxDim > sizeThreshold)
+        {
+            continue;
+        }
+
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, Shapesf::box(o.bbox, vec4f(state.colorMap.getColor(o.signature), 1.0f)));
+        objectIndex++;
+    }
+}
+
+void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+{
+    meshes.clear();
+    meshes.resize(frame.objectData.size());
+    int objectIndex = 0;
+    for (auto &o : frame.objectData)
+    {
+        const LocalizedObject *geometry = state.geoDatabase.loadGeometry(o.signature);
+        if (geometry != nullptr)
+        {
+            TriMeshf mesh;
+            geometry->toMesh(state.colorMap, mesh);
+            mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
+            meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+        }
+        objectIndex++;
+    }
+}
+
+void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
+{
+    meshes.clear();
+    meshes.resize(frame.objectMeshes.size());
+    for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
+    {
+        const auto &o = frame.objectMeshes[objectIndex];
+        TriMeshf mesh;
+        o.toMesh(state.colorMap, mesh);
+        meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+    }
 }

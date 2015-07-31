@@ -109,5 +109,8 @@
     <Text Include="transitionTo.txt">
       <Filter>Logs</Filter>
     </Text>
+    <Text Include="learningParams.txt">
+      <Filter>Core</Filter>
+    </Text>
   </ItemGroup>
 </Project>

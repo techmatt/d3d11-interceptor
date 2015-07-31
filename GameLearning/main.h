@@ -17,7 +17,7 @@ using namespace std;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
-const bool useSignatureCorrespondenceDebugColoring = false;
+#include "learningParams.h"
 
 #include "../shared/localizedObject.h"
 #include "../shared/objectCollection.h"

@@ -24,7 +24,7 @@ mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const Loc
 
 void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 {
-    ofstream file("alignment.txt");
+    ofstream file("logs/alignment.txt");
 
     const int minClusterSize = 4;
 
@@ -81,7 +81,7 @@ FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source
 
     ofstream file;
     if(outputClusters)
-        file.open("clusters.txt");
+        file.open("logs/alignmentClusters.txt");
 
     const vector<FrameAlignmentCorrespondence> correspondences = getCorrespondences(source, dest);
 

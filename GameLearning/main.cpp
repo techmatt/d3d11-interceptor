@@ -1,5 +1,7 @@
 #include "main.h"
 
+LearningParams g_learningParams;
+
 void main()
 {
 	Vizzer callback;
