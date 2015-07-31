@@ -111,6 +111,8 @@ void SegmentAnalyzer::makeSegmentGraph(const FrameCollection &frames)
 
 void SegmentAnalyzer::assignCharacterLabels()
 {
+    const int minCharacterComponents = 5;
+
     auto edgeTest = [](const SegmentEdge &edge)
     {
         if (edge.cooccurenceDist.mean() > 7.0f)
@@ -122,18 +124,27 @@ void SegmentAnalyzer::assignCharacterLabels()
 
     cout << "Computing connected components" << endl;
     const auto components = segmentGraph.computeConnectedComponents(edgeTest);
+    int characterIndex = 0;
     for (int componentIndex = 0; componentIndex < components.size(); componentIndex++)
     {
         const vector<UINT> &component = components[componentIndex];
-        cout << "Component " << componentIndex << " has " << component.size() << " vertices" << endl;
+        cout << "Component " << componentIndex << " has " << component.size() << " vertices";
+
+        if (component.size() < minCharacterComponents)
+        {
+            cout << " (discarded)" << endl;
+            continue;
+        }
 
         characterSegments.push_back(vector<CharacterSegment>());
         auto &character = characterSegments.back();
         for (UINT nodeIndex : component)
         {
             SegmentStats &segment = *segmentGraph.nodes()[nodeIndex].data;
-            segment.characterLabel = componentIndex;
+            segment.characterLabel = characterIndex;
             character.push_back(CharacterSegment(segment.signature));
         }
+        characterIndex++;
+        cout << endl;
     }
 }

@@ -27,6 +27,7 @@ struct AppState
     vector<D3D11TriMesh> curFrameMeshesRigidTransform;
 
     SegmentAnalyzer analyzer;
+    vector<Character> characters;
 
     int curFrameIndex;
     int curCharacterIndex;

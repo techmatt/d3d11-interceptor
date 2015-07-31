@@ -70,16 +70,6 @@ struct SegmentEdge
     StatTracker cooccurenceDist;
 };
 
-struct CharacterSegment
-{
-    CharacterSegment() {}
-    CharacterSegment(UINT64 _signature)
-    {
-        signature = _signature;
-    }
-    UINT64 signature;
-};
-
 typedef UndirectedGraph<SegmentStats*, SegmentEdge> SegmentGraph;
 
 struct SegmentAnalyzer

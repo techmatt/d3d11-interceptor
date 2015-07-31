@@ -44,6 +44,7 @@ struct FrameObjectData
         }
     }
 
+    int index;
     vector<LocalizedObjectData> objectData;
     vector<LocalizedObject> objectMeshes;
 };

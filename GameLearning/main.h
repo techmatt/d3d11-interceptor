@@ -25,6 +25,7 @@ const bool useSignatureCorrespondenceDebugColoring = false;
 #include "../shared/geometryDatabase.h"
 
 #include "frameProcessing.h"
+#include "character.h"
 #include "segmentAnalyzer.h"
 
 #include "appState.h"

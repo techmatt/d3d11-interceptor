@@ -25,6 +25,7 @@ void FrameCollection::load(const string &filename)
     {
         FrameObjectData *frame = new FrameObjectData();
         file >> frame->objectData >> frame->objectMeshes;
+        frame->index = i;
         frames[i] = frame;
     }
 

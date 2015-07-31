@@ -88,8 +88,15 @@ void Vizzer::init(ApplicationData &app)
     FrameProcessing::alignAllFrames(state.allFrames);
 
     state.analyzer.analyze(state.allFrames);
-    state.analyzer.dump("segments.txt");
+    //state.analyzer.dump("segments.txt");
 
+    const int characterCount = (int)state.analyzer.characterSegments.size();
+    for (int characterIndex = 0; characterIndex < characterCount; characterIndex++)
+    {
+        state.characters.resize(characterCount);
+        state.characters[characterIndex].load(state.allFrames, state.analyzer.characterSegments[characterIndex], characterIndex);
+    }
+    
     //makeFrameMeshes(app, *comparisonFrameA, comparisonMeshesA, curFrameBoxMeshes);
     //makeFrameMeshes(app, *comparisonFrameB, comparisonMeshesB, curFrameBoxMeshes);
 

@@ -48,6 +48,9 @@
     <ClInclude Include="appState.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="character.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -75,6 +78,9 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="segmentAnalyzer.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="character.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>

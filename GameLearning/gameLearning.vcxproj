@@ -16,6 +16,7 @@
     <ClInclude Include="..\shared\objectCollection.h" />
     <ClInclude Include="..\shared\signatureColorMap.h" />
     <ClInclude Include="appState.h" />
+    <ClInclude Include="character.h" />
     <ClInclude Include="frameProcessing.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
@@ -27,6 +28,7 @@
     <ClCompile Include="..\shared\localizedObjectLearner.cpp" />
     <ClCompile Include="..\shared\objectCollection.cpp" />
     <ClCompile Include="..\shared\signatureColorMap.cpp" />
+    <ClCompile Include="character.cpp" />
     <ClCompile Include="frameProcessing.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
