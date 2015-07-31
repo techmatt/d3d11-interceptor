@@ -71,6 +71,7 @@ void Vizzer::init(ApplicationData &app)
 
     //singleCaptureObjects.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\objects.txt)");
     state.allFrames.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\d3d11Logs\allFrames.dat)");
+    //state.allFrames.frames.resize(500);
 
     state.colorMap.load(R"(C:\Code\d3d11-interceptor\Dolphin-x64\signatureColorMap.dat)");
 
@@ -236,6 +237,21 @@ void Vizzer::render(ApplicationData &app)
     font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    
+    double animationDistL2 = -1.0;
+    double animationDistMaxError = -1.0;
+    if (state.curCharacterIndex >= 0 && state.curCharacterIndex < state.characters.size())
+    {
+        const auto &animationInstanceA = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.animationAnchorFrame);
+        const auto &animationInstanceB = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.curFrameIndex);
+        if (animationInstanceA != nullptr && animationInstanceB != nullptr)
+        {
+            animationDistL2 = Character::frameInstanceDistL2(*animationInstanceA, *animationInstanceB);
+            animationDistMaxError = Character::frameInstanceDistMaxError(*animationInstanceA, *animationInstanceB);
+        }
+    }
+    font.drawString(app.graphics, "DistL2: " + to_string(animationDistL2), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "DistMax: " + to_string(animationDistMaxError), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
 
     //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
     //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
@@ -253,6 +269,8 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
     if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
     
+
+    if (key == KEY_J) state.animationAnchorFrame = state.curFrameIndex;
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());

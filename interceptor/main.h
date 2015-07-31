@@ -8,9 +8,9 @@ using namespace ml;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
-const int frameDumpIndex = 1500;
+const int frameDumpIndex = 15000;
 const bool capturingAllBuffers = true;
-const int keyFrameCaptureRate = 200;
+const int keyFrameCaptureRate = 500;
 
 #include <windows.h>
 #include <d3d11.h>

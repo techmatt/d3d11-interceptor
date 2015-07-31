@@ -51,6 +51,9 @@
     <ClInclude Include="character.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="learningParams.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -98,6 +101,12 @@
       <Filter>Logs</Filter>
     </Text>
     <Text Include="segments.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="transitionFrom.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="transitionTo.txt">
       <Filter>Logs</Filter>
     </Text>
   </ItemGroup>

@@ -31,6 +31,7 @@ struct AppState
 
     int curFrameIndex;
     int curCharacterIndex;
+    int animationAnchorFrame;
 
     Cameraf camera;
 

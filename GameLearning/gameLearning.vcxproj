@@ -18,6 +18,7 @@
     <ClInclude Include="appState.h" />
     <ClInclude Include="character.h" />
     <ClInclude Include="frameProcessing.h" />
+    <ClInclude Include="learningParams.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="segmentAnalyzer.h" />
@@ -44,6 +45,8 @@
     <Text Include="objA.txt" />
     <Text Include="objB.txt" />
     <Text Include="segments.txt" />
+    <Text Include="transitionFrom.txt" />
+    <Text Include="transitionTo.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>
