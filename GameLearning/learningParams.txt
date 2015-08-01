@@ -1,1 +1,3 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
+
+animationClusterDistThreshold=0.1

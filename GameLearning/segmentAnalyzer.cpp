@@ -136,13 +136,13 @@ void SegmentAnalyzer::assignCharacterLabels()
             continue;
         }
 
-        characterSegments.push_back(vector<CharacterSegment>());
+        characterSegments.push_back(vector<UINT64>());
         auto &character = characterSegments.back();
         for (UINT nodeIndex : component)
         {
             SegmentStats &segment = *segmentGraph.nodes()[nodeIndex].data;
             segment.characterLabel = characterIndex;
-            character.push_back(CharacterSegment(segment.signature));
+            character.push_back(segment.signature);
         }
         characterIndex++;
         cout << endl;

@@ -79,7 +79,7 @@ struct SegmentAnalyzer
 
     map<UINT64, SegmentStats> segments;
     SegmentGraph segmentGraph;
-    vector< vector<CharacterSegment> > characterSegments;
+    vector< vector<UINT64> > characterSegments;
 
 private:
     void makeSegmentGraph(const FrameCollection &frames);

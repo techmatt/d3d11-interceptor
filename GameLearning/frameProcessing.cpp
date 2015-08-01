@@ -24,7 +24,7 @@ mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const Loc
 
 void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 {
-    ofstream file("logs/alignment.txt");
+    //ofstream file("logs/alignment.txt");
 
     const int minClusterSize = 4;
 
@@ -35,8 +35,8 @@ void FrameProcessing::alignAllFrames(const FrameCollection &frames)
 
         FrameAlignmentCluster alignment = alignFrames(frameA, frameB);
 
-        file << "align " << frameIndex + 1 << " to " << frameIndex << ", size=" << alignment.size << endl;
-        file << "transform:" << endl << alignment.transform << endl << endl;
+        //file << "align " << frameIndex + 1 << " to " << frameIndex << ", size=" << alignment.size << endl;
+        //file << "transform:" << endl << alignment.transform << endl << endl;
         
         if (alignment.size >= minClusterSize)
         {

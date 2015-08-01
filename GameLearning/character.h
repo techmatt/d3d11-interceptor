@@ -1,14 +1,4 @@
 
-struct CharacterSegment
-{
-    CharacterSegment() {}
-    CharacterSegment(UINT64 _signature)
-    {
-        signature = _signature;
-    }
-    UINT64 signature;
-};
-
 struct CharacterSegmentInstance
 {
     UINT64 signature;
@@ -47,7 +37,7 @@ struct AnimationCluster
 
 struct Character
 {
-    void load(const FrameCollection &frames, const vector<CharacterSegment> &segments, int _characterIndex);
+    void load(const FrameCollection &frames, const vector<UINT64> &segments, int _characterIndex);
 
     const CharacterFrameInstance* findInstanceAtFrame(int frameIndex) const
     {
@@ -56,10 +46,10 @@ struct Character
         return &(allInstances.find(frameIndex)->second);
     }
 
-    static double frameInstanceDistMaxError(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
-    static double frameInstanceDistL2(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
+    static double frameInstanceDistSqAvg(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
+    static double frameInstanceDistSqMax(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
 
-    map<UINT64, CharacterSegment> allSegments;
+    set<UINT64> allSegments;
     int characterIndex;
 
     // maps from frame index to character instance

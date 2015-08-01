@@ -1,15 +1,13 @@
 
 #include "main.h"
 
-void Character::load(const FrameCollection &frames, const vector<CharacterSegment> &segments, int _characterIndex)
+void Character::load(const FrameCollection &frames, const vector<UINT64> &segments, int _characterIndex)
 {
     characterIndex = _characterIndex;
     cout << endl << "Processing all frames for character " << characterIndex << endl;
     
-    for (const CharacterSegment &segment : segments)
-    {
-        allSegments[segment.signature] = segment;
-    }
+    for (const UINT64 &segment : segments)
+        allSegments.insert(segment);
 
     for (const auto &frame : frames.frames)
     {
@@ -28,13 +26,13 @@ void Character::load(const FrameCollection &frames, const vector<CharacterSegmen
         vec3f sum = vec3f::origin;
         float sumCount = 0.0f;
 
-        for (auto &segment : allSegments)
+        for (UINT64 signature : allSegments)
         {
-            if (frameMap.count(segment.first) > 0)
+            if (frameMap.count(signature) > 0)
             {
-                CharacterSegmentInstance &segmentInstance = frameInstance.segments[segment.first];
-                segmentInstance.signature = segment.first;
-                segmentInstance.worldCentroid = frameMap.find(segment.first)->second->centroid;
+                CharacterSegmentInstance &segmentInstance = frameInstance.segments[signature];
+                segmentInstance.signature = signature;
+                segmentInstance.worldCentroid = frameMap.find(signature)->second->centroid;
                 sum += segmentInstance.worldCentroid;
                 sumCount += 1.0f;
             }
@@ -99,8 +97,6 @@ void Character::makeTransitionTables(const FrameCollection &frames)
 
 void Character::clusterAnimations()
 {
-    const double clusterDistThreshold = 0.5;
-
     cout << "Clustering animations" << endl;
 
     set<CharacterFrameInstance*> unassignedInstances;
@@ -116,8 +112,8 @@ void Character::clusterAnimations()
         vector<CharacterFrameInstance*> clusterInstances;
         for (auto &candidateInstance : unassignedInstances)
         {
-            const double dist = frameInstanceDistMaxError(*seedInstance, *candidateInstance);
-            if (dist < clusterDistThreshold)
+            const double dist = frameInstanceDistSqAvg(*seedInstance, *candidateInstance);
+            if (dist < learningParams().animationClusterDistThreshold)
             {
                 candidateInstance->animationClusterIndex = (int)clusters.size();
                 clusterInstances.push_back(candidateInstance);
@@ -139,7 +135,7 @@ void Character::clusterAnimations()
     cout << "Animations cluster count: " << clusters.size() << endl;
 }
 
-double Character::frameInstanceDistL2(const CharacterFrameInstance &a, const CharacterFrameInstance &b)
+double Character::frameInstanceDistSqMax(const CharacterFrameInstance &a, const CharacterFrameInstance &b)
 {
     if (a.segments.size() != b.segments.size()) return std::numeric_limits<double>::max();
 
@@ -150,13 +146,13 @@ double Character::frameInstanceDistL2(const CharacterFrameInstance &a, const Cha
         
         const vec3f &aCentroid = segA.second.centeredCentroid;
         const vec3f &bCentroid = b.segments.find(segA.first)->second.centeredCentroid;
-        const double diff = vec3f::dist(aCentroid, bCentroid);
+        const double diff = vec3f::distSq(aCentroid, bCentroid);
         result += diff;
     }
     return result;
 }
 
-double Character::frameInstanceDistMaxError(const CharacterFrameInstance &a, const CharacterFrameInstance &b)
+double Character::frameInstanceDistSqAvg(const CharacterFrameInstance &a, const CharacterFrameInstance &b)
 {
     if (a.segments.size() != b.segments.size()) return std::numeric_limits<double>::max();
 
@@ -167,8 +163,8 @@ double Character::frameInstanceDistMaxError(const CharacterFrameInstance &a, con
 
         const vec3f &aCentroid = segA.second.centeredCentroid;
         const vec3f &bCentroid = b.segments.find(segA.first)->second.centeredCentroid;
-        const double diff = vec3f::dist(aCentroid, bCentroid);
-        result = max(diff, diff);
+        const double diff = vec3f::distSq(aCentroid, bCentroid);
+        result = max(result, diff);
     }
-    return result;
+    return result / a.segments.size();
 }

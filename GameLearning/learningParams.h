@@ -9,9 +9,12 @@ struct LearningParams
     void load(const ParameterFile &params)
     {
         params.readParameter("datasetDir", datasetDir);
+        params.readParameter("animationClusterDistThreshold", animationClusterDistThreshold);
     }
 
     string datasetDir;
+
+    double animationClusterDistThreshold;
 };
 
 extern LearningParams g_learningParams;
