@@ -36,9 +36,6 @@
     <ClInclude Include="..\shared\signatureColorMap.h">
       <Filter>Shared</Filter>
     </ClInclude>
-    <ClInclude Include="frameProcessing.h">
-      <Filter>Learning</Filter>
-    </ClInclude>
     <ClInclude Include="..\shared\geometryDatabase.h">
       <Filter>Shared</Filter>
     </ClInclude>
@@ -57,7 +54,10 @@
     <ClInclude Include="datasetProcessor.h">
       <Filter>Learning</Filter>
     </ClInclude>
-    <ClInclude Include="frameDatabase.h">
+    <ClInclude Include="frameAlignment.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
+    <ClInclude Include="replayDatabase.h">
       <Filter>Learning</Filter>
     </ClInclude>
   </ItemGroup>
@@ -77,9 +77,6 @@
     <ClCompile Include="..\shared\signatureColorMap.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
-    <ClCompile Include="frameProcessing.cpp">
-      <Filter>Learning</Filter>
-    </ClCompile>
     <ClCompile Include="..\shared\geometryDatabase.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
@@ -95,7 +92,10 @@
     <ClCompile Include="datasetProcessor.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
-    <ClCompile Include="frameDatabase.cpp">
+    <ClCompile Include="frameAlignment.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="replayDatabase.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>

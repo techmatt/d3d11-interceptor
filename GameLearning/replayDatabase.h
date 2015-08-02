@@ -20,17 +20,17 @@ struct FramePair
     const ProcessedFrame *f1;
 };
 
-struct FrameDatabaseEntry
+struct ReplayDatabaseEntry
 {
     vector<FramePair> pairs;
     vector<ProcessedFrame> processedFrames;
 
-    FrameCollection *collection;
+    GameReplay *replay;
 };
 
-struct FrameDatabase
+struct ReplayDatabase
 {
     void addEntry(const string &alignedFrameFilename);
 
-    vector< reference_wrapper<FrameDatabaseEntry> > entries;
+    vector< reference_wrapper<ReplayDatabaseEntry> > entries;
 };

@@ -75,10 +75,10 @@ HRESULT myDXGISwapChain::Present(UINT  SyncInterval, UINT  Flags)
     if (g_logger->curFrame->objectData.size() > 0)
     {
         g_logger->logSignatureFile << "Frame " << g_logger->frameIndex << " has " << g_logger->curFrame->objectData.size() << " objects" << endl;
-        g_logger->allFrames.frames.push_back(g_logger->curFrame);
+        g_logger->curReplay.frames.push_back(g_logger->curFrame);
 
         if (g_logger->frameIndex == frameDumpIndex)
-            g_logger->allFrames.save(g_logger->logDir + "allFrames.dat");
+            g_logger->curReplay.save(g_logger->logDir + "allFrames.dat");
 
         g_logger->curFrame = new FrameObjectData();
     }

@@ -25,7 +25,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "../shared/geometryDatabase.h"
 
 #include "frameDatabase.h"
-#include "frameProcessing.h"
+#include "frameAlignment.h"
 #include "character.h"
 #include "segmentAnalyzer.h"
 

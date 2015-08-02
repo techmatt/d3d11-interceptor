@@ -76,13 +76,13 @@ struct Logger
     bool capturingFrame;
     string captureDir;
     Bitmap prevCaptureImage;
-    FrameCollection frameCaptureObjects;
+    GameReplay frameCaptureObjects;
 
     //
     // All frame capture state
     //
     FrameObjectData *curFrame;
-    FrameCollection allFrames;
+    GameReplay curReplay;
 };
 
 extern Logger *g_logger;

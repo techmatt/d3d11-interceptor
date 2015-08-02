@@ -1,16 +1,16 @@
 
 #include "main.h"
 
-void FrameDatabase::addEntry(const string &alignedFrameFilename)
+void ReplayDatabase::addEntry(const string &alignedFrameFilename)
 {
     cout << "Loading " << alignedFrameFilename << endl;
     
-    FrameDatabaseEntry *newEntry = new FrameDatabaseEntry;
+    ReplayDatabaseEntry *newEntry = new ReplayDatabaseEntry;
 
-    newEntry->collection = new FrameCollection;
-    newEntry->collection->load(alignedFrameFilename);
+    newEntry->replay = new GameReplay;
+    newEntry->replay->load(alignedFrameFilename);
     
-    const size_t frameCount = newEntry->collection->frames.size();
+    const size_t frameCount = newEntry->replay->frames.size();
     newEntry->processedFrames.resize(frameCount);
     newEntry->pairs.resize(frameCount - 1);
 
@@ -18,7 +18,7 @@ void FrameDatabase::addEntry(const string &alignedFrameFilename)
 
     for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
     {
-        FrameObjectData *frame = newEntry->collection->frames[frameIndex];
+        FrameObjectData *frame = newEntry->replay->frames[frameIndex];
         const string frameID = fileTag + "-" + to_string(frameIndex);
         newEntry->processedFrames[frameIndex] = ProcessedFrame(frame, frameID);
     }
@@ -30,4 +30,6 @@ void FrameDatabase::addEntry(const string &alignedFrameFilename)
         pair.f1 = &newEntry->processedFrames[frameIndex + 1];
         newEntry->pairs[frameIndex] = pair;
     }
+
+    entries.push_back(*newEntry);
 }
