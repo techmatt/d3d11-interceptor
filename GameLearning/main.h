@@ -24,6 +24,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "../shared/signatureColorMap.h"
 #include "../shared/geometryDatabase.h"
 
+#include "frameDatabase.h"
 #include "frameProcessing.h"
 #include "character.h"
 #include "segmentAnalyzer.h"

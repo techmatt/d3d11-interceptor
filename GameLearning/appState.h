@@ -3,6 +3,7 @@ struct AppState
 {
     AppState()
     {
+        curReplayIndex = 0;
         curFrameIndex = 0;
         curCharacterIndex = 0;
         showBBoxes = false;
@@ -20,15 +21,16 @@ struct AppState
 
     GeometryDatabase geoDatabase;
     SignatureColorMap colorMap;
-    FrameCollection allFrames;
-
+    
     vector<D3D11TriMesh> curFrameMeshesBox;
     vector<D3D11TriMesh> curFrameMeshesFull;
     vector<D3D11TriMesh> curFrameMeshesRigidTransform;
 
     SegmentAnalyzer analyzer;
-    vector<Character> characters;
+    CharacterDatabase characters;
+    ReplayDatabase replays;
 
+    int curReplayIndex;
     int curFrameIndex;
     int curCharacterIndex;
     int animationAnchorFrame;

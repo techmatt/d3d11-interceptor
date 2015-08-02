@@ -2,20 +2,7 @@
 
 struct FrameObjectData
 {
-    map<UINT64, const LocalizedObjectData*> makeUniqueSignatureMap() const
-    {
-        map<UINT64, const LocalizedObjectData*> result;
-        for (const LocalizedObjectData &o : objectData)
-        {
-            if (result.count(o.signature) == 1)
-                result[o.signature] = nullptr;
-            else
-                result[o.signature] = &o;
-        }
-        return result;
-    }
-
-    map<UINT64, vector<const LocalizedObjectData*> > makeCompleteSignatureMap() const
+    map<UINT64, vector<const LocalizedObjectData*> > makeSignatureMap() const
     {
         map<UINT64, vector<const LocalizedObjectData*> > result;
         for (const LocalizedObjectData &o : objectData)
@@ -49,10 +36,11 @@ struct FrameObjectData
     vector<LocalizedObject> objectMeshes;
 };
 
-struct FrameCollection
+struct GameReplay
 {
     void save(const string &filename) const;
     void load(const string &filename);
 
+    string sourceFilename;
     vector<FrameObjectData*> frames;
 };

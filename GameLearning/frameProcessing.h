@@ -11,10 +11,10 @@ struct FrameAlignmentCorrespondence
     const LocalizedObjectData *dest;
 };
 
-class FrameProcessing
+class FrameAlignment
 {
 public:
-    static void alignAllFrames(const FrameCollection &frames);
+    static void alignAllFrames(const GameReplay &frames);
 
     static mat4f alignObjects(const LocalizedObjectData &source, const LocalizedObjectData &dest);
 

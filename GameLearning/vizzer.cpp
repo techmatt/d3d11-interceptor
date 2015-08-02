@@ -64,7 +64,8 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    const FrameObjectData &frame = *state.allFrames.frames[state.curFrameIndex];
+    GameReplay &replay = *state.replays.entries[state.curReplayIndex].get().replay;
+    const FrameObjectData &frame = *replay.frames[state.curFrameIndex];
 
     vector<D3D11TriMesh> *meshesPtr = &state.curFrameMeshesRigidTransform;
     if (state.showBBoxes)
@@ -162,14 +163,14 @@ void Vizzer::render(ApplicationData &app)
 
     int y = 0;
     font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(state.allFrames.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(replay.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     
-    double animationDistMax = -1.0;
+    /*double animationDistMax = -1.0;
     double animationDistAvg = -1.0;
-    if (state.curCharacterIndex >= 0 && state.curCharacterIndex < state.characters.size())
+    if (state.curCharacterIndex >= 0 && state.curCharacterIndex < state.characters.characters.size())
     {
         const auto &animationInstanceA = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.animationAnchorFrame);
         const auto &animationInstanceB = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.curFrameIndex);
@@ -180,7 +181,7 @@ void Vizzer::render(ApplicationData &app)
         }
     }
     font.drawString(app.graphics, "DistAvg: " + to_string(animationDistAvg), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "DistMax: " + to_string(animationDistMax), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "DistMax: " + to_string(animationDistMax), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);*/
 
     //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
     //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
@@ -219,13 +220,14 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (frameDelta != 0)
     {
-        state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, state.allFrames.frames.size());
+        GameReplay &replay = *state.replays.entries[state.curReplayIndex].get().replay;
+        state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, replay.frames.size());
         if (GetAsyncKeyState(VK_SHIFT))
         {
-            while (state.allFrames.frames[state.curFrameIndex]->objectMeshes.size() == 0)
-                state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, state.allFrames.frames.size());
+            while (replay.frames[state.curFrameIndex]->objectMeshes.size() == 0)
+                state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, replay.frames.size());
         }
-        const FrameObjectData &frame = *state.allFrames.frames[state.curFrameIndex];
+        const FrameObjectData &frame = *replay.frames[state.curFrameIndex];
 
         makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
         makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
@@ -316,7 +318,7 @@ void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObje
         {
             TriMeshf mesh;
             geometry->toMesh(state.colorMap, mesh);
-            mesh.transform(FrameProcessing::alignObjects(geometry->data, o));
+            mesh.transform(FrameAlignment::alignObjects(geometry->data, o));
             meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
         }
         objectIndex++;

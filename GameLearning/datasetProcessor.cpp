@@ -8,28 +8,25 @@ void DatasetProcessor::go(AppState &state)
     alignFrames(state);
     loadAlignedFrames(state);
 
-    state.analyzer.analyze(state.allFrames);
+    state.analyzer.analyze(state.replays);
     //state.analyzer.dump("logs/segments.txt");
 
-    const int characterCount = (int)state.analyzer.characterSegments.size();
-    for (int characterIndex = 0; characterIndex < characterCount; characterIndex++)
-    {
-        state.characters.resize(characterCount);
-        state.characters[characterIndex].load(state.allFrames, state.analyzer.characterSegments[characterIndex], characterIndex);
-    }
+    state.characters.init(state.analyzer);
+    state.characters.recordAllFrames(state.replays);
 }
 
 void DatasetProcessor::alignFrames(AppState &state)
 {
+    cout << " *** Aligning frames" << endl;
     for (const string &rawFilename : Directory::enumerateFilesWithPath(learningParams().datasetDir + "rawFrames/", ".dat"))
     {
         const string alignedFilename = util::replace(rawFilename, "rawFrames/", "alignedFrames/");
         if (!util::fileExists(alignedFilename))
         {
             cout << "Aligning " << rawFilename << endl;
-            FrameCollection frames;
+            GameReplay frames;
             frames.load(rawFilename);
-            FrameProcessing::alignAllFrames(frames);
+            FrameAlignment::alignAllFrames(frames);
             frames.save(alignedFilename);
         }
     }
@@ -37,13 +34,9 @@ void DatasetProcessor::alignFrames(AppState &state)
 
 void DatasetProcessor::loadAlignedFrames(AppState &state)
 {
+    cout << " *** Loading aligned frames" << endl;
     for (const string &alignedFilename : Directory::enumerateFilesWithPath(learningParams().datasetDir + "alignedFrames/", ".dat"))
     {
-        FrameCollection frames;
-
-        cout << "Loading " << alignedFilename << endl;
-        frames.load(alignedFilename);
-
-        util::push_back(state.allFrames.frames, frames.frames);
+        state.replays.addEntry(alignedFilename);
     }
 }

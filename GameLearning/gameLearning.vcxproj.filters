@@ -57,6 +57,9 @@
     <ClInclude Include="datasetProcessor.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="frameDatabase.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -90,6 +93,9 @@
       <Filter>Learning</Filter>
     </ClCompile>
     <ClCompile Include="datasetProcessor.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="frameDatabase.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>

@@ -74,7 +74,8 @@ typedef UndirectedGraph<SegmentStats*, SegmentEdge> SegmentGraph;
 
 struct SegmentAnalyzer
 {
-    void analyze(const FrameCollection &frames);
+    void analyze(const ReplayDatabase &database);
+
     void dump(const string &filename);
 
     map<UINT64, SegmentStats> segments;
@@ -82,6 +83,9 @@ struct SegmentAnalyzer
     vector< vector<UINT64> > characterSegments;
 
 private:
-    void makeSegmentGraph(const FrameCollection &frames);
+    void recordSegmentTracking(const FramePair &frames);
+    void recordTrackableSegmentObservations(const ProcessedFrame& frame);
+
+    void makeTrackableSegmentGraph(const ReplayDatabase &database);
     void assignCharacterLabels();
 };

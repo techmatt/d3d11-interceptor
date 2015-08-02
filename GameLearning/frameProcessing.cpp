@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const LocalizedObjectData &dest)
+mat4f FrameAlignment::alignObjects(const LocalizedObjectData &source, const LocalizedObjectData &dest)
 {
     int vertexCount = source.getVertexCount();
     
@@ -22,7 +22,7 @@ mat4f FrameProcessing::alignObjects(const LocalizedObjectData &source, const Loc
     return alignment;
 }
 
-void FrameProcessing::alignAllFrames(const FrameCollection &frames)
+void FrameAlignment::alignAllFrames(const GameReplay &frames)
 {
     //ofstream file("logs/alignment.txt");
 
@@ -45,7 +45,7 @@ void FrameProcessing::alignAllFrames(const FrameCollection &frames)
     }
 }
 
-vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const FrameObjectData &source, const FrameObjectData &dest)
+vector<FrameAlignmentCorrespondence> FrameAlignment::getCorrespondences(const FrameObjectData &source, const FrameObjectData &dest)
 {
     vector<FrameAlignmentCorrespondence> result;
 
@@ -56,16 +56,16 @@ vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const F
         return max(max(v.x, v.y), v.z);
     };
 
-    map<UINT64, const LocalizedObjectData*> destMap = dest.makeUniqueSignatureMap();
+    auto destMap = dest.makeSignatureMap();
 
     for (const LocalizedObjectData &o : source.objectData)
     {
-        if (destMap.count(o.signature) != 0 && destMap[o.signature] != nullptr &&
-            getMaxDim(destMap[o.signature]->bbox.getExtent()) >= minObjectSize)
+        if (destMap.count(o.signature) != 0 && destMap[o.signature].size() == 1 &&
+            getMaxDim(destMap[o.signature].front()->bbox.getExtent()) >= minObjectSize)
         {
             FrameAlignmentCorrespondence correspondence;
             correspondence.source = &o;
-            correspondence.dest = destMap[o.signature];
+            correspondence.dest = destMap[o.signature].front();
             result.push_back(correspondence);
         }
     }
@@ -73,7 +73,7 @@ vector<FrameAlignmentCorrespondence> FrameProcessing::getCorrespondences(const F
     return result;
 }
 
-FrameAlignmentCluster FrameProcessing::alignFrames(const FrameObjectData &source, const FrameObjectData &dest)
+FrameAlignmentCluster FrameAlignment::alignFrames(const FrameObjectData &source, const FrameObjectData &dest)
 {
     const int correspondenceGroupSize = 6;
     const float clusterThreshold = 0.1f;

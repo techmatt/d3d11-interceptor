@@ -18,6 +18,7 @@
     <ClInclude Include="appState.h" />
     <ClInclude Include="character.h" />
     <ClInclude Include="datasetProcessor.h" />
+    <ClInclude Include="frameDatabase.h" />
     <ClInclude Include="frameProcessing.h" />
     <ClInclude Include="learningParams.h" />
     <ClInclude Include="main.h" />
@@ -32,6 +33,7 @@
     <ClCompile Include="..\shared\signatureColorMap.cpp" />
     <ClCompile Include="character.cpp" />
     <ClCompile Include="datasetProcessor.cpp" />
+    <ClCompile Include="frameDatabase.cpp" />
     <ClCompile Include="frameProcessing.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

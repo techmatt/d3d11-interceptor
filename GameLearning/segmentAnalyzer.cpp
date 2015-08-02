@@ -1,41 +1,47 @@
 
 #include "main.h"
 
-void SegmentAnalyzer::analyze(const FrameCollection &frames)
+void SegmentAnalyzer::analyze(const ReplayDatabase &database)
 {
-    cout << "Analyzing " << frames.frames.size() << " frames" << endl;
-    for (int frameIndex = 1; frameIndex < frames.frames.size(); frameIndex++)
+    cout << "*** Computing segment statistics" << endl;
+    for (const ReplayDatabaseEntry &entry : database.entries)
     {
-        const auto &prevSigMap = frames.frames[frameIndex - 1]->makeCompleteSignatureMap();
-        const auto &sigMap = frames.frames[frameIndex]->makeCompleteSignatureMap();
-
-        for (const auto &sig : sigMap)
+        cout << "Recording frames for " << entry.replay->sourceFilename << endl;
+        for (auto &pair : entry.pairs)
         {
-            auto &segment = segments[sig.first];
-            segment.signature = sig.first;
-            segment.frameCount++;
-            segment.instancesPerFrame.record((double)sig.second.size());
+            recordSegmentTracking(pair);
+        }
+    }
 
-            for (const auto &instance : sig.second)
+    cout << "*** Making segment graph" << endl;
+    makeTrackableSegmentGraph(database);
+
+    cout << "*** Making character labels" << endl;
+    assignCharacterLabels();
+}
+
+void SegmentAnalyzer::recordSegmentTracking(const FramePair &pair)
+{
+    for (const auto &sig : pair.f1->signatureMap)
+    {
+        auto &segment = segments[sig.first];
+        segment.signature = sig.first;
+        segment.frameCount++;
+        segment.instancesPerFrame.record((double)sig.second.size());
+
+        for (const auto &instance : sig.second)
+        {
+            segment.dimensions.record(instance->bbox.getExtent().length());
+
+            if (sig.second.size() == 1 &&
+                pair.f0->signatureMap.count(sig.first) > 0 &&
+                pair.f0->signatureMap.find(sig.first)->second.size() == 1)
             {
-                segment.dimensions.record(instance->bbox.getExtent().length());
-
-                if (sig.second.size() == 1 &&
-                    prevSigMap.count(sig.first) > 0 &&
-                    prevSigMap.find(sig.first)->second.size() == 1)
-                {
-                    const vec3f delta = instance->centroid - prevSigMap.find(sig.first)->second[0]->centroid;
-                    segment.distMoved.record(delta.length());
-                }
+                const vec3f delta = instance->centroid - pair.f0->signatureMap.find(sig.first)->second[0]->centroid;
+                segment.distMoved.record(delta.length());
             }
         }
     }
-    
-    cout << "Making segment graph" << endl;
-    makeSegmentGraph(frames);
-
-    cout << "Making character labels" << endl;
-    assignCharacterLabels();
 }
 
 void SegmentAnalyzer::dump(const string &filename)
@@ -52,7 +58,7 @@ void SegmentAnalyzer::dump(const string &filename)
     }
 }
 
-void SegmentAnalyzer::makeSegmentGraph(const FrameCollection &frames)
+void SegmentAnalyzer::makeTrackableSegmentGraph(const ReplayDatabase &database)
 {
     map<UINT64, size_t> signatureToNode;
 
@@ -75,38 +81,47 @@ void SegmentAnalyzer::makeSegmentGraph(const FrameCollection &frames)
     }
     cout << "Segment graph nodes=" << n << ", edges=" << segmentGraph.edges().size() << endl;
 
-    for (int frameIndex = 0; frameIndex < frames.frames.size(); frameIndex++)
+    for (const ReplayDatabaseEntry &entry : database.entries)
     {
-        const auto &sigMap = frames.frames[frameIndex]->makeCompleteSignatureMap();
-
-        for (int i = 0; i < n; i++)
+        cout << "Recording trackable segments for " << entry.replay->sourceFilename << endl;
+        for (auto &frame : entry.processedFrames)
         {
-            for (int j = i + 1; j < n; j++)
+            recordTrackableSegmentObservations(frame);
+        }
+    }
+
+    cout << "Done constructing segment graph" << endl;
+}
+
+void SegmentAnalyzer::recordTrackableSegmentObservations(const ProcessedFrame& frame)
+{
+    const int n = (int)segmentGraph.nodes().size();
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = i + 1; j < n; j++)
+        {
+            auto &nodeA = segmentGraph.nodes()[i];
+            auto &nodeB = segmentGraph.nodes()[j];
+            const bool aPresent = (frame.signatureMap.count(nodeA.data->signature) > 0);
+            const bool bPresent = (frame.signatureMap.count(nodeB.data->signature) > 0);
+
+            if (aPresent || bPresent)
             {
-                auto &nodeA = segmentGraph.nodes()[i];
-                auto &nodeB = segmentGraph.nodes()[j];
-                const bool aPresent = (sigMap.count(nodeA.data->signature) > 0);
-                const bool bPresent = (sigMap.count(nodeB.data->signature) > 0);
+                const int cooccurrence = aPresent && bPresent ? 1 : 0;
 
-                if (aPresent || bPresent)
+                auto &edge = segmentGraph.getEdge(i, j);
+                edge.data.cooccurenceFrequency.record(cooccurrence);
+
+                if (aPresent && bPresent)
                 {
-                    const int cooccurrence = aPresent && bPresent ? 1 : 0;
-
-                    auto &edge = segmentGraph.getEdge(i, j);
-                    edge.data.cooccurenceFrequency.record(cooccurrence);
-
-                    if (aPresent && bPresent)
-                    {
-                        const vec3f &centroidA = sigMap.find(nodeA.data->signature)->second[0]->centroid;
-                        const vec3f &centroidB = sigMap.find(nodeB.data->signature)->second[0]->centroid;
-                        float dist = vec3f::dist(centroidA, centroidB);
-                        edge.data.cooccurenceDist.record(dist);
-                    }
+                    const vec3f &centroidA = frame.signatureMap.find(nodeA.data->signature)->second[0]->centroid;
+                    const vec3f &centroidB = frame.signatureMap.find(nodeB.data->signature)->second[0]->centroid;
+                    float dist = vec3f::dist(centroidA, centroidB);
+                    edge.data.cooccurenceDist.record(dist);
                 }
             }
         }
     }
-    cout << "Done processing segment cooccurrence" << endl;
 }
 
 void SegmentAnalyzer::assignCharacterLabels()
