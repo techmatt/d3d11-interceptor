@@ -28,22 +28,25 @@ void Character::init(const vector<UINT64> &segments, int _characterIndex)
 
 void Character::labelAnimationInstances()
 {
-   /* cout << "Labeling animation instances..." << endl;
-    for (auto &instance : allInstances)
+    cout << "Labeling animation instances..." << endl;
+    for (auto &startInstance : allInstances)
     {
-        if (instance.second.animationIndex == -1 && sequencesByFirstPose.count(instance.second.poseClusterIndex) > 0)
+        for (PoseCluster *pose : startInstance.second.poseClusters)
         {
-            for (auto &sequenceCandidate : sequencesByFirstPose.find(instance.second.poseClusterIndex)->second)
+            if (sequencesByFirstPose.count(pose->index) > 0)
             {
-                if (animationAtFrame(*sequenceCandidate, instance.first))
+                for (auto &sequenceCandidate : sequencesByFirstPose.find(pose->index)->second)
                 {
-                    sequenceCandidate->instances.push_back(instance.first);
-                    for (int frameOffset = 0; frameOffset < sequenceCandidate->poses.size(); frameOffset++)
+                    if (animationAtFrame(*sequenceCandidate, startInstance.first))
                     {
-                        CharacterFrameInstance* frame = findInstanceAtFrame(FrameID(instance.first.replayIndex, instance.first.frameIndex + frameOffset));
-                        frame->animationIndex = sequenceCandidate->index;
+                        sequenceCandidate->instances.push_back(startInstance.first);
+                        for (int frameOffset = 0; frameOffset < sequenceCandidate->poses.size(); frameOffset++)
+                        {
+                            CharacterFrameInstance* frameInstance = findInstanceAtFrame(FrameID(startInstance.first.replayIndex, startInstance.first.frameIndex + frameOffset));
+                            frameInstance->sequences.push_back(sequenceCandidate);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -52,7 +55,7 @@ void Character::labelAnimationInstances()
     for (auto &sequences : sequences)
     {
         cout << "Sequence frames = " << sequences.poses.size() << ", instances = " << sequences.instances.size() << endl;
-    }*/
+    }
 }
 
 void Character::recordAllFrames(const ReplayDatabase &frames)
@@ -66,6 +69,12 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
         }
     }
 
+    cout << "Assigning instances to clusters..." << endl;
+    for (auto &instance : allInstances)
+    {
+        assignClusters(instance.second);
+    }
+
     for (const ReplayDatabaseEntry &entry : frames.entries)
     {
         cout << "Recording transitions for character " << characterIndex << " in " << entry.replay->sourceFilename << endl;
@@ -73,12 +82,6 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
         {
             recordFrameTransition(pair);
         }
-    }
-
-    cout << "Assigning instances to clusters..." << endl;
-    for (auto &instance : allInstances)
-    {
-        assignClusters(instance.second);
     }
 
     cout << "Instance count = " << allInstances.size() << endl;

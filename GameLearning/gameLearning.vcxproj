@@ -44,12 +44,9 @@
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="alignment.txt" />
     <Text Include="learningParams.txt" />
-    <Text Include="objA.txt" />
-    <Text Include="objB.txt" />
-    <Text Include="transitionFrom.txt" />
-    <Text Include="transitionTo.txt" />
+    <Text Include="logs\transitionFrom.txt" />
+    <Text Include="logs\transitionTo.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>

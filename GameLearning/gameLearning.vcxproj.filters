@@ -100,23 +100,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="alignment.txt">
-      <Filter>Logs</Filter>
-    </Text>
-    <Text Include="objA.txt">
-      <Filter>Logs</Filter>
-    </Text>
-    <Text Include="objB.txt">
-      <Filter>Logs</Filter>
-    </Text>
-    <Text Include="transitionFrom.txt">
-      <Filter>Logs</Filter>
-    </Text>
-    <Text Include="transitionTo.txt">
-      <Filter>Logs</Filter>
-    </Text>
     <Text Include="learningParams.txt">
       <Filter>Core</Filter>
+    </Text>
+    <Text Include="logs\transitionFrom.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="logs\transitionTo.txt">
+      <Filter>Logs</Filter>
     </Text>
   </ItemGroup>
 </Project>
