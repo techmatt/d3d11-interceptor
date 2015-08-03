@@ -26,6 +26,34 @@ void Character::init(const vector<UINT64> &segments, int _characterIndex)
         allSegments.insert(segment);
 }
 
+void Character::labelAnimationInstances()
+{
+   /* cout << "Labeling animation instances..." << endl;
+    for (auto &instance : allInstances)
+    {
+        if (instance.second.animationIndex == -1 && sequencesByFirstPose.count(instance.second.poseClusterIndex) > 0)
+        {
+            for (auto &sequenceCandidate : sequencesByFirstPose.find(instance.second.poseClusterIndex)->second)
+            {
+                if (animationAtFrame(*sequenceCandidate, instance.first))
+                {
+                    sequenceCandidate->instances.push_back(instance.first);
+                    for (int frameOffset = 0; frameOffset < sequenceCandidate->poses.size(); frameOffset++)
+                    {
+                        CharacterFrameInstance* frame = findInstanceAtFrame(FrameID(instance.first.replayIndex, instance.first.frameIndex + frameOffset));
+                        frame->animationIndex = sequenceCandidate->index;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    for (auto &sequences : sequences)
+    {
+        cout << "Sequence frames = " << sequences.poses.size() << ", instances = " << sequences.instances.size() << endl;
+    }*/
+}
 
 void Character::recordAllFrames(const ReplayDatabase &frames)
 {
@@ -36,17 +64,28 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
         {
             recordFramePoses(frame);
         }
+    }
 
+    for (const ReplayDatabaseEntry &entry : frames.entries)
+    {
+        cout << "Recording transitions for character " << characterIndex << " in " << entry.replay->sourceFilename << endl;
         for (const auto &pair : entry.pairs)
         {
             recordFrameTransition(pair);
         }
     }
 
+    cout << "Assigning instances to clusters..." << endl;
+    for (auto &instance : allInstances)
+    {
+        assignClusters(instance.second);
+    }
+
     cout << "Instance count = " << allInstances.size() << endl;
     cout << "Cluster count = " << poseClusters.size() << endl;
 
     computeAnimationSequences();
+    labelAnimationInstances();
 
     ofstream fileA("logs/transitionFrom.txt");
     for (auto &c : poseClusters)
@@ -97,12 +136,12 @@ void Character::recordFramePoses(const ProcessedFrame &frame)
         {
             segmentInstance.second.centeredCentroid = segmentInstance.second.worldCentroid - sum;
         }
-        updateClusters(frameInstance);
+        addNewCluster(frameInstance);
         allInstances[frame.frameID] = frameInstance;
     }
 }
 
-void Character::updateClusters(CharacterFrameInstance &newInstance)
+void Character::addNewCluster(CharacterFrameInstance &newInstance)
 {
     //
     // check if the instance belongs to an existing pose cluster
@@ -111,11 +150,7 @@ void Character::updateClusters(CharacterFrameInstance &newInstance)
     {
         const double dist = frameInstanceDistSqAvg(cluster.seedInstance, newInstance);
         if (dist < learningParams().poseClusterDistThreshold)
-        {
-            cluster.observations++;
-            newInstance.poseClusterIndex = cluster.index;
             return;
-        }
     }
 
     //
@@ -123,10 +158,19 @@ void Character::updateClusters(CharacterFrameInstance &newInstance)
     //
     PoseCluster newCluster;
     newCluster.index = (int)poseClusters.size();
-    newInstance.poseClusterIndex = newCluster.index;
-    newCluster.observations = 1;
     newCluster.seedInstance = newInstance;
     poseClusters.push_back(newCluster);
+}
+
+void Character::assignClusters(CharacterFrameInstance &newInstance)
+{
+    newInstance.poseClusters.clear();
+    for (PoseCluster &cluster : poseClusters)
+    {
+        const double dist = frameInstanceDistSqAvg(cluster.seedInstance, newInstance);
+        if (dist < learningParams().poseClusterSoftAssignmentThreshold)
+            newInstance.poseClusters.push_back(&cluster);
+    }
 }
 
 void Character::recordFrameTransition(const FramePair &pair)
@@ -136,11 +180,14 @@ void Character::recordFrameTransition(const FramePair &pair)
 
     if (instance0 != nullptr && instance1 != nullptr)
     {
-        int cluster0 = instance0->poseClusterIndex;
-        int cluster1 = instance1->poseClusterIndex;
-
-        poseClusters[cluster1].transitionsFrom[cluster0].frameCount++;
-        poseClusters[cluster0].transitionsTo[cluster1].frameCount++;
+        for (auto &cluster0 : instance0->poseClusters)
+        {
+            for (auto &cluster1 : instance1->poseClusters)
+            {
+                poseClusters[cluster1->index].transitionsFrom[cluster0->index].frameCount++;
+                poseClusters[cluster0->index].transitionsTo[cluster1->index].frameCount++;
+            }
+        }
     }
 }
 
@@ -176,6 +223,18 @@ double Character::frameInstanceDistSqAvg(const CharacterFrameInstance &a, const 
         result = max(result, diff);
     }
     return result / a.segments.size();
+}
+
+void Character::updateFirstPoseMap()
+{
+    sequencesByFirstPose.clear();
+    for (auto &animation : sequences)
+    {
+        for (int firstPose : animation.poses[0])
+        {
+            sequencesByFirstPose[firstPose].push_back(&animation);
+        }
+    }
 }
 
 void Character::computeAnimationSequences()
@@ -226,9 +285,37 @@ void Character::computeAnimationSequences()
                 v.push_back(node->data->index);
                 sequence.poses.push_back(v);
             }
-            cout << "Animation sequence: " << sequence.poses.size() << " poses" << endl;
             sequences.push_back(sequence);
         }
     }
     cout << "Animation count: " << sequences.size() << endl;
+
+    updateFirstPoseMap();
+}
+
+bool Character::animationAtFrame(const AnimationSequence &sequence, const FrameID &startFrame) const
+{
+    FrameID curFrame = startFrame;
+    for (int sequenceIndex = 0; sequenceIndex < sequence.poses.size(); sequenceIndex++)
+    {
+        auto &poseChoices = sequence.poses[sequenceIndex];
+        
+        const CharacterFrameInstance* instance = findInstanceAtFrame(curFrame);
+        if (instance == nullptr)
+            return false;
+
+        bool acceptable = false;
+        for (int poseIndex : poseChoices)
+        {
+            for (auto &instancePose : instance->poseClusters)
+                if (instancePose->index == poseIndex)
+                    acceptable = true;
+        }
+
+        if (!acceptable)
+            return false;
+
+        curFrame = curFrame.next();
+    }
+    return true;
 }

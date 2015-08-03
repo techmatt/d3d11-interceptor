@@ -3,8 +3,7 @@ struct AppState
 {
     AppState()
     {
-        curReplayIndex = 0;
-        curFrameIndex = 0;
+        curFrame = FrameID(0, 0);
         curCharacterIndex = 0;
         showBBoxes = false;
         showFullMesh = false;
@@ -30,8 +29,7 @@ struct AppState
     CharacterDatabase characters;
     ReplayDatabase replays;
 
-    int curReplayIndex;
-    int curFrameIndex;
+    FrameID curFrame;
     int curCharacterIndex;
     int poseAnchorFrame;
 

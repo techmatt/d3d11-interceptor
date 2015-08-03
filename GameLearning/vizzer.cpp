@@ -64,8 +64,8 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    GameReplay &replay = *state.replays.entries[state.curReplayIndex].get().replay;
-    const FrameObjectData &frame = *replay.frames[state.curFrameIndex];
+    GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
+    const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
 
     vector<D3D11TriMesh> *meshesPtr = &state.curFrameMeshesRigidTransform;
     if (state.showBBoxes)
@@ -163,7 +163,7 @@ void Vizzer::render(ApplicationData &app)
 
     int y = 0;
     font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Frame " + to_string(state.curFrameIndex) + " / " + to_string(replay.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
@@ -200,7 +200,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
     
 
-    if (key == KEY_J) state.poseAnchorFrame = state.curFrameIndex;
+    if (key == KEY_J) state.poseAnchorFrame = state.curFrame.frameIndex;
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());
@@ -220,14 +220,14 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (frameDelta != 0)
     {
-        GameReplay &replay = *state.replays.entries[state.curReplayIndex].get().replay;
-        state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, replay.frames.size());
+        GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
+        state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
         if (GetAsyncKeyState(VK_SHIFT))
         {
-            while (replay.frames[state.curFrameIndex]->objectMeshes.size() == 0)
-                state.curFrameIndex = math::mod(state.curFrameIndex + frameDelta, replay.frames.size());
+            while (replay.frames[state.curFrame.frameIndex]->objectMeshes.size() == 0)
+                state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
         }
-        const FrameObjectData &frame = *replay.frames[state.curFrameIndex];
+        const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
 
         makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
         makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);

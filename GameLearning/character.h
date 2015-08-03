@@ -1,5 +1,16 @@
 
 struct SegmentAnalyzer;
+struct PoseCluster;
+struct AnimationSequence;
+
+struct PoseTransition
+{
+    PoseTransition()
+    {
+        frameCount = 0;
+    }
+    int frameCount;
+};
 
 struct CharacterSegmentInstance
 {
@@ -10,23 +21,13 @@ struct CharacterSegmentInstance
 
 struct CharacterFrameInstance
 {
-    CharacterFrameInstance()
-    {
-        poseClusterIndex = -1;
-        animationIndex = -1;
-    }
-    int poseClusterIndex;
-    int animationIndex;
-    map<UINT64, CharacterSegmentInstance> segments;
-};
+    // this is the set of all clusters within clusterSoftAssignmentThreshold
+    vector<PoseCluster*> poseClusters;
 
-struct PoseTransition
-{
-    PoseTransition()
-    {
-        frameCount = 0;
-    }
-    int frameCount;
+    // the set of all animation sequences this instance is a part of (should generally be 0 or 1)
+    vector<AnimationSequence*> sequences;
+
+    map<UINT64, CharacterSegmentInstance> segments;
 };
 
 struct PoseCluster
@@ -48,8 +49,8 @@ struct PoseCluster
     }
 
     int index;
-    CharacterFrameInstance seedInstance;
     int observations;
+    CharacterFrameInstance seedInstance;
     map<int, PoseTransition> transitionsTo;
     map<int, PoseTransition> transitionsFrom;
 };
@@ -58,6 +59,7 @@ struct AnimationSequence
 {
     int index;
     vector< vector<int> > poses;
+    vector<FrameID> instances;
 };
 
 struct Character
@@ -65,7 +67,14 @@ struct Character
     void init(const vector<UINT64> &segments, int _characterIndex);
     void recordAllFrames(const ReplayDatabase &frames);
 
-    const CharacterFrameInstance* findInstanceAtFrame(const string &frameID) const
+    const CharacterFrameInstance* findInstanceAtFrame(const FrameID &frameID) const
+    {
+        if (allInstances.count(frameID) == 0)
+            return nullptr;
+        return &(allInstances.find(frameID)->second);
+    }
+
+    CharacterFrameInstance* findInstanceAtFrame(const FrameID &frameID)
     {
         if (allInstances.count(frameID) == 0)
             return nullptr;
@@ -79,17 +88,24 @@ struct Character
     int characterIndex;
 
     // maps from frame ID to character instance
-    map<string, CharacterFrameInstance> allInstances;
+    map<FrameID, CharacterFrameInstance> allInstances;
 
     vector<PoseCluster> poseClusters;
 
     vector<AnimationSequence> sequences;
 
+    map<int, vector<AnimationSequence*> > sequencesByFirstPose;
+
 private:
-    void updateClusters(CharacterFrameInstance &newInstance);
+    void addNewCluster(CharacterFrameInstance &newInstance);
+    void assignClusters(CharacterFrameInstance &newInstance);
     void recordFramePoses(const ProcessedFrame &frame);
     void recordFrameTransition(const FramePair &pair);
     void computeAnimationSequences();
+    void updateFirstPoseMap();
+
+    void labelAnimationInstances();
+    bool animationAtFrame(const AnimationSequence &sequence, const FrameID &startFrame) const;
 };
 
 struct CharacterDatabase

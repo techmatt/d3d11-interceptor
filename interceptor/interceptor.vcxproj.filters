@@ -25,13 +25,13 @@
     <ClInclude Include="..\shared\localizedObject.h">
       <Filter>Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\objectCollection.h">
-      <Filter>Shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\shared\signatureColorMap.h">
       <Filter>Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\geometryDatabase.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\gameReplay.h">
       <Filter>Shared</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,13 +66,13 @@
     <ClCompile Include="..\shared\localizedObjectInterceptor.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\objectCollection.cpp">
-      <Filter>Shared</Filter>
-    </ClCompile>
     <ClCompile Include="..\shared\signatureColorMap.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
     <ClCompile Include="..\shared\geometryDatabase.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\gameReplay.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
   </ItemGroup>

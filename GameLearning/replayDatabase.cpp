@@ -7,6 +7,7 @@ void ReplayDatabase::addEntry(const string &alignedFrameFilename)
     
     ReplayDatabaseEntry *newEntry = new ReplayDatabaseEntry;
 
+    newEntry->replayIndex = (int)entries.size();
     newEntry->replay = new GameReplay;
     newEntry->replay->load(alignedFrameFilename);
     
@@ -19,8 +20,7 @@ void ReplayDatabase::addEntry(const string &alignedFrameFilename)
     for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
     {
         FrameObjectData *frame = newEntry->replay->frames[frameIndex];
-        const string frameID = fileTag + "-" + to_string(frameIndex);
-        newEntry->processedFrames[frameIndex] = ProcessedFrame(frame, frameID);
+        newEntry->processedFrames[frameIndex] = ProcessedFrame(frame, FrameID(newEntry->replayIndex, frameIndex));
     }
 
     for (int frameIndex = 0; frameIndex < frameCount - 1; frameIndex++)

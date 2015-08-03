@@ -17,7 +17,7 @@ const int keyFrameCaptureRate = 500;
 
 #include "../shared/gameAIInterface.h"
 #include "../shared/localizedObject.h"
-#include "../shared/objectCollection.h"
+#include "../shared/gameReplay.h"
 #include "../shared/signatureColorMap.h"
 #include "../shared/geometryDatabase.h"
 

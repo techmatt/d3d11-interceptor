@@ -11,6 +11,8 @@ struct LearningParams
         params.readParameter("datasetDir", datasetDir);
 
         params.readParameter("poseClusterDistThreshold", poseClusterDistThreshold);
+        params.readParameter("poseClusterSoftAssignmentThreshold", poseClusterSoftAssignmentThreshold);
+
         params.readParameter("requiredAnimationTransitionFrames", requiredAnimationTransitionFrames);
         params.readParameter("requiredSaliency", requiredSaliency);
         params.readParameter("minAnimationLength", minAnimationLength);
@@ -19,6 +21,7 @@ struct LearningParams
     string datasetDir;
 
     double poseClusterDistThreshold;
+    double poseClusterSoftAssignmentThreshold;
 
     double requiredAnimationTransitionFrames;
     double requiredSaliency;
