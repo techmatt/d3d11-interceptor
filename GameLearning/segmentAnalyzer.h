@@ -38,7 +38,7 @@ private:
     int count;
 };
 
-struct SegmentStats
+struct SegmentStats : public BinaryDataSerialize< SegmentStats >
 {
     SegmentStats()
     {
@@ -78,11 +78,14 @@ struct SegmentAnalyzer
 
     void dump(const string &filename);
 
-    map<UINT64, SegmentStats> segments;
+    unordered_map<UINT64, SegmentStats> segments;
     SegmentGraph segmentGraph;
     vector< vector<UINT64> > characterSegments;
 
 private:
+    void save(const string &filename) const;
+    void load(const string &filename);
+
     void recordSegmentTracking(const FramePair &frames);
     void recordTrackableSegmentObservations(const ProcessedFrame& frame);
 

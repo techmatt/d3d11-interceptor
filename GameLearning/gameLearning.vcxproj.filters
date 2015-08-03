@@ -27,9 +27,6 @@
     <ClInclude Include="..\shared\localizedObject.h">
       <Filter>Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\objectCollection.h">
-      <Filter>Shared</Filter>
-    </ClInclude>
     <ClInclude Include="vizzer.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -60,13 +57,13 @@
     <ClInclude Include="replayDatabase.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\gameReplay.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
       <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\objectCollection.cpp">
-      <Filter>Shared</Filter>
     </ClCompile>
     <ClCompile Include="vizzer.cpp">
       <Filter>UI</Filter>
@@ -98,11 +95,11 @@
     <ClCompile Include="replayDatabase.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
+    <ClCompile Include="..\shared\gameReplay.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="clusters.txt">
-      <Filter>Logs</Filter>
-    </Text>
     <Text Include="alignment.txt">
       <Filter>Logs</Filter>
     </Text>
@@ -110,9 +107,6 @@
       <Filter>Logs</Filter>
     </Text>
     <Text Include="objB.txt">
-      <Filter>Logs</Filter>
-    </Text>
-    <Text Include="segments.txt">
       <Filter>Logs</Filter>
     </Text>
     <Text Include="transitionFrom.txt">

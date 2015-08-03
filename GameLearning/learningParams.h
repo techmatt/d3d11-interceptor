@@ -9,12 +9,20 @@ struct LearningParams
     void load(const ParameterFile &params)
     {
         params.readParameter("datasetDir", datasetDir);
-        params.readParameter("animationClusterDistThreshold", animationClusterDistThreshold);
+
+        params.readParameter("poseClusterDistThreshold", poseClusterDistThreshold);
+        params.readParameter("requiredAnimationTransitionFrames", requiredAnimationTransitionFrames);
+        params.readParameter("requiredSaliency", requiredSaliency);
+        params.readParameter("minAnimationLength", minAnimationLength);
     }
 
     string datasetDir;
 
-    double animationClusterDistThreshold;
+    double poseClusterDistThreshold;
+
+    double requiredAnimationTransitionFrames;
+    double requiredSaliency;
+    int minAnimationLength;
 };
 
 extern LearningParams g_learningParams;

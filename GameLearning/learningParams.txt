@@ -1,3 +1,7 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
 
-animationClusterDistThreshold=0.1
+poseClusterDistThreshold=0.1
+
+requiredAnimationTransitionFrames=3
+requiredSaliency=0.25
+minAnimationLength=5

@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\gameReplay.h" />
     <ClInclude Include="..\shared\geometryDatabase.h" />
     <ClInclude Include="..\shared\localizedObject.h" />
-    <ClInclude Include="..\shared\objectCollection.h" />
     <ClInclude Include="..\shared\signatureColorMap.h" />
     <ClInclude Include="appState.h" />
     <ClInclude Include="character.h" />
@@ -27,9 +27,9 @@
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\gameReplay.cpp" />
     <ClCompile Include="..\shared\geometryDatabase.cpp" />
     <ClCompile Include="..\shared\localizedObjectLearner.cpp" />
-    <ClCompile Include="..\shared\objectCollection.cpp" />
     <ClCompile Include="..\shared\signatureColorMap.cpp" />
     <ClCompile Include="character.cpp" />
     <ClCompile Include="datasetProcessor.cpp" />
@@ -45,11 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="alignment.txt" />
-    <Text Include="clusters.txt" />
     <Text Include="learningParams.txt" />
     <Text Include="objA.txt" />
     <Text Include="objB.txt" />
-    <Text Include="segments.txt" />
     <Text Include="transitionFrom.txt" />
     <Text Include="transitionTo.txt" />
   </ItemGroup>

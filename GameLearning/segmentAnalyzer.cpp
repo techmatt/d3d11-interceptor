@@ -1,8 +1,34 @@
 
 #include "main.h"
 
+void SegmentAnalyzer::save(const string &filename) const
+{
+    BinaryDataStreamFile file(filename, true);
+
+    file << segments << characterSegments;
+    
+    file.closeStream();
+}
+
+void SegmentAnalyzer::load(const string &filename)
+{
+    BinaryDataStreamFile file(filename, false);
+
+    file >> segments >> characterSegments;
+    
+    file.closeStream();
+}
+
 void SegmentAnalyzer::analyze(const ReplayDatabase &database)
 {
+    const string &cacheFilename = learningParams().datasetDir + "segments.dat";
+    if (util::fileExists(cacheFilename))
+    {
+        cout << "Loading segments from " << cacheFilename << endl;
+        load(cacheFilename);
+        return;
+    }
+
     cout << "*** Computing segment statistics" << endl;
     for (const ReplayDatabaseEntry &entry : database.entries)
     {
@@ -18,6 +44,8 @@ void SegmentAnalyzer::analyze(const ReplayDatabase &database)
 
     cout << "*** Making character labels" << endl;
     assignCharacterLabels();
+
+    save(cacheFilename);
 }
 
 void SegmentAnalyzer::recordSegmentTracking(const FramePair &pair)
@@ -142,7 +170,7 @@ void SegmentAnalyzer::assignCharacterLabels()
     int characterIndex = 0;
     for (int componentIndex = 0; componentIndex < components.size(); componentIndex++)
     {
-        const vector<UINT> &component = components[componentIndex];
+        const auto &component = components[componentIndex];
         cout << "Component " << componentIndex << " has " << component.size() << " vertices";
 
         if (component.size() < minCharacterComponents)
@@ -153,9 +181,9 @@ void SegmentAnalyzer::assignCharacterLabels()
 
         characterSegments.push_back(vector<UINT64>());
         auto &character = characterSegments.back();
-        for (UINT nodeIndex : component)
+        for (auto &node : component)
         {
-            SegmentStats &segment = *segmentGraph.nodes()[nodeIndex].data;
+            SegmentStats &segment = *node->data;
             segment.characterLabel = characterIndex;
             character.push_back(segment.signature);
         }

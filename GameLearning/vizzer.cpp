@@ -172,7 +172,7 @@ void Vizzer::render(ApplicationData &app)
     double animationDistAvg = -1.0;
     if (state.curCharacterIndex >= 0 && state.curCharacterIndex < state.characters.characters.size())
     {
-        const auto &animationInstanceA = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.animationAnchorFrame);
+        const auto &animationInstanceA = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.poseAnchorFrame);
         const auto &animationInstanceB = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.curFrameIndex);
         if (animationInstanceA != nullptr && animationInstanceB != nullptr)
         {
@@ -200,7 +200,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
     
 
-    if (key == KEY_J) state.animationAnchorFrame = state.curFrameIndex;
+    if (key == KEY_J) state.poseAnchorFrame = state.curFrameIndex;
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());

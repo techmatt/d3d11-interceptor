@@ -31,10 +31,10 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
 {
     for (const ReplayDatabaseEntry &entry : frames.entries)
     {
-        cout << "Recording animations for character " << characterIndex << " in " << entry.replay->sourceFilename << endl;
+        cout << "Recording poses for character " << characterIndex << " in " << entry.replay->sourceFilename << endl;
         for (const auto &frame : entry.processedFrames)
         {
-            recordFrameAnimation(frame);
+            recordFramePoses(frame);
         }
 
         for (const auto &pair : entry.pairs)
@@ -44,9 +44,12 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     }
 
     cout << "Instance count = " << allInstances.size() << endl;
+    cout << "Cluster count = " << poseClusters.size() << endl;
 
-    ofstream fileA("logs/transitionTo.txt");
-    for (auto &c : clusters)
+    computeAnimationSequences();
+
+    ofstream fileA("logs/transitionFrom.txt");
+    for (auto &c : poseClusters)
     {
         fileA << c.index << " (" << c.observations << ")";
         for (auto &i : c.transitionsFrom)
@@ -56,8 +59,8 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
         fileA << endl;
     }
 
-    ofstream fileB("logs/transitionFrom.txt");
-    for (auto &c : clusters)
+    ofstream fileB("logs/transitionTo.txt");
+    for (auto &c : poseClusters)
     {
         fileB << c.index << " (" << c.observations << ")";
         for (auto &i : c.transitionsTo)
@@ -68,7 +71,7 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     }
 }
 
-void Character::recordFrameAnimation(const ProcessedFrame &frame)
+void Character::recordFramePoses(const ProcessedFrame &frame)
 {
     CharacterFrameInstance frameInstance;
     
@@ -102,15 +105,15 @@ void Character::recordFrameAnimation(const ProcessedFrame &frame)
 void Character::updateClusters(CharacterFrameInstance &newInstance)
 {
     //
-    // check if the instance belongs to an existing animation cluster
+    // check if the instance belongs to an existing pose cluster
     //
-    for (AnimationCluster &cluster : clusters)
+    for (PoseCluster &cluster : poseClusters)
     {
         const double dist = frameInstanceDistSqAvg(cluster.seedInstance, newInstance);
-        if (dist < learningParams().animationClusterDistThreshold)
+        if (dist < learningParams().poseClusterDistThreshold)
         {
             cluster.observations++;
-            newInstance.animationClusterIndex = cluster.index;
+            newInstance.poseClusterIndex = cluster.index;
             return;
         }
     }
@@ -118,12 +121,12 @@ void Character::updateClusters(CharacterFrameInstance &newInstance)
     //
     // no valid cluster found; create a new one
     //
-    AnimationCluster newCluster;
-    newCluster.index = (int)clusters.size();
-    newInstance.animationClusterIndex = newCluster.index;
+    PoseCluster newCluster;
+    newCluster.index = (int)poseClusters.size();
+    newInstance.poseClusterIndex = newCluster.index;
     newCluster.observations = 1;
     newCluster.seedInstance = newInstance;
-    clusters.push_back(newCluster);
+    poseClusters.push_back(newCluster);
 }
 
 void Character::recordFrameTransition(const FramePair &pair)
@@ -133,11 +136,11 @@ void Character::recordFrameTransition(const FramePair &pair)
 
     if (instance0 != nullptr && instance1 != nullptr)
     {
-        int cluster0 = instance0->animationClusterIndex;
-        int cluster1 = instance1->animationClusterIndex;
+        int cluster0 = instance0->poseClusterIndex;
+        int cluster1 = instance1->poseClusterIndex;
 
-        clusters[cluster1].transitionsFrom[cluster0].frameCount++;
-        clusters[cluster0].transitionsTo[cluster1].frameCount++;
+        poseClusters[cluster1].transitionsFrom[cluster0].frameCount++;
+        poseClusters[cluster0].transitionsTo[cluster1].frameCount++;
     }
 }
 
@@ -173,4 +176,59 @@ double Character::frameInstanceDistSqAvg(const CharacterFrameInstance &a, const 
         result = max(result, diff);
     }
     return result / a.segments.size();
+}
+
+void Character::computeAnimationSequences()
+{
+    cout << "Computing animation sequences" << endl;
+
+    UndirectedGraph<PoseCluster*, float> animationGraph;
+    
+    for (auto &pose : poseClusters)
+    {
+        animationGraph.addNode(&pose);
+    }
+
+    for (auto &pose : poseClusters)
+    {
+        float bestSaliency = (float)learningParams().requiredSaliency;
+        int bestTransition = -1;
+        for (auto &tr : pose.transitionsTo)
+        {
+            const int poseCandidate = tr.first;
+            const float saliencyA = PoseCluster::transitionSaliency(pose.transitionsTo, pose.index, poseCandidate);
+            const float saliencyB = PoseCluster::transitionSaliency(poseClusters[poseCandidate].transitionsFrom, poseCandidate, pose.index);
+            const float totalSaliency = min(saliencyA, saliencyB);
+            if (totalSaliency > bestSaliency)
+            {
+                bestSaliency = totalSaliency;
+                bestTransition = poseCandidate;
+            }
+        }
+
+        if (bestTransition != -1)
+        {
+            animationGraph.addEdge(pose.index, bestTransition, bestSaliency);
+        }
+    }
+
+    auto components = animationGraph.computeConnectedComponents();
+    for (auto &component : components)
+    {
+        if (component.size() >= learningParams().minAnimationLength)
+        {
+            AnimationSequence sequence;
+            sequence.index = (int)sequences.size();
+
+            for (auto &node : component)
+            {
+                vector<int> v;
+                v.push_back(node->data->index);
+                sequence.poses.push_back(v);
+            }
+            cout << "Animation sequence: " << sequence.poses.size() << " poses" << endl;
+            sequences.push_back(sequence);
+        }
+    }
+    cout << "Animation count: " << sequences.size() << endl;
 }

@@ -70,7 +70,12 @@ public:
         _edges.push_back(newEdge);
     }
 
-    vector< vector<UINT> > computeConnectedComponents(const std::function<bool(const EdgeData&)> &edgeTest) const
+    vector< vector<const Node*> > computeConnectedComponents() const
+    {
+        return computeConnectedComponents([](const EdgeData &e) { return true; });
+    }
+
+    vector< vector<const Node*> > computeConnectedComponents(const std::function<bool(const EdgeData&)> &edgeTest) const
     {
         const UINT n = (UINT)_nodes.size();
         set<UINT> remainingNodes;
@@ -78,11 +83,11 @@ public:
         for (UINT i = 0; i < n; i++)
             remainingNodes.insert(i);
 
-        std::function<void(UINT, vector<UINT>&)> visitNode = [&](UINT nodeIndex, vector<UINT> &curComponent)
+        std::function<void(UINT, vector<const Node*>&)> visitNode = [&](UINT nodeIndex, vector<const Node*> &curComponent)
         {
             if (remainingNodes.count(nodeIndex) == 0) return;
             remainingNodes.erase(nodeIndex);
-            curComponent.push_back(nodeIndex);
+            curComponent.push_back(&_nodes[nodeIndex]);
             for (UINT edgeIndex : _nodes[nodeIndex].edges)
             {
                 const Edge &e = _edges[edgeIndex];
@@ -91,12 +96,12 @@ public:
             }
         };
 
-        vector< vector<UINT> > result;
+        vector< vector<const Node*> > result;
 
         UINT componentIndex = 0;
         while (remainingNodes.size() > 0)
         {
-            result.push_back(vector<UINT>());
+            result.push_back(vector<const Node*>());
             int seedNodeIndex = *remainingNodes.begin();
             visitNode(seedNodeIndex, result.back());
         }

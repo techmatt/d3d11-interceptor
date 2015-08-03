@@ -20,7 +20,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "learningParams.h"
 
 #include "../shared/localizedObject.h"
-#include "../shared/objectCollection.h"
+#include "../shared/gameReplay.h"
 #include "../shared/signatureColorMap.h"
 #include "../shared/geometryDatabase.h"
 

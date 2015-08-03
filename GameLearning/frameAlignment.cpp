@@ -144,7 +144,7 @@ FrameAlignmentCluster FrameAlignment::alignFrames(const FrameObjectData &source,
         return result;
     }
 
-    vector<FrameAlignmentCluster> clusters;
+    vector<FrameAlignmentCluster> poseClusters;
     while (candidateAlignments.size() > 0)
     {
         vector<mat4f> unmatchedAlignments;
@@ -169,20 +169,20 @@ FrameAlignmentCluster FrameAlignment::alignFrames(const FrameObjectData &source,
             }
         }
 
-        clusters.push_back(cluster);
+        poseClusters.push_back(cluster);
         candidateAlignments = unmatchedAlignments;
     }
 
-    sort(clusters.begin(), clusters.end(), [](const FrameAlignmentCluster &a, const FrameAlignmentCluster &b) { return a.size > b.size; });
+    sort(poseClusters.begin(), poseClusters.end(), [](const FrameAlignmentCluster &a, const FrameAlignmentCluster &b) { return a.size > b.size; });
 
     if (outputClusters)
     {
-        for (auto &c : clusters)
+        for (auto &c : poseClusters)
         {
             file << "size = " << c.size << endl;
             file << c.transform << endl << endl;
         }
     }
 
-    return clusters[0];
+    return poseClusters[0];
 }
