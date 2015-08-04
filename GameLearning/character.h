@@ -21,6 +21,8 @@ struct CharacterSegmentInstance
 
 struct CharacterFrameInstance
 {
+    void makePoseDescriptor(const vector<UINT64> &segmentList, vector<float> &result);
+
     // this is the set of all clusters within clusterSoftAssignmentThreshold
     vector<PoseCluster*> poseClusters;
 
@@ -84,7 +86,7 @@ struct Character
     static double frameInstanceDistSqAvg(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
     static double frameInstanceDistSqMax(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
 
-    set<UINT64> allSegments;
+    vector<UINT64> allSegments;
     int characterIndex;
 
     // maps from frame ID to character instance
