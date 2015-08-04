@@ -19,38 +19,48 @@ struct CharacterSegmentInstance
     vec3f centeredCentroid;
 };
 
+struct InstanceAnimationEntry
+{
+    int sequenceIndex;
+    int sequenceOffset;
+    float weight;
+};
+
 struct CharacterFrameInstance
 {
+    CharacterFrameInstance()
+    {
+        candidateAnimationLength = -1;
+    }
+
+    FrameID frameID;
+
     // this is the set of all clusters within clusterSoftAssignmentThreshold
     vector<PoseCluster*> poseClusters;
 
-    // the set of all animation sequences this instance is a part of (should generally be 0 or 1)
-    vector<AnimationSequence*> sequences;
+    // the set of all animation sequences this instance is a part of
+    vector<InstanceAnimationEntry> sequences;
+
+    // the ideal of an animation, if one were to start at this instance
+    int candidateAnimationLength;
 
     map<UINT64, CharacterSegmentInstance> segments;
 };
 
+struct CharacterFrameInstanceCompare
+{
+    bool operator() (const CharacterFrameInstance *a, const CharacterFrameInstance *b)
+    {
+        return a->candidateAnimationLength < b->candidateAnimationLength;
+    }
+};
+
 struct PoseCluster
 {
-    static float transitionSaliency(const map<int, PoseTransition> &map, int start, int candidate)
-    {
-        int frameSum = 0, candidateSum = 0;
-        for (auto &e : map)
-        {
-            if (e.first != start)
-                frameSum += e.second.frameCount;
-            if (e.first == candidate)
-                candidateSum += e.second.frameCount;
-        }
-        if (frameSum == 0) return 0.0f;
-        if (candidateSum < learningParams().requiredAnimationTransitionFrames) return 0.0f;
-
-        return (float)candidateSum / (float)frameSum;
-    }
-
     int index;
-    int observations;
     CharacterFrameInstance seedInstance;
+    vector<FrameID> observations;
+
     map<int, PoseTransition> transitionsTo;
     map<int, PoseTransition> transitionsFrom;
 };
@@ -58,7 +68,8 @@ struct PoseCluster
 struct AnimationSequence
 {
     int index;
-    vector< vector<int> > poses;
+    vec3f color;
+    vector< set<int> > poses;
     vector<FrameID> instances;
 };
 
@@ -84,8 +95,8 @@ struct Character
     static double frameInstanceDistSqAvg(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
     static double frameInstanceDistSqMax(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
 
-    set<UINT64> allSegments;
     int characterIndex;
+    set<UINT64> allSegments;
 
     // maps from frame ID to character instance
     map<FrameID, CharacterFrameInstance> allInstances;
@@ -102,6 +113,11 @@ private:
     void recordFramePoses(const ProcessedFrame &frame);
     void recordFrameTransition(const FramePair &pair);
     void computeAnimationSequences();
+    
+    int computeAnimationOverlap(const CharacterFrameInstance &instanceAStart, const CharacterFrameInstance &instanceBStart, int animationLength) const;
+    int computeAnimationInstances(const CharacterFrameInstance &startInstance, int animationLength, vector< set<PoseCluster*> > &poses, vector<FrameID> &startingFrames, bool emitPoses) const;
+    vector<int> computeAnimationInstanceCounts(const CharacterFrameInstance &startInstance) const;
+
     void updateFirstPoseMap();
 
     void labelAnimationInstances();

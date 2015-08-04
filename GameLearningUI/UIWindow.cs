@@ -185,5 +185,15 @@ namespace UIWindow
         {
             SendMessage("showCharacterSegments " + checkBoxShowCharacterSegments.Checked);
         }
+
+        private void buttonLoadFrame_Click(object sender, EventArgs e)
+        {
+            SendMessage("loadFrame " + textBoxFrameIndex.Text);
+        }
+
+        private void checkBoxAnimationLabel_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("showAnimationLabel " + checkBoxAnimationLabel.Checked);
+        }
     }
 }

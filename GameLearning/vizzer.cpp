@@ -41,6 +41,13 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("loadSignature", [&](const vector<string> &params) {
         state.selectedSignature = util::convertTo<UINT64>(params[1]);
     });
+    state.eventMap.registerEvent("loadFrame", [&](const vector<string> &params) {
+        state.curFrame.frameIndex = util::convertTo<UINT64>(params[1]);
+        if (state.curFrame.frameIndex < 0 || state.curFrame.frameIndex >= state.replays.entries[state.curFrame.replayIndex].get().replay->frames.size())
+        {
+            state.curFrame.frameIndex = 0;
+        }
+    });
     state.eventMap.registerEvent("showBBoxes", [&](const vector<string> &params) {
         state.showBBoxes = ml::util::convertTo<bool>(params[1]);
     });
@@ -55,6 +62,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     });
     state.eventMap.registerEvent("showCharacterSegments", [&](const vector<string> &params) {
         state.showCharacterSegments = ml::util::convertTo<bool>(params[1]);
+    });
+    state.eventMap.registerEvent("showAnimationLabel", [&](const vector<string> &params) {
+        state.showAnimationLabel = ml::util::convertTo<bool>(params[1]);
     });
 }
 
@@ -113,6 +123,17 @@ void Vizzer::render(ApplicationData &app)
                 color = vec3f(0.5f, 0.5f, 0.5f);
             else
                 color = vec3f(1.3f, 0.3f, 0.3f);
+        }
+
+        if (state.showAnimationLabel)
+        {
+            color = vec3f(1.0f, 1.0f, 1.0f);
+            const Character &c = state.characters.characters[state.curCharacterIndex];
+            const CharacterFrameInstance *instance = c.findInstanceAtFrame(state.curFrame);
+            if (instance != nullptr && instance->sequences.size() > 0)
+            {
+                color = c.sequences[instance->sequences[0].sequenceIndex].color;
+            }
         }
 
         if (!state.showSelectionOnly || signature == state.selectedSignature || selectedCharacter)

@@ -73,6 +73,7 @@ public:
 		if (m_CaseSensitive) {
 			const auto s = m_Values.find(name);
 			if (s == m_Values.end()) {
+                cout << "Parameter not found: " << name << endl;
 				return false; 
 			} else {
 				util::convertTo(s->second, value);

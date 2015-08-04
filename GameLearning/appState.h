@@ -10,6 +10,7 @@ struct AppState
         showSelectionOnly = false;
         showTrackable = false;
         showCharacterSegments = false;
+        showAnimationLabel = false;
         selectedSignature = (UINT64)-1;
     }
 
@@ -42,4 +43,5 @@ struct AppState
     bool showSelectionOnly;
     bool showTrackable;
     bool showCharacterSegments;
+    bool showAnimationLabel;
 };

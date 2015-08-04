@@ -204,3 +204,5 @@
 /datasets
 /GameLearning/logs/transitionFrom.txt
 /GameLearning/logs/transitionTo.txt
+/GameLearning/logs/animationStrengths.txt
+/GameLearning/logs/sequences.txt

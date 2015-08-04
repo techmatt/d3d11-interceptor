@@ -28,7 +28,7 @@ void Character::init(const vector<UINT64> &segments, int _characterIndex)
 
 void Character::labelAnimationInstances()
 {
-    cout << "Labeling animation instances..." << endl;
+    /*cout << "Labeling animation instances..." << endl;
     for (auto &startInstance : allInstances)
     {
         for (PoseCluster *pose : startInstance.second.poseClusters)
@@ -55,7 +55,7 @@ void Character::labelAnimationInstances()
     for (auto &sequences : sequences)
     {
         cout << "Sequence frames = " << sequences.poses.size() << ", instances = " << sequences.instances.size() << endl;
-    }
+    }*/
 }
 
 void Character::recordAllFrames(const ReplayDatabase &frames)
@@ -88,12 +88,12 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     cout << "Cluster count = " << poseClusters.size() << endl;
 
     computeAnimationSequences();
-    labelAnimationInstances();
+    //labelAnimationInstances();
 
     ofstream fileA("logs/transitionFrom.txt");
     for (auto &c : poseClusters)
     {
-        fileA << c.index << " (" << c.observations << ")";
+        fileA << c.index << " (" << c.observations.size() << ")";
         for (auto &i : c.transitionsFrom)
         {
             fileA << '\t' << i.first << " (" << i.second.frameCount << ")";
@@ -104,13 +104,35 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     ofstream fileB("logs/transitionTo.txt");
     for (auto &c : poseClusters)
     {
-        fileB << c.index << " (" << c.observations << ")";
+        fileB << c.index << " (" << c.observations.size() << ")";
         for (auto &i : c.transitionsTo)
         {
             fileB << '\t' << i.first << " (" << i.second.frameCount << ")";
         }
         fileB << endl;
     }
+
+    ofstream fileSequences("logs/sequences.txt");
+    for (auto &sequence : sequences)
+    {
+        fileSequences << endl << "Animation index: " << sequence.index << ", length=" << sequence.poses.size() << endl;
+        for (const FrameID &frameID : sequence.instances)
+        {
+            fileSequences << "  frame=" << frameID.frameIndex << endl;
+        }
+    }
+
+    /*ofstream fileC("logs/animationStrengths.txt");
+    for (auto &instance : allInstances)
+    {
+        fileC << instance.first.frameIndex;
+        for (int instanceCount : computeAnimationInstanceCounts(instance.second))
+        {
+            fileC << '\t' << instanceCount;
+        }
+        fileC << endl;
+    }*/
+    
 }
 
 void Character::recordFramePoses(const ProcessedFrame &frame)
@@ -134,6 +156,7 @@ void Character::recordFramePoses(const ProcessedFrame &frame)
 
     if (sumCount > 0.0f)
     {
+        frameInstance.frameID = frame.frameID;
         sum /= sumCount;
         for (auto &segmentInstance : frameInstance.segments)
         {
@@ -172,7 +195,10 @@ void Character::assignClusters(CharacterFrameInstance &newInstance)
     {
         const double dist = frameInstanceDistSqAvg(cluster.seedInstance, newInstance);
         if (dist < learningParams().poseClusterSoftAssignmentThreshold)
+        {
+            cluster.observations.push_back(newInstance.frameID);
             newInstance.poseClusters.push_back(&cluster);
+        }
     }
 }
 
@@ -242,58 +268,181 @@ void Character::updateFirstPoseMap()
 
 void Character::computeAnimationSequences()
 {
-    cout << "Computing animation sequences" << endl;
+    cout << "*** Computing animation sequences" << endl;
 
-    UndirectedGraph<PoseCluster*, float> animationGraph;
-    
-    for (auto &pose : poseClusters)
+    auto findOptimalAnimationLength = [](const vector<int> &v)
     {
-        animationGraph.addNode(&pose);
-    }
-
-    for (auto &pose : poseClusters)
-    {
-        float bestSaliency = (float)learningParams().requiredSaliency;
-        int bestTransition = -1;
-        for (auto &tr : pose.transitionsTo)
+        if (v.size() <= learningParams().minAnimationLength)
         {
-            const int poseCandidate = tr.first;
-            const float saliencyA = PoseCluster::transitionSaliency(pose.transitionsTo, pose.index, poseCandidate);
-            const float saliencyB = PoseCluster::transitionSaliency(poseClusters[poseCandidate].transitionsFrom, poseCandidate, pose.index);
-            const float totalSaliency = min(saliencyA, saliencyB);
-            if (totalSaliency > bestSaliency)
+            return 0;
+        };
+        
+        const int startValue = v[learningParams().animationStartOffset];
+        for (int length = learningParams().animationStartOffset; length < v.size(); length++)
+        {
+            const double ratio = 1.0 - fabs(double(v[length] - startValue)) / (double)startValue;
+            if (ratio < learningParams().animationConsistencyRatio || v[length] < learningParams().minAnimationInstances)
             {
-                bestSaliency = totalSaliency;
-                bestTransition = poseCandidate;
+                if (length < learningParams().minAnimationLength)
+                    return 0;
+                return length;
             }
         }
+        return (int)v.size();
+    };
 
-        if (bestTransition != -1)
+    cout << "Filling priority queue" << endl;
+    priority_queue<CharacterFrameInstance*, vector<CharacterFrameInstance*>, CharacterFrameInstanceCompare> animationLengthsQueue;
+    for (auto &instance : allInstances)
+    {
+        vector<int> animationCounts = computeAnimationInstanceCounts(instance.second);
+        int optimalLength = findOptimalAnimationLength(animationCounts);
+        if (optimalLength != 0)
         {
-            animationGraph.addEdge(pose.index, bestTransition, bestSaliency);
+            instance.second.candidateAnimationLength = optimalLength;
+            animationLengthsQueue.push(&instance.second);
         }
     }
 
-    auto components = animationGraph.computeConnectedComponents();
-    for (auto &component : components)
+    cout << "Emptying priority queue" << endl;
+    while (!animationLengthsQueue.empty())
     {
-        if (component.size() >= learningParams().minAnimationLength)
+        CharacterFrameInstance &instance = *animationLengthsQueue.top();
+        animationLengthsQueue.pop();
+
+        if (instance.sequences.size() == 0)
         {
+            vector< set<PoseCluster*> > posesA, posesB, posesC;
+            vector<FrameID> startingFramesA, startingFramesB, startingFramesC;
+
+            const int instanceCountA = computeAnimationInstances(instance, learningParams().animationStartOffset, posesA, startingFramesA, true);
+            const int instanceCountB = computeAnimationInstances(instance, instance.candidateAnimationLength - 1, posesB, startingFramesB, true);
+            const int instanceCountC = computeAnimationInstances(instance, instance.candidateAnimationLength, posesC, startingFramesC, true);
+
+            cout << "Animation length=" << instance.candidateAnimationLength << ", frameIndex=" << instance.frameID.frameIndex << ", instanceCounts=" << instanceCountA << "-" << instanceCountB << "-" << instanceCountC << endl;
+
             AnimationSequence sequence;
             sequence.index = (int)sequences.size();
 
-            for (auto &node : component)
+            sequence.color = vec3f::origin;
+            while(sequence.color.length() < 0.5f)
+                sequence.color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
+
+            for (const FrameID &frameID : startingFramesA)
             {
-                vector<int> v;
-                v.push_back(node->data->index);
-                sequence.poses.push_back(v);
+                sequence.instances.push_back(frameID);
+                for (int frameOffset = 0; frameOffset < instance.candidateAnimationLength; frameOffset++)
+                {
+                    CharacterFrameInstance &otherInstance = *findInstanceAtFrame(frameID.next(frameOffset));
+
+                    InstanceAnimationEntry entry;
+                    entry.sequenceIndex = sequence.index;
+                    entry.sequenceOffset = frameOffset;
+                    entry.weight = 1.0f;
+                    otherInstance.sequences.push_back(entry);
+                }
             }
+
+            //sequence.poses = posesB;
             sequences.push_back(sequence);
         }
     }
-    cout << "Animation count: " << sequences.size() << endl;
 
-    updateFirstPoseMap();
+    cout << "Animation count: " << sequences.size() << endl;
+    
+    //updateFirstPoseMap();
+}
+
+int Character::computeAnimationOverlap(const CharacterFrameInstance &instanceAStart, const CharacterFrameInstance &instanceBStart, int animationLength) const
+{
+    auto hasIntersection = [](const vector<PoseCluster*> &v0, const vector<PoseCluster*> &v1)
+    {
+        for (PoseCluster* x0 : v0)
+            if (util::contains(v1, x0))
+                return true;
+        return false;
+    };
+
+    int overlap = 0;
+    for (int frameOffset = 0; frameOffset < animationLength; frameOffset++)
+    {
+        const CharacterFrameInstance *instanceA = findInstanceAtFrame(instanceAStart.frameID.next(frameOffset));
+        const CharacterFrameInstance *instanceB = findInstanceAtFrame(instanceBStart.frameID.next(frameOffset));
+
+        if (instanceA == nullptr || instanceB == nullptr)
+            return 0;
+
+        if (hasIntersection(instanceA->poseClusters, instanceB->poseClusters))
+            overlap++;
+    }
+    return overlap;
+}
+
+int Character::computeAnimationInstances(const CharacterFrameInstance &startInstance, int animationLength, vector< set<PoseCluster*> > &poses, vector<FrameID> &startingFrames, bool emitPoses) const
+{
+    int instanceCount = 0;
+    set<FrameID> includedFrames;
+
+    startingFrames.clear();
+
+    if (emitPoses)
+    {
+        poses.resize(animationLength);
+    }
+
+    for (PoseCluster *startCluster : startInstance.poseClusters)
+    {
+        for (const FrameID &observedFrameID : startCluster->observations)
+        {
+            const CharacterFrameInstance *candidateInstance = findInstanceAtFrame(observedFrameID);
+
+            bool valid = true;
+            for (int frameOffset = 0; valid && frameOffset < animationLength; frameOffset++)
+            {
+                if (includedFrames.count(observedFrameID.next(frameOffset)) > 0)
+                    valid = false;
+            }
+            if (valid)
+            {
+                const int overlap = computeAnimationOverlap(startInstance, *candidateInstance, animationLength);
+                const double overlapPercentage = (double)overlap / (double)animationLength;
+                if (overlapPercentage >= learningParams().requiredOverlapPercentage)
+                {
+                    if (emitPoses)
+                    {
+                        startingFrames.push_back(observedFrameID);
+                        for (int frameOffset = 0; frameOffset < animationLength; frameOffset++)
+                        {
+                            const CharacterFrameInstance *instance = findInstanceAtFrame(candidateInstance->frameID.next(frameOffset));
+                            for (PoseCluster *cluster : instance->poseClusters)
+                                poses[frameOffset].insert(cluster);
+                        }
+                    }
+                    for (int frameOffset = 0; frameOffset < animationLength; frameOffset++)
+                        includedFrames.insert(observedFrameID.next(frameOffset));
+                    instanceCount++;
+                }
+            }
+        }
+    }
+    return instanceCount;
+}
+
+vector<int> Character::computeAnimationInstanceCounts(const CharacterFrameInstance &startInstance) const
+{
+    vector<int> result;
+
+    vector< set<PoseCluster*> > poses;
+    vector<FrameID> startingFrames;
+
+    for (int animationLength = 1; animationLength < learningParams().maxAnimationLength; animationLength++)
+    {
+        const int instanceCount = computeAnimationInstances(startInstance, animationLength, poses, startingFrames, false);
+        result.push_back(instanceCount);
+        if (instanceCount <= learningParams().minAnimationInstances || instanceCount >= 100)
+            break;
+    }
+    return result;
 }
 
 bool Character::animationAtFrame(const AnimationSequence &sequence, const FrameID &startFrame) const
