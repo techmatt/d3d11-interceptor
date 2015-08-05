@@ -112,5 +112,8 @@
     <Text Include="logs\animationStrengths.txt">
       <Filter>Logs</Filter>
     </Text>
+    <Text Include="logs\sequences.txt">
+      <Filter>Logs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

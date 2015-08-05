@@ -42,7 +42,7 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
         state.selectedSignature = util::convertTo<UINT64>(params[1]);
     });
     state.eventMap.registerEvent("loadFrame", [&](const vector<string> &params) {
-        state.curFrame.frameIndex = util::convertTo<UINT64>(params[1]);
+        state.curFrame.frameIndex = util::convertTo<int>(params[1]);
         if (state.curFrame.frameIndex < 0 || state.curFrame.frameIndex >= state.replays.entries[state.curFrame.replayIndex].get().replay->frames.size())
         {
             state.curFrame.frameIndex = 0;
@@ -128,11 +128,16 @@ void Vizzer::render(ApplicationData &app)
         if (state.showAnimationLabel)
         {
             color = vec3f(1.0f, 1.0f, 1.0f);
-            const Character &c = state.characters.characters[state.curCharacterIndex];
-            const CharacterFrameInstance *instance = c.findInstanceAtFrame(state.curFrame);
-            if (instance != nullptr && instance->sequences.size() > 0)
+            for (const Character &c : state.characters.characters)
             {
-                color = c.sequences[instance->sequences[0].sequenceIndex].color;
+                if (c.allSegmentsSet.count(signature) > 0)
+                {
+                    const CharacterFrameInstance *instance = c.findInstanceAtFrame(state.curFrame);
+                    if (instance != nullptr && instance->sequences.size() > 0)
+                    {
+                        color = c.sequences[instance->sequences[0].sequenceIndex].color;
+                    }
+                }
             }
         }
 

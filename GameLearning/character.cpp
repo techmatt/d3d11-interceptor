@@ -46,8 +46,9 @@ void Character::init(const vector<UINT64> &segments, int _characterIndex)
 {
     characterIndex = _characterIndex;
 
-    for (const UINT64 &segment : segments)
-        allSegments.insert(segment);
+    allSegmentsVec = segments;
+    for (UINT64 segment : segments)
+        allSegmentsSet.insert(segment);
 }
 
 void Character::labelAnimationInstances()
@@ -166,7 +167,7 @@ void Character::recordFramePoses(const ProcessedFrame &frame)
     vec3f sum = vec3f::origin;
     float sumCount = 0.0f;
 
-    for (UINT64 signature : allSegments)
+    for (UINT64 signature : allSegmentsVec)
     {
         if (frame.signatureMap.count(signature) > 0)
         {
@@ -357,13 +358,20 @@ void Character::computeAnimationSequences()
                 sequence.instances.push_back(frameID);
                 for (int frameOffset = 0; frameOffset < instance.candidateAnimationLength; frameOffset++)
                 {
-                    CharacterFrameInstance &otherInstance = *findInstanceAtFrame(frameID.next(frameOffset));
+                    CharacterFrameInstance *otherInstance = findInstanceAtFrame(frameID.next(frameOffset));
 
-                    InstanceAnimationEntry entry;
-                    entry.sequenceIndex = sequence.index;
-                    entry.sequenceOffset = frameOffset;
-                    entry.weight = 1.0f;
-                    otherInstance.sequences.push_back(entry);
+                    if (otherInstance == nullptr)
+                    {
+                        cout << "otherInstance == nullptr?" << endl;
+                    }
+                    else
+                    {
+                        InstanceAnimationEntry entry;
+                        entry.sequenceIndex = sequence.index;
+                        entry.sequenceOffset = frameOffset;
+                        entry.weight = 1.0f;
+                        otherInstance->sequences.push_back(entry);
+                    }
                 }
             }
 

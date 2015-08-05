@@ -46,6 +46,7 @@
   <ItemGroup>
     <Text Include="learningParams.txt" />
     <Text Include="logs\animationStrengths.txt" />
+    <Text Include="logs\sequences.txt" />
     <Text Include="logs\transitionFrom.txt" />
     <Text Include="logs\transitionTo.txt" />
   </ItemGroup>
