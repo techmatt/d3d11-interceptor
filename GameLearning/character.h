@@ -28,12 +28,16 @@ struct InstanceAnimationEntry
 
 struct CharacterFrameInstance
 {
+<<<<<<< HEAD
     CharacterFrameInstance()
     {
         candidateAnimationLength = -1;
     }
 
     FrameID frameID;
+=======
+    void makePoseDescriptor(const vector<UINT64> &segmentList, vector<float> &result);
+>>>>>>> origin/master
 
     // this is the set of all clusters within clusterSoftAssignmentThreshold
     vector<PoseCluster*> poseClusters;
@@ -95,6 +99,7 @@ struct Character
     static double frameInstanceDistSqAvg(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
     static double frameInstanceDistSqMax(const CharacterFrameInstance &a, const CharacterFrameInstance &b);
 
+    vector<UINT64> allSegments;
     int characterIndex;
     set<UINT64> allSegments;
 

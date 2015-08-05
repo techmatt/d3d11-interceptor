@@ -1,6 +1,30 @@
 
 #include "main.h"
 
+void CharacterFrameInstance::makePoseDescriptor(const vector<UINT64> &segmentList, vector<float> &result)
+{
+    const size_t segmentCount = segmentList.size();
+    if (result.size() != segmentCount * 3)
+        result.resize(segmentCount);
+
+    size_t resultIndex = 0;
+    for (UINT64 signature : segmentList)
+    {
+        auto it = segments.find(signature);
+        if (it == segments.end())
+        {
+            for (int i = 0; i < 3; i++)
+                result[resultIndex++] = 0.0f;
+        }
+        else
+        {
+            result[resultIndex++] = it->second.centeredCentroid.x;
+            result[resultIndex++] = it->second.centeredCentroid.y;
+            result[resultIndex++] = it->second.centeredCentroid.z;
+        }
+    }
+}
+
 void CharacterDatabase::init(SegmentAnalyzer &analyzer)
 {
     characters.resize(analyzer.characterSegments.size());
