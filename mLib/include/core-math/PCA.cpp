@@ -2,10 +2,10 @@
 template<class T>
 void PCA<T>::init(const std::vector<const T*> &points, size_t dimension)
 {
-    std::cout << "Initializing PCA, " << points.size() << " points, " << dimension << " dimensions" << endl;
+    std::cout << "Initializing PCA, " << points.size() << " points, " << dimension << " dimensions" << std::endl;
 	
     const size_t n = points.size();
-    DenseMatrix<T> B(dimension, n);
+    DenseMatrix<T> B(n, dimension);
 	
     _means.clear();
     _means.resize(dimension, (T)0.0);
@@ -22,14 +22,51 @@ void PCA<T>::init(const std::vector<const T*> &points, size_t dimension)
 		const T *point = points[pointIndex];
 		for(size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
 		{
-            B(dimIndex, pointIndex) = point[dimIndex] - _means[dimIndex];
+            B(pointIndex, dimIndex) = point[dimIndex] - _means[dimIndex];
 		}
 	}
 
-    std::cout << "Building cross-correlation matrix..." << endl;
+    std::cout << "Building cross-correlation matrix..." << std::endl;
 	
     DenseMatrix<T> C = B * B.transpose();
 	//DenseMatrix<T>::MultiplyMMTranspose(C, B);
+
+    const T norm = T(1.0) / T(n);
+    for (auto &x : C)
+        x *= norm;
+
+    initFromCorrelationMatrix(C);
+}
+
+template<class T>
+void PCA<T>::init(DenseMatrix<T> &points)
+{
+    const size_t n = points.rows();
+    const size_t dimension = points.cols();
+    std::cout << "Initializing PCA, " << n << " points, " << dimension << " dimensions" << std::endl;
+
+    _means.clear();
+    _means.resize(dimension, (T)0.0);
+
+    for (size_t pointIndex = 0; pointIndex < n; pointIndex++)
+        for (size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
+            _means[dimIndex] += points(pointIndex, dimIndex);
+
+    for (T &x : _means)
+        x /= (T)n;
+
+    for (size_t pointIndex = 0; pointIndex < n; pointIndex++)
+    {
+        for (size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
+        {
+            points(pointIndex, dimIndex) -= _means[dimIndex];
+        }
+    }
+
+    std::cout << "Building cross-correlation matrix..." << std::endl;
+
+    DenseMatrix<T> C = points * points.transpose();
+    //DenseMatrix<T>::MultiplyMMTranspose(C, B);
 
     const T norm = T(1.0) / T(n);
     for (auto &x : C)

@@ -5,6 +5,10 @@ class PCA
 {
 public:
     void init(const std::vector<const T*> &points, size_t dimension);
+
+    // points is a matrix with dimensions (# data points, # dimensions)
+    // points will be mean-centered.
+    void init(DenseMatrix<T> &points);
     
     void save(const std::string &filename) const;
     void load(const std::string &filename);
@@ -25,7 +29,7 @@ private:
     EigenSystem<T> _system;
 };
 
-#include "PCA.inl"
+#include "PCA.cpp"
 
 typedef PCA<float> PCAf;
 typedef PCA<double> PCAd;
