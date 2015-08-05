@@ -3,6 +3,11 @@
 
 void CharacterFrameInstance::makePoseDescriptor(const vector<UINT64> &segmentList, vector<float> &result)
 {
+    PCAf test;
+    vector<const float*> values;
+    test.init(values, 10);
+    test.reducedDimension(0.5);
+
     const size_t segmentCount = segmentList.size();
     if (result.size() != segmentCount * 3)
         result.resize(segmentCount);

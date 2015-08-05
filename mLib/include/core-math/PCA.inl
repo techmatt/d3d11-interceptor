@@ -1,45 +1,50 @@
 
 template<class T>
-void PCA<T>::init(const std::vector<const T*> &points, UINT dimension)
+void PCA<T>::init(const std::vector<const T*> &points, size_t dimension)
 {
-    cout << "Initializing PCA, " << points.size() << << " points, " << dimension << " dimensions" << endl;
+    std::cout << "Initializing PCA, " << points.size() << " points, " << dimension << " dimensions" << endl;
 	
-    const UINT n = points.size();
+    const size_t n = points.size();
     DenseMatrix<T> B(dimension, n);
 	
     _means.clear();
     _means.resize(dimension, (T)0.0);
 
     for (const T *point : points)
-		for(UINT dimIndex = 0; dimIndex < dimension; dimIndex++)
+		for(size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
 		    _means[dimIndex] += point[dimIndex];
 	
     for(T &x : _means)
 		x /= (T)n;
 
-	for(UINT pointIndex = 0; pointIndex < n; pointIndex++)
+	for(size_t pointIndex = 0; pointIndex < n; pointIndex++)
 	{
 		const T *point = points[pointIndex];
-		for(UINT dimIndex = 0; dimIndex < dimension; dimIndex++)
+		for(size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
 		{
-            B[dimIndex][pointIndex] = point[dimIndex] - _means[dimIndex];
+            B(dimIndex, pointIndex) = point[dimIndex] - _means[dimIndex];
 		}
 	}
 
-    cout << "Building cross-correlation matrix..." << endl;
-	DenseMatrix<T> C;
-	DenseMatrix<T>::MultiplyMMTranspose(C, B);
-	DenseMatrix<T>::MultiplyInPlace(C, T(1.0) / T(n));
+    std::cout << "Building cross-correlation matrix..." << endl;
+	
+    DenseMatrix<T> C = B * B.transpose();
+	//DenseMatrix<T>::MultiplyMMTranspose(C, B);
+
+    const T norm = T(1.0) / T(n);
+    for (auto &x : C)
+        x *= norm;
+
     initFromCorrelationMatrix(C);
 }
 
 template<class T>
 void PCA<T>::initFromCorrelationMatrix(const DenseMatrix<T> &C)
 {
-    const UINT dimension = C.rows();
-	cout << "computing eigensystem..." << endl;
-    C.EigenSystem(_Eigenvalues, _Eigenvectors);
-    cout << C.EigenTest(_Eigenvalues, _Eigenvectors) << endl;
+    const size_t dimension = C.rows();
+	std::cout << "Computing eigensystem..." << endl;
+    _system = C.eigenSystem();
+    //std::cout << C.EigenTest(_system.eigenvalues, _system.eigenvectors) << endl;
 
     finalizeFromEigenSystem();
 }
@@ -47,100 +52,98 @@ void PCA<T>::initFromCorrelationMatrix(const DenseMatrix<T> &C)
 template<class T>
 void PCA<T>::finalizeFromEigenSystem()
 {
-    const UINT dimension = _Eigenvalues.size();
-    double EigenvalueSum = 0.0;
-	for(UINT dimIndex = 0; dimIndex < dimension; dimIndex++)
+    const size_t dimension = _system.eigenvalues.size();
+    double sum = 0.0;
+	for(size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
 	{
-        EigenvalueSum += Math::Max(T(0.0), _Eigenvalues[dimIndex]);
+        sum += std::max(T(0.0), _system.eigenvalues[dimIndex]);
 	}
-	double CumulativeEnergy = 0.0;
-	for(UINT dimIndex = 0; dimIndex < dimension; dimIndex++)
+	double cumulativeEnergy = 0.0;
+	for(size_t dimIndex = 0; dimIndex < dimension; dimIndex++)
 	{
-		CumulativeEnergy += _Eigenvalues[dimIndex];
-		Console::WriteLine(std::string("Energy at ") + std::string(dimIndex + 1) + std::string(" terms: ") + std::string(CumulativeEnergy / EigenvalueSum * 100.0f) + std::string("%"));
+		cumulativeEnergy += _system.eigenvalues[dimIndex];
+		std::cout << "Energy at " << dimIndex + 1 << " terms: " << cumulativeEnergy / sum * 100.0f << "%" << endl;
 	}
 }
 
 template<class T>
-UINT PCA<T>::ReducedDimension(double EnergyPercent)
+size_t PCA<T>::reducedDimension(double energyPercent)
 {
-	double EigenvalueSum = 0.0;
-	for(UINT dimIndex = 0; dimIndex < _Eigenvalues.size(); dimIndex++)
+	double sum = 0.0;
+	for(size_t dimIndex = 0; dimIndex < _system.eigenvalues.size(); dimIndex++)
 	{
-		EigenvalueSum += _Eigenvalues[dimIndex];
+		sum += _system.eigenvalues[dimIndex];
 	}
-	double CumulativeEnergy = 0.0;
-	for(UINT dimIndex = 0; dimIndex < _Eigenvalues.size(); dimIndex++)
+	double cumulativeEnergy = 0.0;
+	for(size_t dimIndex = 0; dimIndex < _system.eigenvalues.size(); dimIndex++)
 	{
-		CumulativeEnergy += _Eigenvalues[dimIndex];
-		if(CumulativeEnergy / EigenvalueSum >= EnergyPercent)
+		cumulativeEnergy += _system.eigenvalues[dimIndex];
+		if(cumulativeEnergy / sum >= energyPercent)
 		{
 			return dimIndex + 1;
 		}
 	}
-	return _Eigenvalues.size();
+	return _system.eigenvalues.size();
 }
 
 template<class T>
-void PCA<T>::Transform(std::vector<T> &Result, const std::vector<T> &Input, UINT ReducedDimension)
+void PCA<T>::transform(const std::vector<T> &input, size_t reducedDimension, std::vector<T> &result)
 {
-    if(Result.size() != ReducedDimension)
+    if(result.size() != reducedDimension)
+	    result.resize(reducedDimension);
+    transform(input.data(), reducedDimension, result.data());
+}
+
+template<class T>
+void PCA<T>::inverseTransform(const std::vector<T> &input, std::vector<T> &result)
+{
+    if (result.size() != _means.size())
+	    result.resize(dimension);
+    inverseTransform(input.data(), input.size(), result.data());
+}
+
+template<class T>
+void PCA<T>::transform(const T *input, size_t reducedDimension, T *result)
+{
+	const size_t dimension = _means.size();
+	for(size_t row = 0; row < reducedDimension; row++)
     {
-	    Result.resize(ReducedDimension);
-    }
-	Transform(Result.CArray(), Input.CArray(), ReducedDimension);
-}
-
-template<class T>
-void PCA<T>::InverseTransform(std::vector<T> &Result, const std::vector<T> &Input)
-{
-	const UINT dimension = _means.size();
-	Result.resize(dimension);
-	InverseTransform(Result.CArray(), Input.CArray(), Input.size());
-}
-
-template<class T>
-void PCA<T>::Transform(T *Result, const T *Input, UINT ReducedDimension)
-{
-	const UINT dimension = _means.size();
-	for(UINT Row = 0; Row < ReducedDimension; Row++)
-    {
-		T Total = 0.0;
-		for(UINT Index = 0; Index < dimension; Index++)
+		T total = 0.0;
+		for(size_t index = 0; index < dimension; index++)
 		{
-			Total += _Eigenvectors[Row][Index] * (Input[Index] - _means[Index]);
+			total += _system.eigenvectors(row, index) * (input[index] - _means[index]);
 		}
-		Result[Row] = Total;
+		result[row] = total;
     }
 }
 
 template<class T>
-void PCA<T>::InverseTransform(T *Result, const T *Input, UINT ReducedDimension)
+void PCA<T>::inverseTransform(const T *input, size_t reducedDimension, T *result)
 {
-	UINT dimension = _means.size();
-	for(UINT Col = 0; Col < dimension; Col++)
+	size_t dimension = _means.size();
+	for(size_t col = 0; col < dimension; col++)
     {
-		T Total = 0.0;
-		for(UINT Index = 0; Index < ReducedDimension; Index++)
+		T total = 0.0;
+		for(size_t index = 0; index < reducedDimension; index++)
 		{
-			Total += _Eigenvectors[Index][Col] * Input[Index];
+			total += _system.eigenvectors(index, col) * input[index];
 		}
-		Result[Col] = Total + _means[Col];
+		result[col] = total + _means[col];
     }
 }
 
 template<class T>
-void PCA<T>::SaveToFile(const std::string &filename) const
+void PCA<T>::save(const std::string &filename) const
 {
-    OutputDataStream stream;
-    stream << _means << _Eigenvalues << _Eigenvectors;
-    stream.SaveToFile(filename);
+    BinaryDataStreamFile file(filename, true);
+    file << _means << _system.eigenvalues << _system.eigenvectors;
+    file.closeStream();
 }
 
 template<class T>
-void PCA<T>::LoadFromFile(const std::string &filename)
+void PCA<T>::load(const std::string &filename)
 {
-    InputDataStream stream;
-    stream.LoadFromFile(filename);
-    stream >> _means >> _Eigenvalues >> _Eigenvectors;
+    BinaryDataStreamFile file(filename, false);
+    file >> _means >> _system.eigenvalues >> _system.eigenvectors;
+    file.closeStream();
 }

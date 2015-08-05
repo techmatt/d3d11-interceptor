@@ -12,6 +12,10 @@ namespace ml {
 template<class FloatType>
 struct EigenSystem
 {
+    EigenSystem()
+    {
+        
+    }
     EigenSystem(int n)
     {
         eigenvectors = DenseMatrix<FloatType>(n, n);
@@ -30,7 +34,7 @@ struct EigenSystem
     {
         std::vector<FloatType*> result(eigenvectors.rows());
         for (unsigned int row = 0; row < eigenvectors.rows(); row++)
-            result[row] = &eigenvectors(row, 0);
+            result[row] = &eigenvectors(row, 0U);
         return result;
     }
 

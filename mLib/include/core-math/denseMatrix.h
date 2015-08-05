@@ -161,6 +161,26 @@ public:
 		return m_dataPtr[row * m_cols + col];
 	}
 
+    T& operator()(size_t row, size_t col)
+    {
+        return m_dataPtr[row * m_cols + col];
+    }
+
+    T operator()(size_t row, size_t col) const
+    {
+        return m_dataPtr[row * m_cols + col];
+    }
+
+    T& operator()(int row, int col)
+    {
+        return m_dataPtr[row * m_cols + col];
+    }
+
+    T operator()(int row, int col) const
+    {
+        return m_dataPtr[row * m_cols + col];
+    }
+
 	UINT rows() const
 	{
 		return m_rows;
