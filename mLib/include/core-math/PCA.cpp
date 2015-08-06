@@ -28,7 +28,7 @@ void PCA<T>::init(const std::vector<const T*> &points, size_t dimension)
 
     std::cout << "Building cross-correlation matrix..." << std::endl;
 	
-    DenseMatrix<T> C = B * B.transpose();
+    DenseMatrix<T> C = B.transpose() * B;
 	//DenseMatrix<T>::MultiplyMMTranspose(C, B);
 
     const T norm = T(1.0) / T(n);
@@ -65,7 +65,7 @@ void PCA<T>::init(DenseMatrix<T> &points)
 
     std::cout << "Building cross-correlation matrix..." << std::endl;
 
-    DenseMatrix<T> C = points * points.transpose();
+    DenseMatrix<T> C = points.transpose() * points;
     //DenseMatrix<T>::MultiplyMMTranspose(C, B);
 
     const T norm = T(1.0) / T(n);
@@ -79,8 +79,10 @@ template<class T>
 void PCA<T>::initFromCorrelationMatrix(const DenseMatrix<T> &C)
 {
     const size_t dimension = C.rows();
-	std::cout << "Computing eigensystem..." << endl;
-    _system = C.eigenSystem();
+	std::cout << "Computing eigensystem... (" << dimension << "x" << dimension << ")" << endl;
+    //_system = C.eigenSystem();
+    _system = EigenSolver<T>::solve<EigenSolver<T>::TYPE_EIGEN>(C);
+    std::cout << "done computing eigensystem" << endl;
     //std::cout << C.EigenTest(_system.eigenvalues, _system.eigenvectors) << endl;
 
     finalizeFromEigenSystem();

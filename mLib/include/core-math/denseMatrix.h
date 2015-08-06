@@ -337,6 +337,22 @@ inline std::ostream& operator<<(std::ostream& s, const DenseMatrix<T>& m)
 	return s;
 }
 
+template<class BinaryDataBuffer, class BinaryDataCompressor, class T>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const DenseMatrix<T>& m) {
+    s << (UINT)m.rows() << (UINT)m.cols();
+    s.writeData((const BYTE *)m.ptr(), sizeof(T) * m.rows() * m.cols());
+    return s;
+}
+
+template<class BinaryDataBuffer, class BinaryDataCompressor, class T>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, DenseMatrix<T>& m) {
+    UINT rows, cols;
+    s >> rows >> cols;
+    m.resize(rows, cols);
+    s.readData((BYTE *)m.ptr(), sizeof(T) * rows * cols);
+    return s;
+}
+
 typedef DenseMatrix<float> DenseMatrixf;
 typedef DenseMatrix<double> DenseMatrixd;
 

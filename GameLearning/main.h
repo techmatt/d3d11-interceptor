@@ -17,7 +17,10 @@ using namespace std;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
+#include "constants.h"
 #include "learningParams.h"
+
+#include "LSH.h"
 
 #include "../shared/localizedObject.h"
 #include "../shared/gameReplay.h"

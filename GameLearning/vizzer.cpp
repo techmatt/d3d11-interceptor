@@ -193,6 +193,7 @@ void Vizzer::render(ApplicationData &app)
     font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    font.drawString(app.graphics, "Anchor animation dist: " + to_string(state.characters.characters[state.curCharacterIndex].animationDistance(state.anchorFrame, state.curFrame)), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
     
     /*double animationDistMax = -1.0;
     double animationDistAvg = -1.0;
@@ -225,8 +226,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
     if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
     
-
-    if (key == KEY_J) state.poseAnchorFrame = state.curFrame.frameIndex;
+    if (key == KEY_J) state.anchorFrame = state.curFrame;
 
     /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
     if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());
@@ -243,6 +243,8 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     int frameDelta = 0;
     if (key == KEY_O) frameDelta = -1;
     if (key == KEY_P) frameDelta = 1;
+
+    if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
 
     if (frameDelta != 0)
     {

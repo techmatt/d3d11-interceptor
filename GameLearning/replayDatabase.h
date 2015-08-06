@@ -15,7 +15,7 @@ struct FrameID
     {
         return FrameID(replayIndex, frameIndex + 1);
     }
-    FrameID next(int framesToAdvance) const
+    FrameID delta(int framesToAdvance) const
     {
         return FrameID(replayIndex, frameIndex + framesToAdvance);
     }

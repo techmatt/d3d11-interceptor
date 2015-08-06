@@ -31,9 +31,9 @@ struct AppState
     ReplayDatabase replays;
 
     FrameID curFrame;
+    FrameID anchorFrame;
     int curCharacterIndex;
-    int poseAnchorFrame;
-
+    
     Cameraf camera;
 
     UINT64 selectedSignature;

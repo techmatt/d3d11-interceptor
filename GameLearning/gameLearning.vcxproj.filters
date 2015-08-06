@@ -60,6 +60,12 @@
     <ClInclude Include="..\shared\gameReplay.h">
       <Filter>Shared</Filter>
     </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="LSH.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">

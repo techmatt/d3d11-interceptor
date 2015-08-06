@@ -10,8 +10,21 @@ void ReplayDatabase::addEntry(const string &alignedFrameFilename)
     newEntry->replayIndex = (int)entries.size();
     newEntry->replay = new GameReplay;
     newEntry->replay->load(alignedFrameFilename);
+
+#ifdef _DEBUG
+    int maxFrameCount = 200;
+#else
+    int maxFrameCount = -1;
+#endif
+
+    if (maxFrameCount != -1 && newEntry->replay->frames.size() >= maxFrameCount)
+    {
+        newEntry->replay->frames.resize(maxFrameCount);
+    }
     
     const size_t frameCount = newEntry->replay->frames.size();
+    cout << "Processing " << frameCount << " frames..." << endl;
+
     newEntry->processedFrames.resize(frameCount);
     newEntry->pairs.resize(frameCount - 1);
 
