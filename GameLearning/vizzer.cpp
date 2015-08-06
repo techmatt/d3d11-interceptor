@@ -132,7 +132,7 @@ void Vizzer::render(ApplicationData &app)
             {
                 if (c.allSegmentsSet.count(signature) > 0)
                 {
-                    const CharacterFrameInstance *instance = c.findInstanceAtFrame(state.curFrame);
+                    const CharacterInstance *instance = c.findInstanceAtFrame(state.curFrame);
                     if (instance != nullptr && instance->sequences.size() > 0)
                     {
                         color = c.sequences[instance->sequences[0].sequenceIndex].color;
@@ -187,31 +187,24 @@ void Vizzer::render(ApplicationData &app)
         assets.renderCylinder(state.camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
     }*/
 
-    int y = 0;
-    font.drawString(app.graphics, "FPS: " + convert::toString(timer.framesPerSecond()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Selected signature: " + to_string(state.selectedSignature), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Object count: " + to_string(frame.objectData.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "Anchor animation dist: " + to_string(state.characters.characters[state.curCharacterIndex].animationDistance(state.anchorFrame, state.curFrame)), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    
-    /*double animationDistMax = -1.0;
-    double animationDistAvg = -1.0;
-    if (state.curCharacterIndex >= 0 && state.curCharacterIndex < state.characters.characters.size())
-    {
-        const auto &animationInstanceA = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.poseAnchorFrame);
-        const auto &animationInstanceB = state.characters[state.curCharacterIndex].findInstanceAtFrame(state.curFrameIndex);
-        if (animationInstanceA != nullptr && animationInstanceB != nullptr)
-        {
-            animationDistMax = Character::frameInstanceDistSqMax(*animationInstanceA, *animationInstanceB);
-            animationDistAvg = Character::frameInstanceDistSqAvg(*animationInstanceA, *animationInstanceB);
-        }
-    }
-    font.drawString(app.graphics, "DistAvg: " + to_string(animationDistAvg), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
-    font.drawString(app.graphics, "DistMax: " + to_string(animationDistMax), vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);*/
+    const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
 
-    //font.drawString(app.graphics, "Target object A index: " + to_string(frameAObjectIndex) + " / " + to_string(comparisonFrameA->objectData.size()) + " sig=" + to_string(comparisonFrameA->objectData[frameAObjectIndex].signature), vec2i(10, 80), 24.0f, RGBColor::Red);
-    //font.drawString(app.graphics, "Target object B index: " + to_string(frameBObjectIndex) + " / " + to_string(comparisonFrameB->objectData.size()) + " sig=" + to_string(comparisonFrameB->objectData[frameBObjectIndex].signature), vec2i(10, 105), 24.0f, RGBColor::Red);
+    const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
+    int anchorAnimationInstanceCount = 0;
+    if (anchorInstance != nullptr && anchorInstance->sequences.size() > 0)
+    {
+        const AnimationSequence &curAnimation = curCharacter.sequences[anchorInstance->sequences[0].sequenceIndex];
+        anchorAnimationInstanceCount = (int)curAnimation.instances.size();
+    }
+
+    vector<string> text;
+    text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
+    text.push_back("Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()));
+    text.push_back("Object count: " + to_string(frame.objectData.size()));
+    text.push_back("Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()));
+    text.push_back("Anchor animation dist: " + to_string(curCharacter.animationDistance(state.anchorFrame, state.curFrame)));
+    text.push_back("Anchor animation: " + to_string(state.anchorAnimationInstanceIndex) + " / " + to_string(anchorAnimationInstanceCount));
+    drawText(app, text);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -219,8 +212,19 @@ void Vizzer::resize(ApplicationData &app)
     state.camera.updateAspectRatio((float)app.window.getWidth() / app.window.getHeight());
 }
 
+void Vizzer::drawText(ApplicationData &app, vector<string> &text)
+{
+    int y = 0;
+    for (auto &entry : text)
+    {
+        font.drawString(app.graphics, entry, vec2i(10, 5 + y++ * 25), 24.0f, RGBColor::Red);
+    }
+}
+
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
+    bool frameDirty = false;
+
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
 
     if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
@@ -228,17 +232,25 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     
     if (key == KEY_J) state.anchorFrame = state.curFrame;
 
-    /*if (key == KEY_K) frameAObjectIndex = math::mod(frameAObjectIndex - 1, comparisonFrameA->objectData.size());
-    if (key == KEY_L) frameAObjectIndex = math::mod(frameAObjectIndex + 1, comparisonFrameA->objectData.size());
+    int animationInstanceDelta = 0;
+    if (key == KEY_N) animationInstanceDelta = -1;
+    if (key == KEY_M) animationInstanceDelta = 1;
 
-    if (key == KEY_N) frameBObjectIndex = math::mod(frameBObjectIndex - 1, comparisonFrameB->objectData.size());
-    if (key == KEY_M) frameBObjectIndex = math::mod(frameBObjectIndex + 1, comparisonFrameB->objectData.size());
-
-    if (key == KEY_C)
+    if (animationInstanceDelta != 0)
     {
-        comparisonFrameA->objectMeshes[frameAObjectIndex].saveDescription("logs/objA.txt");
-        comparisonFrameB->objectMeshes[frameBObjectIndex].saveDescription("logs/objB.txt");
-    }*/
+        const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
+        const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
+        if (anchorInstance != nullptr && anchorInstance->sequences.size() > 0)
+        {
+            const AnimationSequence &curAnimation = curCharacter.sequences[anchorInstance->sequences[0].sequenceIndex];
+            if (curAnimation.instances.size() > 0)
+            {
+                state.anchorAnimationInstanceIndex = math::mod(state.anchorAnimationInstanceIndex + animationInstanceDelta, curAnimation.instances.size());
+                state.curFrame = curAnimation.instances[state.anchorAnimationInstanceIndex];
+                frameDirty = true;
+            }
+        }
+    }
 
     int frameDelta = 0;
     if (key == KEY_O) frameDelta = -1;
@@ -246,7 +258,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
 
-    if (frameDelta != 0)
+    if (frameDirty || frameDelta != 0)
     {
         GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
         state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());

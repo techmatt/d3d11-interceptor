@@ -115,10 +115,10 @@
     <Text Include="logs\transitionTo.txt">
       <Filter>Logs</Filter>
     </Text>
-    <Text Include="logs\animationStrengths.txt">
+    <Text Include="logs\sequences.txt">
       <Filter>Logs</Filter>
     </Text>
-    <Text Include="logs\sequences.txt">
+    <Text Include="logs\animationStrength.txt">
       <Filter>Logs</Filter>
     </Text>
   </ItemGroup>

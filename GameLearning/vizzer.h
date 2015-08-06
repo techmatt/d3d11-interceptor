@@ -18,6 +18,7 @@ public:
 
 private:
     void registerEventHandlers(ApplicationData& app);
+    void drawText(ApplicationData &app, vector< string > &text);
 
     void makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes);
     void makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes);

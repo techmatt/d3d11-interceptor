@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-void CharacterFrameInstance::makeRawPoseDescriptor(const vector<UINT64> &segmentList, float *result) const
+void CharacterInstance::makeRawPoseDescriptor(const vector<UINT64> &segmentList, float *result) const
 {
     size_t resultIndex = 0;
     for (UINT64 signature : segmentList)
@@ -90,7 +90,7 @@ bool Character::computeAnimationDescriptor(const FrameID &centerFrame, float *re
     for (int windowOffset = -Constants::animationWindowRadius; windowOffset <= Constants::animationWindowRadius; windowOffset++)
     {
         const FrameID curFrame = centerFrame.delta(windowOffset);
-        const CharacterFrameInstance *instance = findInstanceAtFrame(curFrame);
+        const CharacterInstance *instance = findInstanceAtFrame(curFrame);
         if (instance == nullptr)
         {
             valid = false;
@@ -127,7 +127,7 @@ void Character::computeAnimationPCA()
             bool valid = false;
             while (!valid)
             {
-                const CharacterFrameInstance &randomInstance = *util::randomElement(allInstancesVec);
+                const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
                 valid = computeAnimationDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
             }
         }
@@ -138,7 +138,7 @@ void Character::computeAnimationPCA()
         animationPCA.save(PCAFile);
     }
 
-    animationPCADimension = (int)animationPCA.reducedDimension(0.99);
+    animationPCADimension = (int)animationPCA.reducedDimension(learningParams().PCAEnergy);
     cout << "Animation PCA dimension: " << animationPCADimension << endl;
 }
 
@@ -154,14 +154,13 @@ void Character::computePosePCA()
     }
     else
     {
-        const int posePCASamples = 10000;
         const int poseFeatureCount = 3 * (int)allSegmentsVec.size();
 
-        DenseMatrixf M(posePCASamples, poseFeatureCount);
+        DenseMatrixf M(Constants::posePCASamples, poseFeatureCount);
 
-        for (int sampleIndex = 0; sampleIndex < posePCASamples; sampleIndex++)
+        for (int sampleIndex = 0; sampleIndex < Constants::posePCASamples; sampleIndex++)
         {
-            const CharacterFrameInstance &instance = *util::randomElement(allInstancesVec);
+            const CharacterInstance &instance = *util::randomElement(allInstancesVec);
             instance.makeRawPoseDescriptor(allSegmentsVec, &M(sampleIndex, 0));
 
             //vector<float> descriptor = instance.makeRawPoseDescriptor(allSegmentsVec);
@@ -175,13 +174,13 @@ void Character::computePosePCA()
         posePCA.save(PCAFile);
     }
 
-    posePCADimension = (int)posePCA.reducedDimension(0.99);
+    posePCADimension = (int)posePCA.reducedDimension(learningParams().PCAEnergy);
     cout << "Pose PCA dimension: " << posePCADimension << endl;
 }
 
 void Character::recordFramePoses(const ProcessedFrame &frame)
 {
-    CharacterFrameInstance frameInstance;
+    CharacterInstance frameInstance;
     
     vec3f sum = vec3f::origin;
     float sumCount = 0.0f;
@@ -214,6 +213,77 @@ void Character::computeAnimationSequences()
 {
     cout << "*** Computing animation sequences" << endl;
 
+    cout << "Filling priority queue" << endl;
+    priority_queue<CharacterInstance*, vector<CharacterInstance*>, CharacterInstanceCompare> seedQueue;
+    for (CharacterInstance *instance : allInstancesVec)
+    {
+        instance->optimalAnimationWindowSize = evaluateBestWindowSize(*instance, instance->estimatedAnimationInstanceCount);
+        seedQueue.push(instance);
+    }
+    
+    vector<FrameID> animationCenterFrames;
+    cout << "Emptying priority queue" << endl;
+    while (!seedQueue.empty())
+    {
+        CharacterInstance &seedInstance = *seedQueue.top();
+        seedQueue.pop();
+
+        if (seedInstance.sequences.size() == 0)
+        {
+            AnimationSequence sequence;
+            sequence.index = (int)sequences.size();
+
+            sequence.color = vec3f::origin;
+            while (sequence.color.length() < 0.5f)
+                sequence.color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
+
+            const int windowSize = seedInstance.optimalAnimationWindowSize;
+            const int animationInstances = evaluateAnimationInstances(seedInstance, windowSize, &animationCenterFrames);
+
+            cout << "New sequence: windowSize=" << windowSize << ", instances=" << animationInstances << endl;
+
+            for (const FrameID &frameID : animationCenterFrames)
+            {
+                for (int window = -windowSize; window <= windowSize; window++)
+                {
+                    FrameID curFrame = frameID.delta(window);
+                    sequence.instances.push_back(curFrame);
+                    CharacterInstance *otherInstance = findInstanceAtFrame(curFrame);
+                    if (otherInstance->sequences.size() == 0)
+                    {
+                        if (otherInstance == nullptr)
+                        {
+                            cout << "otherInstance == nullptr?: " << curFrame.frameIndex << endl;
+                        }
+                        else
+                        {
+                            InstanceAnimationEntry entry;
+                            entry.sequenceIndex = sequence.index;
+                            entry.sequenceOffset = window;
+                            entry.weight = 1.0f;
+                            otherInstance->sequences.push_back(entry);
+                        }
+                    }
+                }
+            }
+
+            //sequence.poses = posesB;
+            sequences.push_back(sequence);
+        }
+    }
+
+    /*ofstream file("logs/animationStrength" + to_string(characterIndex) + ".txt");
+    for (int i = 0; i < allInstancesVec.size(); i += 10)
+    {
+        CharacterInstance &instance = *allInstancesVec[i];
+        file << instance.frameID.frameIndex;
+        file << '\t' << evaluateBestWindowSize(instance);
+        for (int windowSize = 0; windowSize <= 20; windowSize++)
+        {
+            file << '\t' << evaluateAnimationInstances(instance, windowSize);
+        }
+        file << endl;
+    }*/
 
     cout << "Animation count: " << sequences.size() << endl;
     
@@ -223,7 +293,7 @@ void Character::computeAnimationSequences()
 void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount)
 {
     cout << "Testing LSH " << pNorm << ", " << miniHashFunctionCount << ", " << macroTableCount << endl;
-    LSHEuclidean<CharacterFrameInstance*> search;
+    LSHEuclidean<CharacterInstance*> search;
     search.init(animationPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
     for (auto &instance : allInstances)
         search.insert(instance.second.reducedAnimationDescriptor, &instance.second);
@@ -238,10 +308,10 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
     ofstream fileDebug("debug.txt");
     for (int test = 0; test < testInstanceCount; test++)
     {
-        const CharacterFrameInstance &randomInstance = *util::randomElement(allInstancesVec);
+        const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
 
         auto results = search.findSimilar(randomInstance.reducedAnimationDescriptor);
-        for (CharacterFrameInstance *candidate : results)
+        for (CharacterInstance *candidate : results)
         {
             const float distSq = math::distSq(candidate->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
             if (distSq > targetDistSq)
@@ -275,13 +345,13 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
     file << (double)wastedSamples / (double)testInstanceCount << endl;
 }
 
-int Character::evaluateAnimationOverlap(const CharacterFrameInstance &frameA, const CharacterFrameInstance &frameB, int windowSize)
+int Character::evaluateAnimationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int windowSize)
 {
     int matchingFrames = 0;
     for (int window = -windowSize; window <= windowSize; window++)
     {
-        const CharacterFrameInstance *instanceA = findInstanceAtFrame(frameA.frameID.delta(window));
-        const CharacterFrameInstance *instanceB = findInstanceAtFrame(frameB.frameID.delta(window));
+        CharacterInstance *instanceA = findInstanceAtFrame(frameA.frameID.delta(window));
+        CharacterInstance *instanceB = findInstanceAtFrame(frameB.frameID.delta(window));
 
         if (instanceA == nullptr || instanceB == nullptr)
             return 0;
@@ -293,17 +363,69 @@ int Character::evaluateAnimationOverlap(const CharacterFrameInstance &frameA, co
     return matchingFrames;
 }
 
-int Character::evaluateAnimationStrength(const CharacterFrameInstance &seed, int windowSize)
+int Character::evaluateAnimationInstances(const CharacterInstance &seed, int windowSize, vector<FrameID> *instanceFrames)
 {
-    auto candidates = animationSearch.findSimilar(seed.reducedAnimationDescriptor);
-    for (CharacterFrameInstance *candidate : candidates)
+    if (instanceFrames != nullptr)
+        instanceFrames->clear();
+
+    int matchingSequences = 0;
+    set<FrameID> invalidFrames;
+
+    auto candidatesUnsorted = animationSearch.findSimilar(seed.reducedAnimationDescriptor);
+
+    vector< pair<CharacterInstance*, float> > candidatesSorted;
+    for (CharacterInstance *candidate : candidatesUnsorted)
     {
         const float distSq = math::distSq(candidate->reducedAnimationDescriptor, seed.reducedAnimationDescriptor);
         if (distSq >= learningParams().maxAnimationFeatureDistSq)
             continue;
-
-
+        candidatesSorted.push_back(make_pair(candidate, distSq));
     }
+    sort(candidatesSorted.begin(), candidatesSorted.end(),
+        [](const pair<CharacterInstance*, float> &a, const pair<CharacterInstance*, float> &b) { return a.second < b.second; });
+
+    for (auto &c : candidatesSorted)
+    {
+        auto &candidate = *c.first;
+        const int matchingFrames = evaluateAnimationMatchingFrames(seed, candidate, windowSize);
+
+        const float matchingPercent = (float)matchingFrames / (float)(windowSize * 2 + 1);
+        if (matchingPercent >= learningParams().requiredOverlapPercentage)
+        {
+            bool valid = true;
+            for (int window = -windowSize; window <= windowSize; window++)
+                if (invalidFrames.count(candidate.frameID.delta(window)) > 0)
+                    valid = false;
+
+            if (valid)
+            {
+                for (int window = -windowSize; window <= windowSize; window++)
+                    invalidFrames.insert(candidate.frameID.delta(window));
+                matchingSequences++;
+                if (instanceFrames != nullptr)
+                    instanceFrames->push_back(candidate.frameID);
+            }
+        }
+    }
+
+    return matchingSequences;
+}
+
+int Character::evaluateBestWindowSize(const CharacterInstance &seed, int &instanceCount)
+{
+    const int startInstanceCount = evaluateAnimationInstances(seed, 0);
+    const int minInstances = max(learningParams().minAnimationInstances, (int)ceil((double)startInstanceCount * learningParams().maxAnimationDropOffPercentage));
+
+    instanceCount = startInstanceCount;
+
+    for (int windowSize = 1; windowSize < learningParams().maxAnimationLength / 2; windowSize++)
+    {
+        const int curInstanceCount = evaluateAnimationInstances(seed, windowSize);
+        if (curInstanceCount < minInstances)
+            return windowSize - 1;
+        instanceCount = curInstanceCount;
+    }
+    return learningParams().maxAnimationLength / 2;
 }
 
 void Character::makeAnimationSearch()
@@ -321,7 +443,7 @@ void Character::makeAnimationSearch()
 
     cout << "Building LSH tables" << endl;
     auto &params = learningParams();
-    animationSearch.init(animationPCADimension, params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
+    animationSearch.init(animationPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (auto &instance : allInstances)
     {
         animationSearch.insert(instance.second.reducedAnimationDescriptor, &instance.second);

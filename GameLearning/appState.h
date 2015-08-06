@@ -5,6 +5,7 @@ struct AppState
     {
         curFrame = FrameID(0, 0);
         curCharacterIndex = 0;
+        anchorAnimationInstanceIndex = 0;
         showBBoxes = false;
         showFullMesh = false;
         showSelectionOnly = false;
@@ -33,6 +34,7 @@ struct AppState
     FrameID curFrame;
     FrameID anchorFrame;
     int curCharacterIndex;
+    int anchorAnimationInstanceIndex;
     
     Cameraf camera;
 

@@ -8,7 +8,7 @@ using namespace ml;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
-const int frameDumpIndex = 15000;
+const int frameDumpIndex = 30000;
 const bool capturingAllBuffers = true;
 const int keyFrameCaptureRate = 500;
 

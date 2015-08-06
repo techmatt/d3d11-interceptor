@@ -15,6 +15,7 @@ void EventMap::dispatchEvents(const vector<string> &messages) const
 {
     for (const string &message : messages)
     {
+        cout << "message: " << message << endl;
         auto parts = ml::util::split(message, ' ');
         if (_handlers.count(parts[0]) == 0)
         {
