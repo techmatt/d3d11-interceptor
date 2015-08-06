@@ -75,28 +75,19 @@ struct Character
 
     LSHEuclidean<CharacterFrameInstance*> animationSearch;
 
-    static float L2DistSq(const vector<float> &a, const vector<float> &b)
-    {
-        const size_t n = a.size();
-        float sum = 0.0f;
-        for (size_t i = 0; i < n; i++)
-        {
-            float diff = a[i] - b[i];
-            sum += diff * diff;
-        }
-        return sum;
-    }
-
     float animationDistance(const FrameID &a, const FrameID &b) const
     {
         const CharacterFrameInstance *aInst = findInstanceAtFrame(a);
         const CharacterFrameInstance *bInst = findInstanceAtFrame(b);
         if (aInst == nullptr || bInst == nullptr)
             return numeric_limits<float>::max();
-        return L2DistSq(aInst->reducedAnimationDescriptor, bInst->reducedAnimationDescriptor);
+        return math::distSq(aInst->reducedAnimationDescriptor, bInst->reducedAnimationDescriptor);
     }
 
 private:
+    void recordFramePoses(const ProcessedFrame &frame);
+    bool computeAnimationDescriptor(const FrameID &centerFrame, float *result);
+
     void computePosePCA();
     void computePoseDescriptors();
     void computeAnimationPCA();
@@ -104,9 +95,9 @@ private:
     void makeAnimationSearch();
     void testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount);
 
-    void computeAnimationDescriptor(const FrameID &centerFrame, float *result);
+    int evaluateAnimationOverlap(const CharacterFrameInstance &frameA, const CharacterFrameInstance &frameB, int windowSize);
+    int evaluateAnimationStrength(const CharacterFrameInstance &seed, int windowSize);
 
-    void recordFramePoses(const ProcessedFrame &frame);
     void computeAnimationSequences();
 };
 

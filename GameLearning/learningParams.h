@@ -14,12 +14,15 @@ struct LearningParams
         params.readParameter("poseClusterSoftAssignmentThreshold", poseClusterSoftAssignmentThreshold);
 
         params.readParameter("requiredOverlapPercentage", requiredOverlapPercentage);
-        params.readParameter("animationStartOffset", animationStartOffset);
         params.readParameter("minAnimationInstances", minAnimationInstances);
         params.readParameter("minAnimationLength", minAnimationLength);
         params.readParameter("maxAnimationLength", maxAnimationLength);
 
-        params.readParameter("animationConsistencyRatio", animationConsistencyRatio);
+        params.readParameter("maxAnimationFeatureDistSq", maxAnimationFeatureDistSq);
+
+        params.readParameter("LSHpNorm", LSHpNorm);
+        params.readParameter("LSHminiHashCount", LSHminiHashCount);
+        params.readParameter("LSHmacroTableCount", LSHmacroTableCount);
     }
 
     string datasetDir;
@@ -28,12 +31,14 @@ struct LearningParams
     double poseClusterSoftAssignmentThreshold;
 
     double requiredOverlapPercentage;
-    int animationStartOffset;
+    int maxAnimationFeatureDistSq;
     int minAnimationInstances;
     int minAnimationLength;
     int maxAnimationLength;
 
-    double animationConsistencyRatio;
+    double LSHpNorm;
+    int LSHminiHashCount;
+    int LSHmacroTableCount;
 };
 
 extern LearningParams g_learningParams;

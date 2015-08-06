@@ -83,8 +83,9 @@ void Character::computeAnimationDescriptors()
     }
 }
 
-void Character::computeAnimationDescriptor(const FrameID &centerFrame, float *result)
+bool Character::computeAnimationDescriptor(const FrameID &centerFrame, float *result)
 {
+    bool valid = true;
     int animationFeatureIndex = 0;
     for (int windowOffset = -Constants::animationWindowRadius; windowOffset <= Constants::animationWindowRadius; windowOffset++)
     {
@@ -92,6 +93,7 @@ void Character::computeAnimationDescriptor(const FrameID &centerFrame, float *re
         const CharacterFrameInstance *instance = findInstanceAtFrame(curFrame);
         if (instance == nullptr)
         {
+            valid = false;
             for (int poseFeatureIndex = 0; poseFeatureIndex < posePCADimension; poseFeatureIndex++)
                 result[animationFeatureIndex++] = 0.0f;
         }
@@ -101,6 +103,7 @@ void Character::computeAnimationDescriptor(const FrameID &centerFrame, float *re
                 result[animationFeatureIndex++] = instance->reducedPoseDescriptor[poseFeatureIndex];
         }
     }
+    return valid;
 }
 
 void Character::computeAnimationPCA()
@@ -121,8 +124,12 @@ void Character::computeAnimationPCA()
 
         for (int sampleIndex = 0; sampleIndex < Constants::animationPCASamples; sampleIndex++)
         {
-            const CharacterFrameInstance &randomInstance = *util::randomElement(allInstancesVec);
-            computeAnimationDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
+            bool valid = false;
+            while (!valid)
+            {
+                const CharacterFrameInstance &randomInstance = *util::randomElement(allInstancesVec);
+                valid = computeAnimationDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
+            }
         }
 
         animationPCA.init(M);
@@ -215,13 +222,13 @@ void Character::computeAnimationSequences()
 
 void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount)
 {
-    cout << "Testing LSH" << endl;
+    cout << "Testing LSH " << pNorm << ", " << miniHashFunctionCount << ", " << macroTableCount << endl;
     LSHEuclidean<CharacterFrameInstance*> search;
     search.init(animationPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
     for (auto &instance : allInstances)
         search.insert(instance.second.reducedAnimationDescriptor, &instance.second);
 
-    const UINT testInstanceCount = 1000;
+    const UINT testInstanceCount = 500;
     const float targetDistSq = 5.0f;
     size_t missedSamples = 0;
     size_t wastedSamples = 0;
@@ -236,14 +243,14 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
         auto results = search.findSimilar(randomInstance.reducedAnimationDescriptor);
         for (CharacterFrameInstance *candidate : results)
         {
-            const float distSq = L2DistSq(candidate->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
+            const float distSq = math::distSq(candidate->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
             if (distSq > targetDistSq)
                 wastedSamples++;
         }
 
         for (auto &instance : allInstancesVec)
         {
-            const float distSq = L2DistSq(instance->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
+            const float distSq = math::distSq(instance->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
             if (test == 0)
                 fileDebug << distSq << endl;
             if (distSq < targetDistSq)
@@ -268,19 +275,57 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
     file << (double)wastedSamples / (double)testInstanceCount << endl;
 }
 
+int Character::evaluateAnimationOverlap(const CharacterFrameInstance &frameA, const CharacterFrameInstance &frameB, int windowSize)
+{
+    int matchingFrames = 0;
+    for (int window = -windowSize; window <= windowSize; window++)
+    {
+        const CharacterFrameInstance *instanceA = findInstanceAtFrame(frameA.frameID.delta(window));
+        const CharacterFrameInstance *instanceB = findInstanceAtFrame(frameB.frameID.delta(window));
+
+        if (instanceA == nullptr || instanceB == nullptr)
+            return 0;
+
+        const float distSq = math::distSq(instanceA->reducedAnimationDescriptor, instanceB->reducedAnimationDescriptor);
+        if (distSq < learningParams().maxAnimationFeatureDistSq)
+            matchingFrames++;
+    }
+    return matchingFrames;
+}
+
+int Character::evaluateAnimationStrength(const CharacterFrameInstance &seed, int windowSize)
+{
+    auto candidates = animationSearch.findSimilar(seed.reducedAnimationDescriptor);
+    for (CharacterFrameInstance *candidate : candidates)
+    {
+        const float distSq = math::distSq(candidate->reducedAnimationDescriptor, seed.reducedAnimationDescriptor);
+        if (distSq >= learningParams().maxAnimationFeatureDistSq)
+            continue;
+
+
+    }
+}
+
 void Character::makeAnimationSearch()
 {
-    for (float dist = 0.001f; dist <= 0.3f; dist *= 2.0f)
-        for (int k = 10; k <= 50; k += 10)
-            for (int L = 3; L <= 7; L += 4)
-                testAnimationSearch(dist, k, L);
-    /*animationSearch.init(animationPCADimension, 7.0f, 5, 5);
+    const bool LSHParameterSearch = false;
+    if (LSHParameterSearch)
+    {
+        // best values found for targetDistSq = 5.0:
+        // pNorm=0.0135, k=30, L=20
+        for (float dist = 0.004f; dist <= 0.3f; dist *= 1.5f)
+            for (int k = 10; k <= 30; k += 5)
+                for (int L = 5; L <= 20; L += 5)
+                    testAnimationSearch(dist, k, L);
+    }
+
+    cout << "Building LSH tables" << endl;
+    auto &params = learningParams();
+    animationSearch.init(animationPCADimension, params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (auto &instance : allInstances)
     {
         animationSearch.insert(instance.second.reducedAnimationDescriptor, &instance.second);
-    }*/
-
-    
+    }
 }
 
 void CharacterDatabase::init(SegmentAnalyzer &analyzer)

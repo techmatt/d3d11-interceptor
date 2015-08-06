@@ -4,9 +4,13 @@ poseClusterDistThreshold=0.075
 poseClusterSoftAssignmentThreshold=0.1
 
 requiredOverlapPercentage=0.9
-animationStartOffset=5
 minAnimationInstances=5
 minAnimationLength=10
 maxAnimationLength=300
 
 animationConsistencyRatio=0.9
+maxAnimationFeatureDistSq=5.0
+
+LSHpNorm=0.0135
+LSHminiHashCount=30
+LSHmacroTableCount=20

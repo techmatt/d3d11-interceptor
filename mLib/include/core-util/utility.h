@@ -203,6 +203,18 @@ namespace math
 		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 	}
 
+    float distSq(const std::vector<float> &a, const std::vector<float> &b)
+    {
+        const size_t n = a.size();
+        float sum = 0.0f;
+        for (size_t i = 0; i < n; i++)
+        {
+            float diff = a[i] - b[i];
+            sum += diff * diff;
+        }
+        return sum;
+    }
+
 }  // namespace math
 
 namespace util
