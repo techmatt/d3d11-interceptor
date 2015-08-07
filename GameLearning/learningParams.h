@@ -16,7 +16,7 @@ struct LearningParams
         params.readParameter("minAnimationLength", minAnimationLength);
         params.readParameter("maxAnimationLength", maxAnimationLength);
 
-        params.readParameter("maxAnimationFeatureDistSq", maxAnimationFeatureDistSq);
+        params.readParameter("baseAnimationFeatureDistSq", baseAnimationFeatureDistSq);
 
         params.readParameter("LSHpNorm", LSHpNorm);
         params.readParameter("LSHminiHashCount", LSHminiHashCount);
@@ -31,7 +31,7 @@ struct LearningParams
 
     double requiredOverlapPercentage;
     double maxAnimationDropOffPercentage;
-    double maxAnimationFeatureDistSq;
+    double baseAnimationFeatureDistSq;
     int minAnimationInstances;
     int minAnimationLength;
     int maxAnimationLength;

@@ -47,7 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt" />
+    <Text Include="logs\animationAnchorComparison.txt" />
     <Text Include="logs\animationStrength.txt" />
+    <Text Include="logs\poseAnchorComparison.txt" />
     <Text Include="logs\sequences.txt" />
     <Text Include="logs\transitionFrom.txt" />
     <Text Include="logs\transitionTo.txt" />

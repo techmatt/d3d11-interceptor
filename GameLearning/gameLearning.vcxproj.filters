@@ -121,5 +121,11 @@
     <Text Include="logs\animationStrength.txt">
       <Filter>Logs</Filter>
     </Text>
+    <Text Include="logs\animationAnchorComparison.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="logs\poseAnchorComparison.txt">
+      <Filter>Logs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

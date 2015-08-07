@@ -34,9 +34,12 @@ void DatasetProcessor::alignFrames(AppState &state)
 
 void DatasetProcessor::loadAlignedFrames(AppState &state)
 {
+    const int maxReplayCount = 2;
+
     cout << " *** Loading aligned frames" << endl;
     for (const string &alignedFilename : Directory::enumerateFilesWithPath(learningParams().datasetDir + "alignedFrames/", ".dat"))
     {
-        state.replays.addEntry(alignedFilename);
+        if (state.replays.entries.size() < maxReplayCount)
+            state.replays.addEntry(alignedFilename);
     }
 }

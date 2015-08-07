@@ -8,7 +8,8 @@ void GameReplay::save(const string &filename) const
     file << frames.size();
     for (FrameObjectData *frame : frames)
     {
-        file << frame->objectData << frame->objectMeshes;
+        file.writePrimitiveVector(frame->objectData);
+        file << frame->objectMeshes;
     }
     file.closeStream();
 }
