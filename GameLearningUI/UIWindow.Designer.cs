@@ -44,6 +44,7 @@
             this.textBoxFrameIndex = new System.Windows.Forms.TextBox();
             this.buttonLoadFrame = new System.Windows.Forms.Button();
             this.checkBoxAnimationLabel = new System.Windows.Forms.CheckBox();
+            this.buttonTestAnchor = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // timerProcessMessages
@@ -181,6 +182,16 @@
             this.checkBoxAnimationLabel.UseVisualStyleBackColor = true;
             this.checkBoxAnimationLabel.CheckedChanged += new System.EventHandler(this.checkBoxAnimationLabel_CheckedChanged);
             // 
+            // buttonTestAnchor
+            // 
+            this.buttonTestAnchor.Location = new System.Drawing.Point(12, 125);
+            this.buttonTestAnchor.Name = "buttonTestAnchor";
+            this.buttonTestAnchor.Size = new System.Drawing.Size(91, 27);
+            this.buttonTestAnchor.TabIndex = 0;
+            this.buttonTestAnchor.Text = "Test anchor";
+            this.buttonTestAnchor.UseVisualStyleBackColor = true;
+            this.buttonTestAnchor.Click += new System.EventHandler(this.buttonTestAnchor_Click);
+            // 
             // UIWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -196,6 +207,7 @@
             this.Controls.Add(this.textBoxSignature);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.buttonTestAnchor);
             this.Controls.Add(this.buttonLoadFrame);
             this.Controls.Add(this.buttonLoadSignature);
             this.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -229,6 +241,7 @@
         private System.Windows.Forms.TextBox textBoxFrameIndex;
         private System.Windows.Forms.Button buttonLoadFrame;
         private System.Windows.Forms.CheckBox checkBoxAnimationLabel;
+        private System.Windows.Forms.Button buttonTestAnchor;
     }
 }
 

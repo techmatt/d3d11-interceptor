@@ -19,6 +19,10 @@ struct FrameID
     {
         return FrameID(replayIndex, frameIndex + framesToAdvance);
     }
+    string toString() const
+    {
+        return "r" + to_string(replayIndex) + "-f" + to_string(frameIndex);
+    }
     int replayIndex;
     int frameIndex;
 };

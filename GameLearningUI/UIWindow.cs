@@ -195,5 +195,10 @@ namespace UIWindow
         {
             SendMessage("showAnimationLabel " + checkBoxAnimationLabel.Checked);
         }
+
+        private void buttonTestAnchor_Click(object sender, EventArgs e)
+        {
+            SendMessage("testAnchor");
+        }
     }
 }

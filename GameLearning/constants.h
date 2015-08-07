@@ -6,8 +6,8 @@
 
 struct Constants
 {
-    static const int posePCASamples = 20000;
-    static const int animationPCASamples = 20000;
+    static const int posePCASamples = 40000;
+    static const int animationPCASamples = 40000;
     static const int animationWindowRadius = 2;
     static const int animationWindowTotalSize = (animationWindowRadius * 2 + 1);
 

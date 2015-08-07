@@ -247,7 +247,6 @@ void Character::computeAnimationSequences()
                 for (int window = -windowSize; window <= windowSize; window++)
                 {
                     FrameID curFrame = frameID.delta(window);
-                    sequence.instances.push_back(curFrame);
                     CharacterInstance *otherInstance = findInstanceAtFrame(curFrame);
                     if (otherInstance->sequences.size() == 0)
                     {
@@ -261,6 +260,7 @@ void Character::computeAnimationSequences()
                             entry.sequenceIndex = sequence.index;
                             entry.sequenceOffset = window;
                             entry.weight = 1.0f;
+                            sequence.instances.push_back(curFrame);
                             otherInstance->sequences.push_back(entry);
                         }
                     }

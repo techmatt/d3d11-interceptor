@@ -26,7 +26,8 @@ void GameReplay::load(const string &filename)
     for (int i = 0; i < frameCount; i++)
     {
         FrameObjectData *frame = new FrameObjectData();
-        file >> frame->objectData >> frame->objectMeshes;
+        file.readPrimitiveVector(frame->objectData);
+        file >> frame->objectMeshes;
         frame->index = i;
         frames[i] = frame;
     }

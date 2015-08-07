@@ -102,6 +102,15 @@ struct Character
         return math::distSq(aInst->reducedAnimationDescriptor, bInst->reducedAnimationDescriptor);
     }
 
+    float poseDistance(const FrameID &a, const FrameID &b) const
+    {
+        const CharacterInstance *aInst = findInstanceAtFrame(a);
+        const CharacterInstance *bInst = findInstanceAtFrame(b);
+        if (aInst == nullptr || bInst == nullptr)
+            return numeric_limits<float>::max();
+        return math::distSq(aInst->reducedPoseDescriptor, bInst->reducedPoseDescriptor);
+    }
+
 private:
     void recordFramePoses(const ProcessedFrame &frame);
     bool computeAnimationDescriptor(const FrameID &centerFrame, float *result);

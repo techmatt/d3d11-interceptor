@@ -66,6 +66,21 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("showAnimationLabel", [&](const vector<string> &params) {
         state.showAnimationLabel = ml::util::convertTo<bool>(params[1]);
     });
+    state.eventMap.registerEvent("testAnchor", [&](const vector<string> &params) {
+        const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
+        
+        ofstream poseFile("logs/poseAnchorComparison.txt");
+        ofstream animationFile("logs/animationAnchorComparison.txt");
+
+        for (CharacterInstance *instance : curCharacter.allInstancesVec)
+        {
+            float poseDistance = curCharacter.poseDistance(state.anchorFrame, instance->frameID);
+            poseFile << instance->frameID.toString() << '\t' << poseDistance << endl;
+            
+            float animationDistance = curCharacter.animationDistance(state.anchorFrame, instance->frameID);
+            animationFile << instance->frameID.toString() << '\t' << animationDistance << endl;
+        }
+    });
 }
 
 void Vizzer::render(ApplicationData &app)
@@ -143,49 +158,7 @@ void Vizzer::render(ApplicationData &app)
 
         if (!state.showSelectionOnly || signature == state.selectedSignature || selectedCharacter)
             state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective(), color);
-
-        /*if (meshIndex == frameAObjectIndex)
-        {
-            const auto &v0 = frame.objectMeshes[meshIndex];
-            for (const vec3f &v : frame.objectMeshes[meshIndex].data.vertices)
-            {
-                assets.renderSphere(state.camera.getCameraPerspective(), v, 0.4f, color);
-            }
-        }*/
     }
-
-    /*const UINT64 targetSignature = comparisonFrameA->objects[frameAObjectIndex].signature;
-
-    for (int meshIndex = 0; meshIndex < comparisonMeshesA.size(); meshIndex++)
-    {
-        const D3D11TriMesh &m = comparisonMeshesA[meshIndex];
-        vec3f color(1.0f, 1.0f, 1.0f);
-        if (comparisonFrameA->objects[meshIndex].signature == targetSignature)
-            color = vec3f(1.0f, 0.0f, 0.0f);
-        if (meshIndex == frameAObjectIndex)
-            color = vec3f(0.0f, 1.0f, 0.0f);
-
-        assets.renderMesh(m, state.camera.getCameraPerspective(), color);
-    }
-
-    for (int meshIndex = 0; meshIndex < comparisonMeshesB.size(); meshIndex++)
-    {
-        const D3D11TriMesh &m = comparisonMeshesB[meshIndex];
-        vec3f color(1.0f, 1.0f, 1.0f);
-        if (comparisonFrameB->objects[meshIndex].signature == targetSignature)
-            color = vec3f(0.0f, 0.0f, 1.0f);
-        if (meshIndex == frameBObjectIndex)
-            color = vec3f(0.0f, 0.75f, 0.0f);
-        assets.renderMesh(m, state.camera.getCameraPerspective(), color);
-    }*/
-
-    /*for (auto &c : correspondences)
-    {
-        const vec3f color = vec3f(0.8f, 0.8f, 0.8f);
-        assets.renderSphere(state.camera.getCameraPerspective(), c.source->centroid, 2.0f, color);
-        assets.renderSphere(state.camera.getCameraPerspective(), c.dest->centroid, 2.0f, color);
-        assets.renderCylinder(state.camera.getCameraPerspective(), c.source->centroid, c.dest->centroid, 2.0f, color);
-    }*/
 
     const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
 
