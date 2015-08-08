@@ -92,6 +92,9 @@ void Vizzer::render(ApplicationData &app)
     GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
     const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
 
+    if (frameDirty)
+        reloadFrame(app);
+
     vector<D3D11TriMesh> *meshesPtr = &state.curFrameMeshesRigidTransform;
     if (state.showBBoxes)
     {
@@ -148,9 +151,9 @@ void Vizzer::render(ApplicationData &app)
                 if (c.allSegmentsSet.count(signature) > 0)
                 {
                     const CharacterInstance *instance = c.findInstanceAtFrame(state.curFrame);
-                    if (instance != nullptr && instance->sequences.size() > 0)
+                    if (instance != nullptr && instance->sequence != nullptr)
                     {
-                        color = c.sequences[instance->sequences[0].sequenceIndex].color;
+                        color = instance->sequence->color;
                     }
                 }
             }
@@ -164,10 +167,9 @@ void Vizzer::render(ApplicationData &app)
 
     const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
     int anchorAnimationInstanceCount = 0;
-    if (anchorInstance != nullptr && anchorInstance->sequences.size() > 0)
+    if (anchorInstance != nullptr && anchorInstance->sequence != nullptr)
     {
-        const AnimationSequence &curAnimation = curCharacter.sequences[anchorInstance->sequences[0].sequenceIndex];
-        anchorAnimationInstanceCount = (int)curAnimation.instances.size();
+        anchorAnimationInstanceCount = (int)anchorInstance->sequence->instances.size();
     }
 
     vector<string> text;
@@ -194,10 +196,20 @@ void Vizzer::drawText(ApplicationData &app, vector<string> &text)
     }
 }
 
+void Vizzer::reloadFrame(ApplicationData &app)
+{
+    GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
+    const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
+
+    //makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
+    //makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
+    makeFrameMeshesRigidTransform(app, frame, state.curFrameMeshesRigidTransform);
+
+    frameDirty = false;
+}
+
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
-    bool frameDirty = false;
-
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
 
     if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
@@ -213,9 +225,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     {
         const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
         const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
-        if (anchorInstance != nullptr && anchorInstance->sequences.size() > 0)
+        if (anchorInstance != nullptr && anchorInstance->sequence != nullptr)
         {
-            const AnimationSequence &curAnimation = curCharacter.sequences[anchorInstance->sequences[0].sequenceIndex];
+            const AnimationSequence &curAnimation = *anchorInstance->sequence;
             if (curAnimation.instances.size() > 0)
             {
                 state.anchorAnimationInstanceIndex = math::mod(state.anchorAnimationInstanceIndex + animationInstanceDelta, curAnimation.instances.size());
@@ -231,20 +243,18 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
 
-    if (frameDirty || frameDelta != 0)
+    if (frameDelta != 0)
     {
         GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
         state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
+
         if (GetAsyncKeyState(VK_SHIFT))
         {
             while (replay.frames[state.curFrame.frameIndex]->objectMeshes.size() == 0)
                 state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
         }
-        const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
 
-        makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
-        makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
-        makeFrameMeshesRigidTransform(app, frame, state.curFrameMeshesRigidTransform);
+        frameDirty = true;
     }
 }
 
@@ -300,7 +310,6 @@ void Vizzer::mouseMove(ApplicationData &app)
 
 void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
-    meshes.clear();
     meshes.resize(frame.objectData.size());
     int objectIndex = 0;
     for (auto &o : frame.objectData)
@@ -321,7 +330,6 @@ void Vizzer::makeFrameMeshesBox(ApplicationData &app, const FrameObjectData &fra
 
 void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
-    meshes.clear();
     meshes.resize(frame.objectData.size());
     int objectIndex = 0;
     for (auto &o : frame.objectData)
@@ -332,7 +340,7 @@ void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObje
             TriMeshf mesh;
             geometry->toMesh(state.colorMap, mesh);
             mesh.transform(FrameAlignment::alignObjects(geometry->data, o));
-            meshes[objectIndex] = D3D11TriMesh(app.graphics, mesh);
+            meshes[objectIndex].load(app.graphics, mesh);
         }
         objectIndex++;
     }
@@ -340,7 +348,6 @@ void Vizzer::makeFrameMeshesRigidTransform(ApplicationData &app, const FrameObje
 
 void Vizzer::makeFrameMeshesFull(ApplicationData &app, const FrameObjectData &frame, vector<D3D11TriMesh> &meshes)
 {
-    meshes.clear();
     meshes.resize(frame.objectMeshes.size());
     for (int objectIndex = 0; objectIndex < frame.objectMeshes.size(); objectIndex++)
     {

@@ -80,7 +80,7 @@ private:
     virtual void fixedRadiusInternalDist(const FloatType *query, UINT k, FloatType radiusSq, FloatType epsilon, std::vector< std::pair<UINT, FloatType> > &result) const = 0;
 };
 
-template<class FloatType>
+template<class FloatType, class ValueType>
 class KNearestNeighborQueue
 {
 public:
@@ -89,12 +89,12 @@ public:
 	struct NeighborEntry
 	{
 		NeighborEntry() {}
-		NeighborEntry(int _index, FloatType _dist)
+        NeighborEntry(ValueType _value, FloatType _dist)
 		{
-			index = _index;
+			value = _value;
 			dist = _dist;
 		}
-		int index;
+        ValueType value;
 		FloatType dist;
 	};
 
@@ -111,13 +111,13 @@ public:
 
 	void clear(FloatType clearValue)
 	{
-		m_queue.assign(m_queue.size(), NeighborEntry(-1, clearValue));
+		m_queue.assign(m_queue.size(), NeighborEntry(ValueType(0), clearValue));
 		m_farthestDist = clearValue;
 	}
 
-    inline void insert(int index, FloatType dist)
+    inline void insert(ValueType value, FloatType dist)
     {
-        insert(NeighborEntry(index, dist));
+        insert(NeighborEntry(value, dist));
     }
 
 	inline void insert(const NeighborEntry &entry)
@@ -208,7 +208,7 @@ private:
 	UINT m_dimension;
 	std::vector<FloatType> m_pointData;
 	std::vector< const FloatType* > m_points;
-	mutable KNearestNeighborQueue<FloatType> m_queue;
+	mutable KNearestNeighborQueue<FloatType, int> m_queue;
 };
 
 }  // namespace ml

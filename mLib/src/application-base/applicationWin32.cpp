@@ -56,7 +56,6 @@ void ml::ApplicationWin32::messageLoop()
 				callback().resize(data());
 			}
 
-
 			for(int i = 0; i < m_input.keyCount; i++)
 				if(m_input.keys[i]) m_callback.keyPressed(*m_data, i);
 

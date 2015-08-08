@@ -9,13 +9,6 @@ struct CharacterSegmentInstance
     vec3f centeredCentroid;
 };
 
-struct InstanceAnimationEntry
-{
-    int sequenceIndex;
-    int sequenceOffset;
-    float weight;
-};
-
 //
 // an instance of a character in a single frame
 //
@@ -27,31 +20,68 @@ struct CharacterInstance
     vector<float> reducedPoseDescriptor;
     vector<float> reducedAnimationDescriptor;
 
-    // the set of all animation sequences this instance is a part of
-    vector<InstanceAnimationEntry> sequences;
+    AnimationSequence *sequence;
 
     map<UINT64, CharacterSegmentInstance> segments;
-
-    int optimalAnimationWindowSize;
-    int estimatedAnimationInstanceCount;
 };
 
-struct CharacterInstanceCompare
+struct AnimationGraphNeighborEdge
 {
-    bool operator() (const CharacterInstance *a, const CharacterInstance *b)
+    float totalDeviation() const
     {
-        if (a->optimalAnimationWindowSize == b->optimalAnimationWindowSize)
-            return a->estimatedAnimationInstanceCount < b->estimatedAnimationInstanceCount;
-        return a->optimalAnimationWindowSize < b->optimalAnimationWindowSize;
+        return deviationAToB + deviationBToA;
     }
+    CharacterInstance *instA;
+    CharacterInstance *instB;
+
+    float deviationAToB;
+    float deviationBToA;
 };
+
+inline bool operator < (const AnimationGraphNeighborEdge &a, const AnimationGraphNeighborEdge &b)
+{
+    return a.totalDeviation() > b.totalDeviation();
+}
+
+struct AnimationGraphSimilarEdge
+{
+    CharacterInstance *instA;
+    CharacterInstance *instB;
+
+    float distSq;
+};
+
+inline bool operator < (const AnimationGraphSimilarEdge &a, const AnimationGraphSimilarEdge &b)
+{
+    return a.distSq > b.distSq;
+}
 
 struct AnimationSequence
 {
+    AnimationSequence(FrameID seedFrame)
+    {
+        instances.push_back(seedFrame);
+        maxDeviation = 0.0f;
+        minSeedDistSq = 0.0f;
+
+        color = vec3f::origin;
+        while (color.length() < 0.5f)
+            color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
+
+    }
+    void addDeviation(float deviation)
+    {
+        deviations.push_back(deviation);
+        maxDeviation = max(maxDeviation, deviation);
+    }
+    vector<float> deviations;
+    float maxDeviation;
+
+    float minSeedDistSq;
+
     int index;
     vec3f color;
-    vector< vector<float> > animationDescriptors;
-
+    
     // the frameID of the every instance of this animation
     vector<FrameID> instances;
 };
@@ -83,7 +113,7 @@ struct Character
     map<FrameID, CharacterInstance> allInstances;
     vector<CharacterInstance*> allInstancesVec;
 
-    vector<AnimationSequence> sequences;
+    set<AnimationSequence*> sequences;
 
     PCAf posePCA;
     int posePCADimension;
@@ -122,13 +152,16 @@ private:
     void makeAnimationSearch();
     void testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount);
 
-    int evaluateAnimationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int windowSize, float acceptanceScale);
-    int evaluateAnimationInstances(const CharacterInstance &seed, int windowSize, float acceptanceScale, vector<FrameID> *instanceFrames = nullptr);
+    void mergeAnimations(AnimationSequence *a, AnimationSequence *b, float seedDistSq, float neighborDeviation);
+    bool animationsShouldMergeDeviation(AnimationSequence *a, AnimationSequence *b, float deviation);
+    bool animationsShouldMergeSeed(AnimationSequence *a, AnimationSequence *b, float seedDistSq);
 
-    int evaluateBestWindowSize(const CharacterInstance &seed, float acceptanceScale, int &instanceCount);
+    vector<CharacterInstance*> findKNearestInstances(const CharacterInstance &instance, int k);
+    float computeTransitionDeviation(const CharacterInstance &instStart, int delta);
 
     void computeAnimationSequences();
-    void addAnimationSequences(float acceptanceScale, int minWindowSize);
+    void mergeNearestSequences();
+    void mergeAdjacentFrames();
 };
 
 struct CharacterDatabase

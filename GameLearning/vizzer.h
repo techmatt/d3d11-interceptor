@@ -17,6 +17,7 @@ public:
 	void resize(ApplicationData &app);
 
 private:
+    void reloadFrame(ApplicationData &app);
     void registerEventHandlers(ApplicationData& app);
     void drawText(ApplicationData &app, vector< string > &text);
 
@@ -28,4 +29,6 @@ private:
     FrameTimer timer;
 
     AppState state;
+
+    bool frameDirty;
 };

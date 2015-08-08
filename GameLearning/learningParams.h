@@ -16,6 +16,8 @@ struct LearningParams
         params.readParameter("minAnimationLength", minAnimationLength);
         params.readParameter("maxAnimationLength", maxAnimationLength);
 
+        params.readParameter("transitionKNearest", transitionKNearest);
+
         params.readParameter("baseAnimationFeatureDistSq", baseAnimationFeatureDistSq);
 
         params.readParameter("LSHpNorm", LSHpNorm);
@@ -35,6 +37,8 @@ struct LearningParams
     int minAnimationInstances;
     int minAnimationLength;
     int maxAnimationLength;
+
+    int transitionKNearest;
 
     double LSHpNorm;
     int LSHminiHashCount;
