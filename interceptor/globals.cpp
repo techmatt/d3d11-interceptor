@@ -69,6 +69,13 @@ void Logger::recordSignatureColorPostDraw(MyD3DAssets &assets, const DrawParamet
     }
 }
 
+//
+// This is used to force all captures to be continuously numbered, which is needed
+// for tools like FFMPEG
+//
+const bool useLinearCaptureNumbering = true;
+int frameOutputIndex = 0;
+
 void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
 {
     if (capturingFrame && assets.viewportFullScreen())
@@ -89,7 +96,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
         const auto &indexBuffer = assets.getActiveIndexBuffer();
         const auto &vertexBuffer = assets.getActiveVertexBuffer();
         
-        const string imagePrefix = "render" + util::zeroPad(frameRenderIndex, 5);
+        const string imagePrefix = "render" + (useLinearCaptureNumbering ? util::zeroPad(frameOutputIndex, 5) : util::zeroPad(frameRenderIndex, 5));
         const string frameImageFile = imagePrefix + "_frame.png";
         const string frameDeltaImageFile = imagePrefix + "_delta.png";
         const string texImageFile = imagePrefix + "_tex";
@@ -99,6 +106,7 @@ void Logger::recordDrawEvent(MyD3DAssets &assets, const DrawParameters &params)
             Bitmap image;
             assets.context->readRenderTarget(image);
             LodePNG::save(image, g_logger->captureDir + frameImageFile);
+            frameOutputIndex++;
 
             if (prevCaptureImage.getDimensions() == image.getDimensions())
             {

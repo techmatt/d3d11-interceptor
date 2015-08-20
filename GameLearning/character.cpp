@@ -50,6 +50,8 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     computeAnimationPCA();
     computeAnimationDescriptors();
 
+    saveAnimationCurve();
+
     makeAnimationSearch();
 
     computeAnimationSequences();
@@ -73,7 +75,7 @@ void Character::computeAnimationDescriptors()
 {
     cout << "Computing animation descriptors..." << endl;
 
-    const int animationFeatureCount = posePCADimension * Constants::animationWindowTotalSize;
+    const int animationFeatureCount = posePCADimension * Constants::animationPoseCount;
     vector<float> rawAnimationDescriptor(animationFeatureCount);
 
     for (auto &instance : allInstances)
@@ -87,7 +89,7 @@ bool Character::computeAnimationDescriptor(const FrameID &centerFrame, float *re
 {
     bool valid = true;
     int animationFeatureIndex = 0;
-    for (int windowOffset = -Constants::animationWindowRadius; windowOffset <= Constants::animationWindowRadius; windowOffset++)
+    for (int windowOffset = 0; windowOffset < Constants::animationPoseCount; windowOffset++)
     {
         const FrameID curFrame = centerFrame.delta(windowOffset);
         const CharacterInstance *instance = findInstanceAtFrame(curFrame);
@@ -118,7 +120,7 @@ void Character::computeAnimationPCA()
     }
     else
     {
-        const int animationFeatureCount = posePCADimension * Constants::animationWindowTotalSize;
+        const int animationFeatureCount = posePCADimension * Constants::animationPoseCount;
 
         DenseMatrixf M(Constants::animationPCASamples, animationFeatureCount);
 
@@ -140,6 +142,35 @@ void Character::computeAnimationPCA()
 
     animationPCADimension = (int)animationPCA.reducedDimension(learningParams().PCAEnergy);
     cout << "Animation PCA dimension: " << animationPCADimension << endl;
+}
+
+void Character::saveAnimationCurve()
+{
+    const string curveDir = learningParams().datasetDir + "curves/";
+    const string curveFile = curveDir + "character" + to_string(characterIndex) + ".csv";
+
+    if (util::fileExists(curveFile))
+    {
+        cout << "Animation curve already exported" << endl;
+    }
+    else
+    {
+        util::makeDirectory(curveDir);
+        ofstream file(curveFile);
+
+        file << "pose0,pose1,animation0,animation1" << endl;
+
+        for (int sampleIndex = 0; sampleIndex < allInstancesVec.size(); sampleIndex++)
+        {
+            const CharacterInstance &instance = *allInstancesVec[sampleIndex];
+            file << instance.reducedPoseDescriptor[0] << "," << instance.reducedPoseDescriptor[1] << ",";
+            file << instance.reducedAnimationDescriptor[0] << "," << instance.reducedAnimationDescriptor[1];
+            file << endl;
+        }
+    }
+
+    posePCADimension = (int)posePCA.reducedDimension(learningParams().PCAEnergy);
+    cout << "Pose PCA dimension: " << posePCADimension << endl;
 }
 
 void Character::computePosePCA()
@@ -209,155 +240,201 @@ void Character::recordFramePoses(const ProcessedFrame &frame)
     }
 }
 
-bool Character::animationsShouldMergeDeviation(AnimationSequence *a, AnimationSequence *b, float deviation)
-{
-    auto deviationAcceptable = [](float dA, float dB)
-    {
-        float diffRatio = max(dA, dB) / (min(dA, dB) + 1.0f);
-        //cout << "  dA=" << dA << ", dB=" << dB << ", ratio=" << diffRatio << endl;
-        return (diffRatio < 1.0f);
-    };
-
-    if (a->deviations.size() == 0 || b->deviations.size() == 0)
-        return true;
-    else if (a->deviations.size() == 0)
-        return animationsShouldMergeDeviation(b, a, deviation);
-    else if (b->deviations.size() == 0)
-        return deviationAcceptable(a->maxDeviation, deviation);
-    else
-        return deviationAcceptable(a->maxDeviation, b->maxDeviation) &&
-               deviationAcceptable(deviation, a->maxDeviation) &&
-               deviationAcceptable(deviation, b->maxDeviation);
-}
-
-bool Character::animationsShouldMergeSeed(AnimationSequence *a, AnimationSequence *b, float seedDistSq)
-{
-    auto deviationAcceptable = [](float dA, float dB)
-    {
-        float diffRatio = max(dA, dB) / (min(dA, dB) + 1.0f);
-        return (diffRatio < 1.0f);
-    };
-
-    if (a->minSeedDistSq == 0.0f && b->minSeedDistSq == 0.0f)
-        return true;
-    else if (a->minSeedDistSq == 0.0f)
-        return animationsShouldMergeSeed(b, a, seedDistSq);
-    else if (b->minSeedDistSq == 0.0f)
-        return deviationAcceptable(a->minSeedDistSq, seedDistSq);
-    else
-        return deviationAcceptable(a->minSeedDistSq, b->minSeedDistSq) &&
-               deviationAcceptable(seedDistSq, a->minSeedDistSq) &&
-               deviationAcceptable(seedDistSq, b->minSeedDistSq);
-}
-
 void Character::computeAnimationSequences()
 {
-    return;
     cout << "*** Computing animation sequences" << endl;
 
     // this is just so I can focus on Marth for now
     if (characterIndex == 0)
         return;
 
-    cout << "Adding all instances" << endl;
-    for (CharacterInstance *instance : allInstancesVec)
+    ofstream file("logs/animationInfo.txt");
+    int minAnimationLength = 5;
+    //for (float acceptanceScale = 1.0f; acceptanceScale <= 10.0f; acceptanceScale *= 1.5f)
+    float acceptanceScale = 1.0f;
     {
-        AnimationSequence *newAnimation = new AnimationSequence(instance->frameID);
-        instance->sequence = newAnimation;
-        sequences.insert(newAnimation);
-    }
+        addAnimationSequences(acceptanceScale, minAnimationLength);
 
-    mergeNearestSequences();
-    mergeAdjacentFrames();
+        if (minAnimationLength > 0) minAnimationLength--;
+
+        file << endl << "*** acceptanceScale = " << acceptanceScale << endl;
+        for (auto &instance : allInstancesVec)
+        {
+            string animationName = "(none)";
+            if (instance->animations.size() > 0)
+                animationName = to_string(instance->animations[0].animation->index) + "-" + to_string(instance->animations[0].offset);
+            file << instance->frameID.toString() << '\t' << animationName << endl;
+        }
+    }
 }
 
-void Character::mergeNearestSequences()
+int Character::computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale)
 {
-    cout << "Merging kNearest sequences" << endl;
-    priority_queue<AnimationGraphSimilarEdge> queue;
-    for (CharacterInstance *instance : allInstancesVec)
+    vector<int> matches = animationMatchingFrames(seed, instance, animationLength, acceptanceScale);
+    if (matches.size() == 0) return 0;
+
+    double sum = 0.0;
+    for (int i = 0; i < animationLength; i++)
     {
-        auto similarInstances = findKNearestInstances(*instance, 3);
-        for (CharacterInstance *similarInstance : similarInstances)
+        sum += matches[i];
+        const double matchingRatio = sum / (double)(i + 1);
+        if (matchingRatio < learningParams().requiredOverlapPercentage)
         {
-            AnimationGraphSimilarEdge edge;
-            edge.instA = instance;
-            edge.instB = similarInstance;
-            edge.distSq = math::distSq(edge.instA->reducedAnimationDescriptor, edge.instB->reducedAnimationDescriptor);
-            
-            if (edge.distSq < 50.0f)
-                queue.push(edge);
+            return i;
         }
     }
-
-    cout << "Emptying queue, sequences=" << sequences.size() << endl;
-    while (!queue.empty())
-    {
-        AnimationGraphSimilarEdge edge = queue.top();
-        queue.pop();
-
-        if (edge.instA->sequence == edge.instB->sequence)
-            continue;
-
-        //cout << "edge distSq: " << edge.distSq << endl;
-        if (animationsShouldMergeSeed(edge.instA->sequence, edge.instB->sequence, edge.distSq))
-        {
-            //cout << "  merging A=" << edge.instA->sequence->instances.size() << " B=" << edge.instB->sequence->instances.size() << " total=" << sequences.size() << endl;
-            mergeAnimations(edge.instA->sequence, edge.instB->sequence, edge.distSq, -1.0f);
-        }
-    }
-    cout << "Queue empty, sequences=" << sequences.size() << endl;
+    return animationLength;
 }
 
-void Character::mergeAdjacentFrames()
+void Character::addNewAnimation(const CharacterInstance &seed, int animationLength, float acceptanceScale)
 {
-    //ofstream file("logs/edgeDeviations" + to_string(characterIndex) + ".txt");
+    AnimationSequence *animation = new AnimationSequence(seed.frameID, animationLength, (int)animations.size());
 
-    cout << "Adding neighbor edges" << endl;
-    priority_queue<AnimationGraphNeighborEdge> queue;
+    auto startInstances = findInstancesRadius(seed, (float)learningParams().baseAnimationFeatureDistSq * acceptanceScale);
+
+    sort(startInstances.begin(), startInstances.end());
+
+    for (CharacterInstance *instance : startInstances)
+    {
+        int duration = computeAnimationDuration(seed, *instance, animationLength, acceptanceScale);
+        for (int offset = 0; offset < duration; offset++)
+        {
+            FrameID curFrame = instance->frameID.delta(offset);
+            CharacterInstance *otherInstance = findInstanceAtFrame(curFrame);
+            otherInstance->animations.push_back(AnimationFrame(animation, offset));
+        }
+    }
+
+    cout << "New animation: length=" << animationLength << ", instances=" << startInstances.size() << endl;
+
+    animations.push_back(animation);
+}
+
+void Character::addAnimationSequences(float acceptanceScale, int minAnimationLength)
+{
+    cout << "Filling priority queue acceptanceScale=" << acceptanceScale << endl;
+    priority_queue<CharacterInstance*, vector<CharacterInstance*>, CharacterInstanceCompare> seedQueue;
     for (CharacterInstance *instance : allInstancesVec)
     {
-        CharacterInstance *nextInstance = findInstanceAtFrame(instance->frameID.delta(1));
-        if (nextInstance == nullptr)
-            continue;
-        AnimationGraphNeighborEdge edge;
-        edge.instA = instance;
-        edge.instB = nextInstance;
-        edge.deviationAToB = computeTransitionDeviation(*edge.instA, 1);
-        edge.deviationBToA = computeTransitionDeviation(*edge.instB, -1);
-        //file << instance->frameID.toString() << '\t' << edge.deviationAToB << '\t' << edge.deviationBToA << endl;
-
-        if (edge.totalDeviation() <= 500.0f)
-            queue.push(edge);
+        if (instance->animations.size() == 0)
+        {
+            instance->optimalAnimationLength = evaluateBestAnimationLength(*instance, acceptanceScale, instance->estimatedAnimationInstanceCount);
+            if (instance->estimatedAnimationInstanceCount >= learningParams().minAnimationInstances &&
+                instance->optimalAnimationLength >= minAnimationLength)
+            {
+                seedQueue.push(instance);
+            }
+        }
     }
 
-    int i = 0;
-    cout << "Merging adjacent frames sequences=" << sequences.size() << endl;
-    while (!queue.empty())
+    vector<FrameID> animationStartFrames;
+    cout << "Emptying priority queue" << endl;
+    while (!seedQueue.empty())
     {
-        AnimationGraphNeighborEdge edge = queue.top();
-        queue.pop();
+        CharacterInstance &seedInstance = *seedQueue.top();
+        seedQueue.pop();
 
-        if (edge.instA->sequence == edge.instB->sequence)
-            continue;
-
-        //cout << "deviation=" << edge.totalDeviation() << endl;
-        if (animationsShouldMergeDeviation(edge.instA->sequence, edge.instB->sequence, edge.totalDeviation()))
+        if (seedInstance.animations.size() == 0)
         {
-            //cout << "  merging A=" << edge.instA->sequence->instances.size() << " B=" << edge.instB->sequence->instances.size() << " total=" << sequences.size() << endl;
-            mergeAnimations(edge.instA->sequence, edge.instB->sequence, -1.0f, edge.totalDeviation());
+            addNewAnimation(seedInstance, seedInstance.optimalAnimationLength, acceptanceScale);
         }
-        else
-        {
-            //cout << "  animations not merging" << endl;
-            //cin.get();
-        }
-
-        i++;
-        //if (i % 1000 == 0)
-        //    cin.get();
     }
-    cout << "Queue empty, sequences=" << sequences.size() << endl;
+
+    /*ofstream file("logs/animationStrength" + to_string(characterIndex) + ".txt");
+    for (int i = 0; i < allInstancesVec.size(); i += 10)
+    {
+    CharacterInstance &instance = *allInstancesVec[i];
+    file << instance.frameID.frameIndex;
+    file << '\t' << evaluateBestWindowSize(instance);
+    for (int windowSize = 0; windowSize <= 20; windowSize++)
+    {
+    file << '\t' << evaluateAnimationInstances(instance, windowSize);
+    }
+    file << endl;
+    }*/
+
+    cout << "Animation count: " << animations.size() << endl;
+
+    //updateFirstPoseMap();
+}
+
+vector<int> Character::animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale)
+{
+    vector<int> result(animationLength, 0);
+    for (int offset = 0; offset < animationLength; offset++)
+    {
+        CharacterInstance *instanceA = findInstanceAtFrame(frameA.frameID.delta(offset));
+        CharacterInstance *instanceB = findInstanceAtFrame(frameB.frameID.delta(offset));
+
+        if (instanceA == nullptr || instanceB == nullptr)
+        {
+            result.clear();
+            return result;
+        }
+
+        const float distSq = math::distSq(instanceA->reducedAnimationDescriptor, instanceB->reducedAnimationDescriptor);
+        if (distSq < learningParams().baseAnimationFeatureDistSq * acceptanceScale)
+            result[offset] = 1;
+    }
+    return result;
+}
+
+int Character::countAnimationInstances(const CharacterInstance &seed, int animationLength, float acceptanceScale)
+{
+    int matchingSequences = 0;
+    set<FrameID> invalidFrames;
+
+    auto candidatesUnsorted = animationSearch.findSimilar(seed.reducedAnimationDescriptor);
+
+    vector< pair<CharacterInstance*, float> > candidatesSorted;
+    for (CharacterInstance *candidate : candidatesUnsorted)
+    {
+        const float distSq = math::distSq(candidate->reducedAnimationDescriptor, seed.reducedAnimationDescriptor);
+        if (distSq <= learningParams().baseAnimationFeatureDistSq * acceptanceScale)
+            candidatesSorted.push_back(make_pair(candidate, distSq));
+    }
+    sort(candidatesSorted.begin(), candidatesSorted.end(),
+        [](const pair<CharacterInstance*, float> &a, const pair<CharacterInstance*, float> &b) { return a.second < b.second; });
+
+    for (auto &c : candidatesSorted)
+    {
+        auto &candidate = *c.first;
+        const int animationDuration = computeAnimationDuration(seed, candidate, animationLength, acceptanceScale);
+
+        if (animationDuration >= animationLength)
+        {
+            bool valid = true;
+            for (int offset = 0; offset < animationLength; offset++)
+                if (invalidFrames.count(candidate.frameID.delta(offset)) > 0)
+                    valid = false;
+
+            if (valid)
+            {
+                for (int offset = 0; offset < animationLength; offset++)
+                    invalidFrames.insert(candidate.frameID.delta(offset));
+                matchingSequences++;
+            }
+        }
+    }
+
+    return matchingSequences;
+}
+
+int Character::evaluateBestAnimationLength(const CharacterInstance &seed, float acceptanceScale, int &instanceCount)
+{
+    const int startInstanceCount = countAnimationInstances(seed, 0, acceptanceScale);
+    const int minInstances = max(learningParams().minAnimationInstances, (int)ceil((double)startInstanceCount * learningParams().maxAnimationDropOffPercentage));
+
+    instanceCount = startInstanceCount;
+
+    for (int animationLength = 1; animationLength < learningParams().maxAnimationLength; animationLength++)
+    {
+        const int curInstanceCount = countAnimationInstances(seed, animationLength, acceptanceScale);
+        if (curInstanceCount < minInstances)
+            return animationLength - 1;
+        instanceCount = curInstanceCount;
+    }
+    return learningParams().maxAnimationLength;
 }
 
 void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount)
@@ -437,7 +514,7 @@ void Character::makeAnimationSearch()
     }
 }
 
-vector<CharacterInstance*> Character::findKNearestInstances(const CharacterInstance &instance, int k)
+vector<CharacterInstance*> Character::findInstancesKNearest(const CharacterInstance &instance, int k)
 {
     auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
     KNearestNeighborQueue<float, CharacterInstance*> queue;
@@ -455,65 +532,17 @@ vector<CharacterInstance*> Character::findKNearestInstances(const CharacterInsta
     return result;
 }
 
-float Character::computeTransitionDeviation(const CharacterInstance &instStart, int delta)
+vector<CharacterInstance*> Character::findInstancesRadius(const CharacterInstance &instance, float maxDistSq)
 {
-    CharacterInstance *instEnd = findInstanceAtFrame(instStart.frameID.delta(delta));
-    if (instEnd == nullptr)
-        return std::numeric_limits<float>::max();
-
-    float distSqSum = 0.0f;
-    int count = 0;
-
-    auto endKNearest = findKNearestInstances(*instEnd, learningParams().transitionKNearest);
-    for (CharacterInstance *similarEnd : endKNearest)
+    auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
+    vector<CharacterInstance*> result;
+    for (auto &candidateInstance : candidates)
     {
-        CharacterInstance *reprojectedInstance = findInstanceAtFrame(similarEnd->frameID.delta(-delta));
-        if (reprojectedInstance == nullptr || reprojectedInstance == &instStart)
-            continue;
-
-        const float distSq = math::distSq(instStart.reducedAnimationDescriptor, reprojectedInstance->reducedAnimationDescriptor);
-        distSqSum += distSq;
-        count++;
+        const float distSq = math::distSq(instance.reducedAnimationDescriptor, candidateInstance->reducedAnimationDescriptor);
+        if (distSq <= maxDistSq)
+            result.push_back(candidateInstance);
     }
-
-    if (count == 0)
-        return std::numeric_limits<float>::max();
-
-    return distSqSum / (float)count;
-}
-
-void Character::mergeAnimations(AnimationSequence *a, AnimationSequence *b, float seedDistSq, float neighborDeviation)
-{
-    if (b->instances.size() > a->instances.size())
-    {
-        mergeAnimations(b, a, seedDistSq, neighborDeviation);
-        return;
-    }
-    for (FrameID bInstFrame : b->instances)
-    {
-        CharacterInstance *bInst = findInstanceAtFrame(bInstFrame);
-        if (bInst == nullptr)
-        {
-            cout << "bInst == nullptr?" << endl;
-            continue;
-        }
-
-        bInst->sequence = a;
-        a->instances.push_back(bInstFrame);
-    }
-    for (float bDeviation : b->deviations)
-        a->addDeviation(bDeviation);
-
-    if (neighborDeviation > 0.0f)
-        a->addDeviation(neighborDeviation);
-
-    a->minSeedDistSq = min(a->minSeedDistSq, b->minSeedDistSq);
-
-    if (seedDistSq > 0.0f)
-        a->minSeedDistSq = min(a->minSeedDistSq, seedDistSq);
-
-    sequences.erase(b);
-    delete b;
+    return result;
 }
 
 void CharacterDatabase::init(SegmentAnalyzer &analyzer)

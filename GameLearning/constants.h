@@ -8,9 +8,8 @@ struct Constants
 {
     static const int posePCASamples = 40000;
     static const int animationPCASamples = 40000;
-    static const int animationWindowRadius = 2;
-    static const int animationWindowTotalSize = (animationWindowRadius * 2 + 1);
-
+    static const int animationPoseCount = 3;
+    
     const float LSHpNorm = 0.0135f;
     const int LSHminiHashCount = 30;
     const int LSHmacroTableCount = 20;

@@ -118,7 +118,6 @@
       <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeaderFile>main.h</PrecompiledHeaderFile>
       <AdditionalOptions>-Zm256 %(AdditionalOptions)</AdditionalOptions>
-      <SDLCheck>false</SDLCheck>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>

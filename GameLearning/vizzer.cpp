@@ -151,9 +151,9 @@ void Vizzer::render(ApplicationData &app)
                 if (c.allSegmentsSet.count(signature) > 0)
                 {
                     const CharacterInstance *instance = c.findInstanceAtFrame(state.curFrame);
-                    if (instance != nullptr && instance->sequence != nullptr)
+                    if (instance != nullptr && instance->animations.size() > 0)
                     {
-                        color = instance->sequence->color;
+                        color = instance->animations[0].animation->color;
                     }
                 }
             }
@@ -167,9 +167,9 @@ void Vizzer::render(ApplicationData &app)
 
     const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
     int anchorAnimationInstanceCount = 0;
-    if (anchorInstance != nullptr && anchorInstance->sequence != nullptr)
+    if (anchorInstance != nullptr && anchorInstance->animations.size() > 0)
     {
-        anchorAnimationInstanceCount = (int)anchorInstance->sequence->instances.size();
+        anchorAnimationInstanceCount = (int)anchorInstance->animations[0].animation->instances.size();
     }
 
     vector<string> text;
@@ -225,9 +225,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     {
         const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
         const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
-        if (anchorInstance != nullptr && anchorInstance->sequence != nullptr)
+        if (anchorInstance != nullptr && anchorInstance->animations.size() > 0)
         {
-            const AnimationSequence &curAnimation = *anchorInstance->sequence;
+            const AnimationSequence &curAnimation = *anchorInstance->animations[0].animation;
             if (curAnimation.instances.size() > 0)
             {
                 state.anchorAnimationInstanceIndex = math::mod(state.anchorAnimationInstanceIndex + animationInstanceDelta, curAnimation.instances.size());

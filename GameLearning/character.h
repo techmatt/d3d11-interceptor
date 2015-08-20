@@ -9,6 +9,17 @@ struct CharacterSegmentInstance
     vec3f centeredCentroid;
 };
 
+struct AnimationFrame
+{
+    AnimationFrame(AnimationSequence *_animation, int _offset)
+    {
+        animation = _animation;
+        offset = _offset;
+    }
+    AnimationSequence *animation;
+    int offset;
+};
+
 //
 // an instance of a character in a single frame
 //
@@ -20,70 +31,44 @@ struct CharacterInstance
     vector<float> reducedPoseDescriptor;
     vector<float> reducedAnimationDescriptor;
 
-    AnimationSequence *sequence;
+    vector<AnimationFrame> animations;
 
     map<UINT64, CharacterSegmentInstance> segments;
+
+    int optimalAnimationLength;
+    int estimatedAnimationInstanceCount;
 };
 
-struct AnimationGraphNeighborEdge
+struct CharacterInstanceCompare
 {
-    float totalDeviation() const
+    bool operator() (const CharacterInstance *a, const CharacterInstance *b)
     {
-        return deviationAToB + deviationBToA;
+        if (a->optimalAnimationLength == b->optimalAnimationLength)
+            return a->estimatedAnimationInstanceCount < b->estimatedAnimationInstanceCount;
+        return a->optimalAnimationLength < b->optimalAnimationLength;
     }
-    CharacterInstance *instA;
-    CharacterInstance *instB;
-
-    float deviationAToB;
-    float deviationBToA;
 };
-
-inline bool operator < (const AnimationGraphNeighborEdge &a, const AnimationGraphNeighborEdge &b)
-{
-    return a.totalDeviation() > b.totalDeviation();
-}
-
-struct AnimationGraphSimilarEdge
-{
-    CharacterInstance *instA;
-    CharacterInstance *instB;
-
-    float distSq;
-};
-
-inline bool operator < (const AnimationGraphSimilarEdge &a, const AnimationGraphSimilarEdge &b)
-{
-    return a.distSq > b.distSq;
-}
 
 struct AnimationSequence
 {
-    AnimationSequence(FrameID seedFrame)
+    AnimationSequence(FrameID _seedFrame, int _frameCount, int animationIndex)
     {
+        index = animationIndex;
+        seedFrame = _seedFrame;
         instances.push_back(seedFrame);
-        maxDeviation = 0.0f;
-        minSeedDistSq = 0.0f;
-
+        
         color = vec3f::origin;
         while (color.length() < 0.5f)
             color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
-
     }
-    void addDeviation(float deviation)
-    {
-        deviations.push_back(deviation);
-        maxDeviation = max(maxDeviation, deviation);
-    }
-    vector<float> deviations;
-    float maxDeviation;
-
-    float minSeedDistSq;
 
     int index;
+
     vec3f color;
-    
-    // the frameID of the every instance of this animation
+    FrameID seedFrame;
     vector<FrameID> instances;
+
+    int frameCount;
 };
 
 struct Character
@@ -105,24 +90,6 @@ struct Character
         return &(allInstances.find(frameID)->second);
     }
 
-    int characterIndex;
-    vector<UINT64> allSegmentsVec;
-    set<UINT64> allSegmentsSet;
-    
-    // maps from frame ID to character instance
-    map<FrameID, CharacterInstance> allInstances;
-    vector<CharacterInstance*> allInstancesVec;
-
-    set<AnimationSequence*> sequences;
-
-    PCAf posePCA;
-    int posePCADimension;
-
-    PCAf animationPCA;
-    int animationPCADimension;
-
-    LSHEuclidean<CharacterInstance*> animationSearch;
-
     float animationDistance(const FrameID &a, const FrameID &b) const
     {
         const CharacterInstance *aInst = findInstanceAtFrame(a);
@@ -141,9 +108,29 @@ struct Character
         return math::distSq(aInst->reducedPoseDescriptor, bInst->reducedPoseDescriptor);
     }
 
+    int characterIndex;
+    vector<UINT64> allSegmentsVec;
+    set<UINT64> allSegmentsSet;
+    
+    // maps from frame ID to character instance
+    map<FrameID, CharacterInstance> allInstances;
+    vector<CharacterInstance*> allInstancesVec;
+
+    vector<AnimationSequence*> animations;
+
+    PCAf posePCA;
+    int posePCADimension;
+
+    PCAf animationPCA;
+    int animationPCADimension;
+
+    LSHEuclidean<CharacterInstance*> animationSearch;
+
 private:
     void recordFramePoses(const ProcessedFrame &frame);
     bool computeAnimationDescriptor(const FrameID &centerFrame, float *result);
+
+    void saveAnimationCurve();
 
     void computePosePCA();
     void computePoseDescriptors();
@@ -152,16 +139,19 @@ private:
     void makeAnimationSearch();
     void testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount);
 
-    void mergeAnimations(AnimationSequence *a, AnimationSequence *b, float seedDistSq, float neighborDeviation);
-    bool animationsShouldMergeDeviation(AnimationSequence *a, AnimationSequence *b, float deviation);
-    bool animationsShouldMergeSeed(AnimationSequence *a, AnimationSequence *b, float seedDistSq);
+    vector<int> animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale);
+    int countAnimationInstances(const CharacterInstance &seed, int animationLength, float acceptanceScale);
+    int evaluateBestAnimationLength(const CharacterInstance &seed, float acceptanceScale, int &instanceCount);
+    
+    void addAnimationSequences(float acceptanceScale, int minWindowSize);
 
-    vector<CharacterInstance*> findKNearestInstances(const CharacterInstance &instance, int k);
-    float computeTransitionDeviation(const CharacterInstance &instStart, int delta);
+    void addNewAnimation(const CharacterInstance &seed, int animationLength, float acceptanceScale);
+    int computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale);
+
+    vector<CharacterInstance*> findInstancesKNearest(const CharacterInstance &instance, int k);
+    vector<CharacterInstance*> findInstancesRadius(const CharacterInstance &instance, float maxDistSq);
 
     void computeAnimationSequences();
-    void mergeNearestSequences();
-    void mergeAdjacentFrames();
 };
 
 struct CharacterDatabase
