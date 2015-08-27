@@ -266,14 +266,6 @@ void Character::computeAnimationSequences()
             file << instance->frameID.toString() << '\t' << animationName << endl;
         }*/
     }
-
-    for (CharacterInstance *inst : allInstancesVec)
-    {
-        if (inst->animation.animation != nullptr)
-        {
-            inst->animation.animation->instances.push_back(inst->frameID);
-        }
-    }
 }
 
 int Character::computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale)
@@ -294,44 +286,27 @@ int Character::computeAnimationDuration(const CharacterInstance &seed, const Cha
     return animationLength;
 }
 
-void Character::addNewAnimation(const CharacterInstance &seed, int animationLength)
+void Character::addNewAnimation(const CharacterInstance &seed, int animationLength, float acceptanceScale)
 {
-    animationLength = max(animationLength, learningParams().minAnimationLength);
-    for (int offset = 0; offset < animationLength; offset++)
-    {
-        FrameID animationFrame = seed.frameID.delta(offset);
-        CharacterInstance *animationInstance = findInstanceAtFrame(animationFrame);
-        if (animationInstance == nullptr)
-        {
-            cout << "Animation rejected" << endl;
-            return;
-        }
-    }
-
     AnimationSequence *animation = new AnimationSequence(seed.frameID, animationLength, (int)animations.size());
 
-    int frameCount = 0;
-    for (int offset = 0; offset < animationLength; offset++)
-    {
-        FrameID animationFrame = seed.frameID.delta(offset);
-        CharacterInstance *animationInstance = findInstanceAtFrame(animationFrame);
+    auto startInstances = findInstancesRadius(seed, (float)learningParams().baseAnimationFeatureDistSq * acceptanceScale);
 
-        for (auto pose : findPosesRadius(*animationInstance, (float)learningParams().maxPoseDistSq))
+    sort(startInstances.begin(), startInstances.end());
+
+    for (CharacterInstance *instance : startInstances)
+    {
+        int duration = computeAnimationDuration(seed, *instance, animationLength, acceptanceScale);
+        for (int offset = 0; offset < duration; offset++)
         {
-            CharacterInstance *otherInstance = pose.first;
-            const float poseDistSq = pose.second;
-            if (otherInstance->animation.poseDistSq > poseDistSq)
-            {
-                if (otherInstance->animation.animation != animation)
-                    frameCount++;
-                otherInstance->animation.animation = animation;
-                otherInstance->animation.offset = offset;
-                otherInstance->animation.poseDistSq = poseDistSq;
-            }
+            FrameID curFrame = instance->frameID.delta(offset);
+            CharacterInstance *otherInstance = findInstanceAtFrame(curFrame);
+            animation->instances.push_back(curFrame);
+            otherInstance->animations.push_back(AnimationFrame(animation, offset));
         }
     }
 
-    cout << "New animation: length=" << animationLength << ", estFrameCount=" << frameCount << endl;
+    cout << "New animation: length=" << animationLength << ", instances=" << startInstances.size() << endl;
 
     animations.push_back(animation);
 }
@@ -342,7 +317,7 @@ void Character::addAnimationSequences(float acceptanceScale, int minAnimationLen
     priority_queue<CharacterInstance*, vector<CharacterInstance*>, CharacterInstanceCompare> seedQueue;
     for (CharacterInstance *instance : allInstancesVec)
     {
-        if (instance->animation.poseDistSq > learningParams().poseDistSqThreshold)
+        if (instance->animations.size() == 0)
         {
             instance->optimalAnimationLength = evaluateBestAnimationLength(*instance, acceptanceScale, instance->estimatedAnimationInstanceCount);
             if (instance->estimatedAnimationInstanceCount >= learningParams().minAnimationInstances &&
@@ -360,9 +335,9 @@ void Character::addAnimationSequences(float acceptanceScale, int minAnimationLen
         CharacterInstance &seedInstance = *seedQueue.top();
         seedQueue.pop();
 
-        if (seedInstance.animation.poseDistSq > learningParams().poseDistSqThreshold)
+        if (seedInstance.animations.size() == 0)
         {
-            addNewAnimation(seedInstance, seedInstance.optimalAnimationLength);
+            addNewAnimation(seedInstance, seedInstance.optimalAnimationLength, acceptanceScale);
         }
     }
 
@@ -399,7 +374,7 @@ vector<int> Character::animationMatchingFrames(const CharacterInstance &frameA, 
         }
 
         const float distSq = math::distSq(instanceA->reducedAnimationDescriptor, instanceB->reducedAnimationDescriptor);
-        if (distSq < learningParams().animationDistSqBase * acceptanceScale)
+        if (distSq < learningParams().baseAnimationFeatureDistSq * acceptanceScale)
             result[offset] = 1;
     }
     return result;
@@ -416,7 +391,7 @@ int Character::countAnimationInstances(const CharacterInstance &seed, int animat
     for (CharacterInstance *candidate : candidatesUnsorted)
     {
         const float distSq = math::distSq(candidate->reducedAnimationDescriptor, seed.reducedAnimationDescriptor);
-        if (distSq <= learningParams().animationDistSqBase * acceptanceScale)
+        if (distSq <= learningParams().baseAnimationFeatureDistSq * acceptanceScale)
             candidatesSorted.push_back(make_pair(candidate, distSq));
     }
     sort(candidatesSorted.begin(), candidatesSorted.end(),
@@ -546,7 +521,7 @@ void Character::makeLSHSearch()
     }
 }
 
-/*vector<CharacterInstance*> Character::findAnimationsKNearest(const CharacterInstance &instance, int k)
+vector<CharacterInstance*> Character::findInstancesKNearest(const CharacterInstance &instance, int k)
 {
     auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
     KNearestNeighborQueue<float, CharacterInstance*> queue;
@@ -562,30 +537,17 @@ void Character::makeLSHSearch()
         if (entry.value != nullptr)
             result.push_back(entry.value);
     return result;
-}*/
+}
 
-vector< pair<CharacterInstance*, float> > Character::findAnimationsRadius(const CharacterInstance &instance, float maxDistSq)
+vector<CharacterInstance*> Character::findInstancesRadius(const CharacterInstance &instance, float maxDistSq)
 {
     auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
-    vector< pair<CharacterInstance*, float> > result;
+    vector<CharacterInstance*> result;
     for (auto &candidateInstance : candidates)
     {
         const float distSq = math::distSq(instance.reducedAnimationDescriptor, candidateInstance->reducedAnimationDescriptor);
         if (distSq <= maxDistSq)
-            result.push_back(make_pair(candidateInstance, distSq));
-    }
-    return result;
-}
-
-vector< pair<CharacterInstance*, float> > Character::findPosesRadius(const CharacterInstance &instance, float maxDistSq)
-{
-    auto candidates = poseSearch.findSimilar(instance.reducedPoseDescriptor);
-    vector< pair<CharacterInstance*, float> > result;
-    for (auto &candidateInstance : candidates)
-    {
-        const float distSq = math::distSq(instance.reducedPoseDescriptor, candidateInstance->reducedPoseDescriptor);
-        if (distSq <= maxDistSq)
-            result.push_back(make_pair(candidateInstance, distSq));
+            result.push_back(candidateInstance);
     }
     return result;
 }

@@ -11,21 +11,13 @@ struct CharacterSegmentInstance
 
 struct AnimationFrame
 {
-    AnimationFrame()
-    {
-        animation = nullptr;
-        offset = -1;
-        poseDistSq = std::numeric_limits<float>::max();
-    }
-    AnimationFrame(AnimationSequence *_animation, int _offset, float _poseDistSq)
+    AnimationFrame(AnimationSequence *_animation, int _offset)
     {
         animation = _animation;
         offset = _offset;
-        poseDistSq = _poseDistSq;
     }
     AnimationSequence *animation;
     int offset;
-    float poseDistSq;
 };
 
 //
@@ -39,8 +31,7 @@ struct CharacterInstance
     vector<float> reducedPoseDescriptor;
     vector<float> reducedAnimationDescriptor;
 
-    //vector<AnimationFrame> animations;
-    AnimationFrame animation;
+    vector<AnimationFrame> animations;
 
     map<UINT64, CharacterSegmentInstance> segments;
 
@@ -63,7 +54,6 @@ struct AnimationSequence
     AnimationSequence(FrameID _seedFrame, int _frameCount, int animationIndex)
     {
         index = animationIndex;
-        frameCount = 0;
         seedFrame = _seedFrame;
         instances.push_back(seedFrame);
         
@@ -156,14 +146,14 @@ private:
     vector<int> animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale);
     int countAnimationInstances(const CharacterInstance &seed, int animationLength, float acceptanceScale);
     int evaluateBestAnimationLength(const CharacterInstance &seed, float acceptanceScale, int &instanceCount);
-    int computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale);
-
+    
     void addAnimationSequences(float acceptanceScale, int minWindowSize);
 
-    void addNewAnimation(const CharacterInstance &seed, int animationLength);
+    void addNewAnimation(const CharacterInstance &seed, int animationLength, float acceptanceScale);
+    int computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale);
 
-    vector< pair<CharacterInstance*, float> > findPosesRadius(const CharacterInstance &instance, float maxDistSq);
-    vector< pair<CharacterInstance*, float> > findAnimationsRadius(const CharacterInstance &instance, float maxDistSq);
+    vector<CharacterInstance*> findInstancesKNearest(const CharacterInstance &instance, int k);
+    vector<CharacterInstance*> findInstancesRadius(const CharacterInstance &instance, float maxDistSq);
 
     void computeAnimationSequences();
 };

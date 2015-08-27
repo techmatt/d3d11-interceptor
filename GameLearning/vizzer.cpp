@@ -151,9 +151,9 @@ void Vizzer::render(ApplicationData &app)
                 if (c.allSegmentsSet.count(signature) > 0)
                 {
                     const CharacterInstance *instance = c.findInstanceAtFrame(state.curFrame);
-                    if (instance != nullptr && instance->animations.size() > 0)
+                    if (instance != nullptr && instance->animation.animation != nullptr)
                     {
-                        color = instance->animations[0].animation->color;
+                        color = instance->animation.animation->color;
                     }
                 }
             }
@@ -167,9 +167,9 @@ void Vizzer::render(ApplicationData &app)
 
     const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
     int anchorAnimationInstanceCount = 0;
-    if (anchorInstance != nullptr && anchorInstance->animations.size() > 0)
+    if (anchorInstance != nullptr && anchorInstance->animation.animation > 0)
     {
-        anchorAnimationInstanceCount = (int)anchorInstance->animations[0].animation->instances.size();
+        anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
     }
 
     vector<string> text;
@@ -178,6 +178,7 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Object count: " + to_string(frame.objectData.size()));
     text.push_back("Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()));
     text.push_back("Anchor animation dist: " + to_string(curCharacter.animationDistance(state.anchorFrame, state.curFrame)));
+    text.push_back("Anchor pose dist: " + to_string(curCharacter.poseDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor animation: " + to_string(state.anchorAnimationInstanceIndex) + " / " + to_string(anchorAnimationInstanceCount));
     drawText(app, text);
 }
@@ -225,9 +226,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     {
         const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
         const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
-        if (anchorInstance != nullptr && anchorInstance->animations.size() > 0)
+        if (anchorInstance != nullptr && anchorInstance->animation.animation != nullptr)
         {
-            const AnimationSequence &curAnimation = *anchorInstance->animations[0].animation;
+            const AnimationSequence &curAnimation = *anchorInstance->animation.animation;
             if (curAnimation.instances.size() > 0)
             {
                 state.anchorAnimationInstanceIndex = math::mod(state.anchorAnimationInstanceIndex + animationInstanceDelta, curAnimation.instances.size());

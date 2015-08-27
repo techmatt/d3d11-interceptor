@@ -1,15 +1,16 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
 
-poseClusterDistThreshold=0.075
-poseClusterSoftAssignmentThreshold=0.1
-
 maxAnimationDropOffPercentage=0.8
 minAnimationInstances=5
-minAnimationLength=1
+minAnimationLength=5
 maxAnimationLength=200
 
 requiredOverlapPercentage=0.9
-baseAnimationFeatureDistSq=5.0
+
+animationDistSqBase=5.0
+
+poseDistSqThreshold=5.0
+maxPoseDistSq=20.0
 
 LSHpNorm=0.02
 LSHminiHashCount=30
