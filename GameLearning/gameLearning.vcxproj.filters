@@ -109,5 +109,14 @@
     <Text Include="learningParams.txt">
       <Filter>Core</Filter>
     </Text>
+    <Text Include="logs\animationAnchorComparison.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="logs\animationInfo.txt">
+      <Filter>Logs</Filter>
+    </Text>
+    <Text Include="logs\poseAnchorComparison.txt">
+      <Filter>Logs</Filter>
+    </Text>
   </ItemGroup>
 </Project>

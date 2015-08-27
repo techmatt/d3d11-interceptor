@@ -47,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt" />
+    <Text Include="logs\animationAnchorComparison.txt" />
+    <Text Include="logs\animationInfo.txt" />
+    <Text Include="logs\poseAnchorComparison.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>

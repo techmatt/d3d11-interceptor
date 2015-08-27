@@ -345,8 +345,9 @@ void Character::addAnimationSequences(float acceptanceScale, int minAnimationLen
         if (instance->animation.poseDistSq > learningParams().poseDistSqThreshold)
         {
             instance->optimalAnimationLength = evaluateBestAnimationLength(*instance, acceptanceScale, instance->estimatedAnimationInstanceCount);
-            if (instance->estimatedAnimationInstanceCount >= learningParams().minAnimationInstances &&
-                instance->optimalAnimationLength >= minAnimationLength)
+            if (minAnimationLength == 1 ||
+                (instance->estimatedAnimationInstanceCount >= learningParams().minAnimationInstances &&
+                 instance->optimalAnimationLength >= minAnimationLength))
             {
                 seedQueue.push(instance);
             }
