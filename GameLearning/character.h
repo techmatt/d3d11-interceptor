@@ -37,7 +37,7 @@ struct CharacterInstance
     void makeRawPoseDescriptor(const vector<UINT64> &segmentList, float *result) const;
 
     vector<float> reducedPoseDescriptor;
-    vector<float> reducedAnimationDescriptor;
+    vector<float> reducedPoseChainDescriptor;
 
     //vector<AnimationFrame> animations;
     AnimationFrame animation;
@@ -106,7 +106,7 @@ struct Character
         const CharacterInstance *bInst = findInstanceAtFrame(b);
         if (aInst == nullptr || bInst == nullptr)
             return numeric_limits<float>::max();
-        return math::distSq(aInst->reducedAnimationDescriptor, bInst->reducedAnimationDescriptor);
+        return math::distSq(aInst->reducedPoseChainDescriptor, bInst->reducedPoseChainDescriptor);
     }
 
     float poseDistance(const FrameID &a, const FrameID &b) const
@@ -131,10 +131,11 @@ struct Character
     PCAf posePCA;
     int posePCADimension;
 
-    PCAf animationPCA;
-    int animationPCADimension;
+    PCAf poseChainPCA;
+    int poseChainPCADimension;
 
-    LSHEuclidean<CharacterInstance*> animationSearch;
+    //LSHEuclidean<CharacterInstance*> poseChainSearch;
+    LSHEuclidean<CharacterInstance*> poseChainSearch;
     LSHEuclidean<CharacterInstance*> poseSearch;
 
 private:

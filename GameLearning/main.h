@@ -32,6 +32,8 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "character.h"
 #include "segmentAnalyzer.h"
 
+#include "gameState.h"
+
 #include "appState.h"
 #include "datasetProcessor.h"
 #include "vizzer.h"

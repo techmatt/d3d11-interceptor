@@ -66,6 +66,9 @@
     <ClInclude Include="LSH.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="gameState.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -103,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="..\shared\gameReplay.cpp">
       <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="gameState.cpp">
+      <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -81,7 +81,7 @@ void Character::computeAnimationDescriptors()
     for (auto &instance : allInstances)
     {
         computeAnimationDescriptor(instance.first, rawAnimationDescriptor.data());
-        animationPCA.transform(rawAnimationDescriptor, animationPCADimension, instance.second.reducedAnimationDescriptor);
+        poseChainPCA.transform(rawAnimationDescriptor, poseChainPCADimension, instance.second.reducedPoseChainDescriptor);
     }
 }
 
@@ -110,13 +110,13 @@ bool Character::computeAnimationDescriptor(const FrameID &centerFrame, float *re
 
 void Character::computeAnimationPCA()
 {
-    const string PCADir = learningParams().datasetDir + "animationPCA/";
+    const string PCADir = learningParams().datasetDir + "poseChainPCA/";
     const string PCAFile = PCADir + "character" + to_string(characterIndex) + ".dat";
 
     if (util::fileExists(PCAFile))
     {
         cout << "Loading animation PCA from " << PCAFile << endl;
-        animationPCA.load(PCAFile);
+        poseChainPCA.load(PCAFile);
     }
     else
     {
@@ -134,14 +134,14 @@ void Character::computeAnimationPCA()
             }
         }
 
-        animationPCA.init(M);
+        poseChainPCA.init(M);
 
         util::makeDirectory(PCADir);
-        animationPCA.save(PCAFile);
+        poseChainPCA.save(PCAFile);
     }
 
-    animationPCADimension = (int)animationPCA.reducedDimension(learningParams().PCAEnergy);
-    cout << "Animation PCA dimension: " << animationPCADimension << endl;
+    poseChainPCADimension = (int)poseChainPCA.reducedDimension(learningParams().PCAEnergy);
+    cout << "Animation PCA dimension: " << poseChainPCADimension << endl;
 }
 
 void Character::saveAnimationCurve()
@@ -164,7 +164,7 @@ void Character::saveAnimationCurve()
         {
             const CharacterInstance &instance = *allInstancesVec[sampleIndex];
             file << instance.reducedPoseDescriptor[0] << "," << instance.reducedPoseDescriptor[1] << ",";
-            file << instance.reducedAnimationDescriptor[0] << "," << instance.reducedAnimationDescriptor[1];
+            file << instance.reducedPoseChainDescriptor[0] << "," << instance.reducedPoseChainDescriptor[1];
             file << endl;
         }
     }
@@ -399,7 +399,7 @@ vector<int> Character::animationMatchingFrames(const CharacterInstance &frameA, 
             return result;
         }
 
-        const float distSq = math::distSq(instanceA->reducedAnimationDescriptor, instanceB->reducedAnimationDescriptor);
+        const float distSq = math::distSq(instanceA->reducedPoseChainDescriptor, instanceB->reducedPoseChainDescriptor);
         if (distSq < learningParams().animationDistSqBase * acceptanceScale)
             result[offset] = 1;
     }
@@ -411,12 +411,12 @@ int Character::countAnimationInstances(const CharacterInstance &seed, int animat
     int matchingSequences = 0;
     set<FrameID> invalidFrames;
 
-    auto candidatesUnsorted = animationSearch.findSimilar(seed.reducedAnimationDescriptor);
+    auto candidatesUnsorted = poseChainSearch.findSimilar(seed.reducedPoseChainDescriptor);
 
     vector< pair<CharacterInstance*, float> > candidatesSorted;
     for (CharacterInstance *candidate : candidatesUnsorted)
     {
-        const float distSq = math::distSq(candidate->reducedAnimationDescriptor, seed.reducedAnimationDescriptor);
+        const float distSq = math::distSq(candidate->reducedPoseChainDescriptor, seed.reducedPoseChainDescriptor);
         if (distSq <= learningParams().animationDistSqBase * acceptanceScale)
             candidatesSorted.push_back(make_pair(candidate, distSq));
     }
@@ -468,9 +468,9 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
 {
     cout << "Testing LSH " << pNorm << ", " << miniHashFunctionCount << ", " << macroTableCount << endl;
     LSHEuclidean<CharacterInstance*> search;
-    search.init(animationPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
+    search.init(poseChainPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
     for (auto &instance : allInstances)
-        search.insert(instance.second.reducedAnimationDescriptor, &instance.second);
+        search.insert(instance.second.reducedPoseChainDescriptor, &instance.second);
 
     const UINT testInstanceCount = 500;
     const float targetDistSq = 10.0f;
@@ -484,17 +484,17 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
     {
         const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
 
-        auto results = search.findSimilar(randomInstance.reducedAnimationDescriptor);
+        auto results = search.findSimilar(randomInstance.reducedPoseChainDescriptor);
         for (CharacterInstance *candidate : results)
         {
-            const float distSq = math::distSq(candidate->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
+            const float distSq = math::distSq(candidate->reducedPoseChainDescriptor, randomInstance.reducedPoseChainDescriptor);
             if (distSq > targetDistSq)
                 wastedSamples++;
         }
 
         for (auto &instance : allInstancesVec)
         {
-            const float distSq = math::distSq(instance->reducedAnimationDescriptor, randomInstance.reducedAnimationDescriptor);
+            const float distSq = math::distSq(instance->reducedPoseChainDescriptor, randomInstance.reducedPoseChainDescriptor);
             if (test == 0)
                 fileDebug << distSq << endl;
             if (distSq < targetDistSq)
@@ -534,10 +534,10 @@ void Character::makeLSHSearch()
 
     cout << "Building LSH tables" << endl;
     auto &params = learningParams();
-    animationSearch.init(animationPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
+    poseChainSearch.init(poseChainPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (auto &instance : allInstances)
     {
-        animationSearch.insert(instance.second.reducedAnimationDescriptor, &instance.second);
+        poseChainSearch.insert(instance.second.reducedPoseChainDescriptor, &instance.second);
     }
 
     poseSearch.init(posePCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
@@ -549,12 +549,12 @@ void Character::makeLSHSearch()
 
 /*vector<CharacterInstance*> Character::findAnimationsKNearest(const CharacterInstance &instance, int k)
 {
-    auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
+    auto candidates = poseChainSearch.findSimilar(instance.reducedPoseChainDescriptor);
     KNearestNeighborQueue<float, CharacterInstance*> queue;
     queue.init(k, std::numeric_limits<float>::max());
     for (auto &candidateInstance : candidates)
     {
-        const float distSq = math::distSq(instance.reducedAnimationDescriptor, candidateInstance->reducedAnimationDescriptor);
+        const float distSq = math::distSq(instance.reducedPoseChainDescriptor, candidateInstance->reducedPoseChainDescriptor);
         queue.insert(candidateInstance, distSq);
     }
 
@@ -567,11 +567,11 @@ void Character::makeLSHSearch()
 
 vector< pair<CharacterInstance*, float> > Character::findAnimationsRadius(const CharacterInstance &instance, float maxDistSq)
 {
-    auto candidates = animationSearch.findSimilar(instance.reducedAnimationDescriptor);
+    auto candidates = poseChainSearch.findSimilar(instance.reducedPoseChainDescriptor);
     vector< pair<CharacterInstance*, float> > result;
     for (auto &candidateInstance : candidates)
     {
-        const float distSq = math::distSq(instance.reducedAnimationDescriptor, candidateInstance->reducedAnimationDescriptor);
+        const float distSq = math::distSq(instance.reducedPoseChainDescriptor, candidateInstance->reducedPoseChainDescriptor);
         if (distSq <= maxDistSq)
             result.push_back(make_pair(candidateInstance, distSq));
     }
