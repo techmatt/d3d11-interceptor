@@ -77,7 +77,7 @@ struct Logger
     string captureDir;
     Bitmap prevCaptureImage;
     GameReplay frameCaptureObjects;
-
+    
     //
     // All frame capture state
     //

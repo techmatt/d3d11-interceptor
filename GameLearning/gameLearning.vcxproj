@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\gameReplay.h" />
+    <ClInclude Include="..\shared\GCPadStatus.h" />
     <ClInclude Include="..\shared\geometryDatabase.h" />
     <ClInclude Include="..\shared\localizedObject.h" />
     <ClInclude Include="..\shared\signatureColorMap.h" />

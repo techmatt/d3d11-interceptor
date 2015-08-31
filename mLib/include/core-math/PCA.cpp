@@ -126,7 +126,7 @@ size_t PCA<T>::reducedDimension(double energyPercent)
 }
 
 template<class T>
-void PCA<T>::transform(const std::vector<T> &input, size_t reducedDimension, std::vector<T> &result)
+void PCA<T>::transform(const std::vector<T> &input, size_t reducedDimension, std::vector<T> &result) const
 {
     if(result.size() != reducedDimension)
 	    result.resize(reducedDimension);
@@ -134,7 +134,7 @@ void PCA<T>::transform(const std::vector<T> &input, size_t reducedDimension, std
 }
 
 template<class T>
-void PCA<T>::inverseTransform(const std::vector<T> &input, std::vector<T> &result)
+void PCA<T>::inverseTransform(const std::vector<T> &input, std::vector<T> &result) const
 {
     if (result.size() != _means.size())
 	    result.resize(dimension);
@@ -142,7 +142,7 @@ void PCA<T>::inverseTransform(const std::vector<T> &input, std::vector<T> &resul
 }
 
 template<class T>
-void PCA<T>::transform(const T *input, size_t reducedDimension, T *result)
+void PCA<T>::transform(const T *input, size_t reducedDimension, T *result) const
 {
 	const size_t dimension = _means.size();
 	for(size_t row = 0; row < reducedDimension; row++)
@@ -157,7 +157,7 @@ void PCA<T>::transform(const T *input, size_t reducedDimension, T *result)
 }
 
 template<class T>
-void PCA<T>::inverseTransform(const T *input, size_t reducedDimension, T *result)
+void PCA<T>::inverseTransform(const T *input, size_t reducedDimension, T *result) const
 {
 	size_t dimension = _means.size();
 	for(size_t col = 0; col < dimension; col++)

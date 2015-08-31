@@ -255,6 +255,27 @@ HRESULT myD3D11DeviceContext::Map(ID3D11Resource *  pResource, UINT  Subresource
 {
     if (g_logger->logInterfaceCalls) g_logger->log("Map resource=" + pointerToString(pResource) + " subResource=" + to_string(Subresource) + " type=" + to_string(MapType));
 
+    //
+    // special sentinel value used to report GameCube controller state
+    //
+    if (MapType == (D3D11_MAP)1235)
+    {
+        if (g_logger->curFrame == nullptr)
+        {
+            g_logger->logErrorFile << "g_logger->curFrame == nullptr" << endl;
+            return S_OK;
+        }
+        GCPadStatus *padState = (GCPadStatus*)pResource;
+        UINT padIndex = Subresource;
+        if (padIndex < g_logger->curFrame->ControllerCount)
+            g_logger->curFrame->padState[padIndex] = *padState;
+        if (g_logger->logInterfaceCalls)
+        {
+            g_logger->log("Controller update button=" + to_string(padState->button) + " frameID=" + to_string(MapFlags) + " index=" + to_string(Subresource));
+        }
+        return S_OK;
+    }
+
     UINT64 ptr = (UINT64)pResource;
     if (capturingAllBuffers &&
         (MapType == D3D11_MAP_WRITE_NO_OVERWRITE || MapType == D3D11_MAP_WRITE_DISCARD || MapType == D3D11_MAP_WRITE ||

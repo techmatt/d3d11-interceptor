@@ -39,7 +39,6 @@ struct CharacterInstance
     vector<float> reducedPoseDescriptor;
     vector<float> reducedPoseChainDescriptor;
 
-    //vector<AnimationFrame> animations;
     AnimationFrame animation;
 
     map<UINT64, CharacterSegmentInstance> segments;
@@ -60,11 +59,11 @@ struct CharacterInstanceCompare
 
 struct AnimationSequence
 {
-    AnimationSequence(FrameID _seedFrame, int _frameCount, int animationIndex)
+    AnimationSequence(FrameID _seedFrame, int _length, int animationIndex)
     {
         index = animationIndex;
-        frameCount = 0;
         seedFrame = _seedFrame;
+        length = _length;
         instances.push_back(seedFrame);
         
         color = vec3f::origin;
@@ -74,17 +73,26 @@ struct AnimationSequence
 
     int index;
 
-    vec3f color;
     FrameID seedFrame;
-    vector<FrameID> instances;
+    int length;
 
-    int frameCount;
+    vec3f color;
+    vector<FrameID> instances;
 };
+
+inline bool operator < (const AnimationFrame &a, const AnimationFrame &b)
+{
+    if (a.animation->index == b.animation->index)
+        return a.offset < b.offset;
+    return a.animation->index < b.animation->index;
+}
 
 struct Character
 {
     void init(const vector<UINT64> &segments, int _characterIndex);
     void recordAllFrames(const ReplayDatabase &frames);
+
+    bool makeInstance(const ProcessedFrame &frame, CharacterInstance &result) const;
     
     const CharacterInstance* findInstanceAtFrame(const FrameID &frameID) const
     {
@@ -134,9 +142,13 @@ struct Character
     PCAf poseChainPCA;
     int poseChainPCADimension;
 
-    //LSHEuclidean<CharacterInstance*> poseChainSearch;
+    LSHEuclidean<AnimationFrame> animationFrameSearch;
     LSHEuclidean<CharacterInstance*> poseChainSearch;
     LSHEuclidean<CharacterInstance*> poseSearch;
+
+    vector< AnimationFrame > findAnimationFramesRadius(const CharacterInstance &instance, float maxDistSq) const;
+    vector< pair<CharacterInstance*, float> > findPosesRadius(const CharacterInstance &instance, float maxDistSq) const;
+    vector< pair<CharacterInstance*, float> > findPoseChainsRadius(const CharacterInstance &instance, float maxDistSq) const;
 
 private:
     void recordFramePoses(const ProcessedFrame &frame);
@@ -147,11 +159,19 @@ private:
     void saveAnimations(const string &filename) const;
     void loadAnimations(const string &filename);
 
+    //
+    // dimensionality reduction
+    //
     void computePosePCA();
     void computePoseDescriptors();
     void computeAnimationPCA();
     void computeAnimationDescriptors();
-    void makeLSHSearch();
+
+    //
+    // LSH
+    //
+    void makePoseLSHSearch();
+    void makeAnimationLSHSearch();
     void testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount);
 
     vector<int> animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale);
@@ -162,9 +182,6 @@ private:
     void addAnimationSequences(float acceptanceScale, int minWindowSize);
 
     void addNewAnimation(const CharacterInstance &seed, int animationLength);
-
-    vector< pair<CharacterInstance*, float> > findPosesRadius(const CharacterInstance &instance, float maxDistSq);
-    vector< pair<CharacterInstance*, float> > findAnimationsRadius(const CharacterInstance &instance, float maxDistSq);
 
     void computeAnimationSequences();
 };

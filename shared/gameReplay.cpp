@@ -10,6 +10,7 @@ void GameReplay::save(const string &filename) const
     {
         file.writePrimitiveVector(frame->objectData);
         file << frame->objectMeshes;
+        file.writeData((const BYTE *)frame->padState, sizeof(GCPadStatus) * FrameObjectData::ControllerCount);
     }
     file.closeStream();
 }
@@ -29,6 +30,7 @@ void GameReplay::load(const string &filename)
         FrameObjectData *frame = new FrameObjectData();
         file.readPrimitiveVector(frame->objectData);
         file >> frame->objectMeshes;
+        file.readData((BYTE *)frame->padState, sizeof(GCPadStatus) * FrameObjectData::ControllerCount);
         frame->index = i;
         frames[i] = frame;
     }

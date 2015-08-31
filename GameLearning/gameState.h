@@ -2,13 +2,20 @@
 struct CharacterState
 {
     void load(const Character &character, const CharacterInstance &instance);
+
+    string describe() const;
+
     float worldX, worldY;
-    vector<short> animationStates;
+    map<int, AnimationFrame> activeAnimationsByIndex;
+
+    float bestPoseDistSq;
 };
 
 struct GameState
 {
-    CharacterState characters[2];
+    void load(const ProcessedFrame &frame, const CharacterDatabase &characters);
+
+    CharacterState characterState[2];
 
     // previous frames?
 };

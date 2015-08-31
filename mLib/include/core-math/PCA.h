@@ -15,11 +15,11 @@ public:
 
     size_t reducedDimension(double energyPercent);
 	
-    void transform(const std::vector<T> &input, size_t reducedDimension, std::vector<T> &result);
-    void inverseTransform(const std::vector<T> &input, std::vector<T> &result);
+    void transform(const std::vector<T> &input, size_t reducedDimension, std::vector<T> &result) const;
+    void inverseTransform(const std::vector<T> &input, std::vector<T> &result) const;
 	
-    void transform(const T *input, size_t reducedDimension, T *result);
-    void inverseTransform(const T *input, size_t reducedDimension, T *result);
+    void transform(const T *input, size_t reducedDimension, T *result) const;
+    void inverseTransform(const T *input, size_t reducedDimension, T *result) const;
 
 private:
     void initFromCorrelationMatrix(const DenseMatrix<T> &m);

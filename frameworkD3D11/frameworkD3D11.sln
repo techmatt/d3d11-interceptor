@@ -28,6 +28,11 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "Dolphin", "..\Dolphin-x64\D
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameAICore", "..\gameAICore\gameAICore.vcxproj", "{87FCF3FC-A08B-473B-A8E0-4A9FA6DBFFD6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2EC23C6D-8667-4B47-93C9-7D85D11CAE54}"
+	ProjectSection(SolutionItems) = preProject
+		DolphinNotes.txt = DolphinNotes.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

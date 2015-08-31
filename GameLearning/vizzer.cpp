@@ -172,6 +172,9 @@ void Vizzer::render(ApplicationData &app)
         anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
     }
 
+    GameState gameState;
+    gameState.load(state.replays.getFrame(state.curFrame), state.characters);
+
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
     text.push_back("Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()));
@@ -180,6 +183,9 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Anchor animation dist: " + to_string(curCharacter.animationDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor pose dist: " + to_string(curCharacter.poseDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor animation: " + to_string(state.anchorAnimationInstanceIndex) + " / " + to_string(anchorAnimationInstanceCount));
+    text.push_back("Character state: " + gameState.characterState[state.curCharacterIndex].describe());
+    text.push_back("Controller 0: " + frame.padState[0].toString());
+    text.push_back("Controller 1: " + frame.padState[1].toString());
     drawText(app, text);
 }
 

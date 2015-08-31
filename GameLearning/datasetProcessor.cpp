@@ -18,6 +18,7 @@ void DatasetProcessor::go(AppState &state)
 void DatasetProcessor::alignFrames(AppState &state)
 {
     cout << " *** Aligning frames" << endl;
+    util::makeDirectory(learningParams().datasetDir + "alignedFrames/");
     for (const string &rawFilename : Directory::enumerateFilesWithPath(learningParams().datasetDir + "rawFrames/", ".dat"))
     {
         const string alignedFilename = util::replace(rawFilename, "rawFrames/", "alignedFrames/");

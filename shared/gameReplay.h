@@ -34,6 +34,9 @@ struct FrameObjectData
     int index;
     vector<LocalizedObjectData> objectData;
     vector<LocalizedObject> objectMeshes;
+
+    static const int ControllerCount = 2;
+    GCPadStatus padState[ControllerCount];
 };
 
 struct GameReplay

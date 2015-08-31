@@ -22,6 +22,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 
 #include "LSH.h"
 
+#include "../shared/GCPadStatus.h"
 #include "../shared/localizedObject.h"
 #include "../shared/gameReplay.h"
 #include "../shared/signatureColorMap.h"

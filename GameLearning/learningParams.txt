@@ -9,8 +9,8 @@ requiredOverlapPercentage=0.9
 
 animationDistSqBase=5.0
 
-poseDistSqThreshold=5.0
-maxPoseDistSq=20.0
+poseDistSqThreshold=3.0
+maxPoseDistSq=5.0
 
 LSHpNorm=0.02
 LSHminiHashCount=30

@@ -8,13 +8,14 @@ using namespace ml;
 
 typedef ColorImageR8G8B8A8 Bitmap;
 
-const int frameDumpIndex = 60000;
+const int frameDumpIndex = 4000;
 const bool capturingAllBuffers = true;
 const int keyFrameCaptureRate = 500;
 
 #include <windows.h>
 #include <d3d11.h>
 
+#include "../shared/GCPadStatus.h"
 #include "../shared/gameAIInterface.h"
 #include "../shared/localizedObject.h"
 #include "../shared/gameReplay.h"
