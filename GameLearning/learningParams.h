@@ -26,6 +26,8 @@ struct LearningParams
         params.readParameter("LSHmacroTableCount", LSHmacroTableCount);
 
         params.readParameter("PCAEnergy", PCAEnergy);
+
+        params.readParameter("minObjectIndexCount", minObjectIndexCount);
     }
 
     string datasetDir;
@@ -46,6 +48,8 @@ struct LearningParams
     double LSHpNorm;
     int LSHminiHashCount;
     int LSHmacroTableCount;
+
+    int minObjectIndexCount;
 };
 
 extern LearningParams g_learningParams;

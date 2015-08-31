@@ -19,3 +19,5 @@ LSHmacroTableCount=20
 PCAEnergy=0.995
 
 transitionKNearest=7
+
+minObjectIndexCount=13

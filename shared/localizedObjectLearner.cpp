@@ -75,7 +75,6 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
         int i1 = indices[triIndex + 1];
         int i2 = indices[triIndex + 2];
 
-        //i1 == i0 + 1 && i2 == i0 + 2 && 
         if (vertexValid(v0) && vertexValid(v1) && vertexValid(v2) && math::abs(i0 - i1) <= 3 && math::abs(i0 - i2) <= 3)
         {
             vec3f normal = math::triangleNormal(v0, v1, v2);
@@ -100,6 +99,9 @@ void LocalizedObject::toMesh(const SignatureColorMap &colorMap, TriMeshf &mesh) 
         }
     }
 
-    if (meshVertices.size() > 0)
+    bool acceptMesh = (meshVertices.size() > 0);
+    acceptMesh &= meshIndices.size() >= learningParams().minObjectIndexCount;
+    
+    if (acceptMesh)
         mesh = TriMeshf(meshVertices, meshIndices);
 }
