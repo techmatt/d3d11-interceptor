@@ -46,7 +46,7 @@ struct GCPadStatus
     }
     string toString() const
     {
-        string result = "";
+        string result = "<" + to_string((int)stickX) + "," + to_string((int)stickY) + "> ";
         if (button & PAD_BUTTON_A) result += "A,";
         if (button & PAD_BUTTON_B) result += "B,";
         if (button & PAD_BUTTON_X) result += "X,";

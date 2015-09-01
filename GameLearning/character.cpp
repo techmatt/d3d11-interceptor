@@ -59,7 +59,7 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
 
     makePoseClusters();
 
-    computeAnimationSequences();
+    //computeAnimationSequences();
 }
 
 void Character::computePoseDescriptors()
@@ -100,7 +100,7 @@ void Character::computePoseChainReverseDescriptors()
     for (auto &instance : allInstances)
     {
         computePoseChainReverseDescriptor(instance.first, rawPoseChainDescriptor.data());
-        poseChainForwardPCA.transform(rawPoseChainDescriptor, poseChainForwardPCADimension, instance.second.poseChainForwardDescriptor);
+        poseChainReversePCA.transform(rawPoseChainDescriptor, poseChainReversePCADimension, instance.second.poseChainReverseDescriptor);
     }
 }
 
@@ -291,7 +291,7 @@ void Character::computePosePCA()
     cout << "Pose PCA dimension: " << posePCADimension << endl;
 }
 
-bool Character::makeInstance(const ProcessedFrame &frame, CharacterInstance &result) const
+/*bool Character::makeInstance(const ProcessedFrame &frame, CharacterInstance &result) const
 {
     vec3f sum = vec3f::origin;
     float sumCount = 0.0f;
@@ -324,8 +324,17 @@ bool Character::makeInstance(const ProcessedFrame &frame, CharacterInstance &res
     result.makeRawPoseDescriptor(allSegmentsVec, rawPoseDescriptor.data());
     posePCA.transform(rawPoseDescriptor, posePCADimension, result.poseDescriptor);
 
+    const int poseChainReverseFeatureCount = min(Constants::poseChainReverseMaxDim, posePCADimension) * Constants::poseChainReverseLength;
+    vector<float> rawPoseChainReverseDescriptor(poseChainReverseFeatureCount);
+
+    for (auto &instance : allInstances)
+    {
+        computePoseChainReverseDescriptor(instance.first, rawPoseChainDescriptor.data());
+        poseChainReversePCA.transform(rawPoseChainDescriptor, poseChainReversePCADimension, instance.second.poseChainReverseDescriptor);
+    }
+
     return true;
-}
+}*/
 
 void Character::recordFramePoses(const ProcessedFrame &frame)
 {
@@ -354,6 +363,7 @@ void Character::recordFramePoses(const ProcessedFrame &frame)
         {
             segmentInstance.second.centeredCentroid = segmentInstance.second.worldCentroid - sum;
         }
+        frameInstance.worldCentroid = sum;
         allInstances[frame.frameID] = frameInstance;
     }
 }
@@ -593,6 +603,20 @@ PoseCluster* Character::findBestPoseCluster(const CharacterInstance &instance, f
     }
 
     return bestCluster;
+}
+
+vector< pair<PoseCluster*, float> > Character::findPoseClustersRadius(const CharacterInstance &instance, float maxDistSq) const
+{
+    auto candidates = poseClusterSearch.findSimilar(instance.poseDescriptor);
+    vector< pair<PoseCluster*, float> > result;
+    for (auto &candidateCluster : candidates)
+    {
+        const CharacterInstance *candidateInstance = findInstanceAtFrame(candidateCluster->seedFrame);
+        const float distSq = math::distSq(instance.poseDescriptor, candidateInstance->poseDescriptor);
+        if (distSq <= maxDistSq)
+            result.push_back(make_pair(candidateCluster, distSq));
+    }
+    return result;
 }
 
 vector< pair<CharacterInstance*, float> > Character::findPosesRadius(const CharacterInstance &instance, float maxDistSq) const

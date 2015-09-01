@@ -1,11 +1,9 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
 
-maxAnimationDropOffPercentage=0.8
-minAnimationInstances=5
-minAnimationLength=5
-maxAnimationLength=200
+minAnimationInstances=4
 
-requiredOverlapPercentage=0.9
+controllerHistorySize=3
+worldPosHistorySize=3
 
 poseChainDistSq=20.0
 

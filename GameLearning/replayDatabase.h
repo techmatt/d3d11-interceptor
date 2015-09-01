@@ -71,9 +71,20 @@ struct ReplayDatabase
 {
     void addEntry(const string &alignedFrameFilename);
 
-    ProcessedFrame& getFrame(const FrameID &frame)
+    ProcessedFrame* getFrame(const FrameID &frame)
     {
-        return entries[frame.replayIndex].get().processedFrames[frame.frameIndex];
+        ReplayDatabaseEntry &replay = entries[frame.replayIndex].get();
+        if (frame.frameIndex < 0 || frame.frameIndex >= replay.processedFrames.size())
+            return nullptr;
+        return &replay.processedFrames[frame.frameIndex];
+    }
+
+    const ProcessedFrame* getFrame(const FrameID &frame) const
+    {
+        ReplayDatabaseEntry &replay = entries[frame.replayIndex].get();
+        if (frame.frameIndex < 0 || frame.frameIndex >= replay.processedFrames.size())
+            return nullptr;
+        return &replay.processedFrames[frame.frameIndex];
     }
 
     vector< reference_wrapper<ReplayDatabaseEntry> > entries;

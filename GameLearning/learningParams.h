@@ -10,12 +10,11 @@ struct LearningParams
     {
         params.readParameter("datasetDir", datasetDir);
 
-        params.readParameter("requiredOverlapPercentage", requiredOverlapPercentage);
-        params.readParameter("maxAnimationDropOffPercentage", maxAnimationDropOffPercentage);
-        params.readParameter("minAnimationInstances", minAnimationInstances);
-        params.readParameter("minAnimationLength", minAnimationLength);
-        params.readParameter("maxAnimationLength", maxAnimationLength);
+        params.readParameter("controllerHistorySize", controllerHistorySize);
+        params.readParameter("worldPosHistorySize", worldPosHistorySize);
 
+        params.readParameter("minAnimationInstances", minAnimationInstances);
+        
         params.readParameter("poseChainDistSq", poseChainDistSq);
 
         params.readParameter("poseDistSqThreshold", poseDistSqThreshold);
@@ -33,11 +32,10 @@ struct LearningParams
 
     double PCAEnergy;
 
-    double requiredOverlapPercentage;
-    double maxAnimationDropOffPercentage;
     int minAnimationInstances;
-    int minAnimationLength;
-    int maxAnimationLength;
+
+    int controllerHistorySize;
+    int worldPosHistorySize;
 
     double poseChainDistSq;
 

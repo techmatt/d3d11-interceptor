@@ -173,8 +173,22 @@ void Vizzer::render(ApplicationData &app)
         anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
     }*/
 
-    GameState gameState;
-    gameState.load(state.replays.getFrame(state.curFrame), state.characters);
+    if (GetAsyncKeyState(VK_F4))
+    {
+        GameState gameState;
+        gameState.load(state.curFrame, state.replays, state.characters);
+
+        ofstream file("state.csv");
+        for (string s : gameState.makeHeader())
+            file << s << ',';
+        file << endl;
+
+        vector<float> descriptor(gameState.descriptorLength());
+        gameState.makeDescriptor(descriptor.data());
+        for (float f : descriptor)
+            file << f << ',';
+        file << endl;
+    }
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
@@ -194,7 +208,7 @@ void Vizzer::render(ApplicationData &app)
         text.push_back("Current pose seed: " + to_string(curCharacter.poseClusters[curInstance->poseClusterIndex]->seedFrame.frameIndex));
     }
 
-    text.push_back("Character state: " + gameState.characterState[state.curCharacterIndex].describe());
+    //text.push_back("Character state: " + gameState.characterState[state.curCharacterIndex].describe());
     text.push_back("Controller 0: " + frame.padState[0].toString());
     text.push_back("Controller 1: " + frame.padState[1].toString());
     drawText(app, text);

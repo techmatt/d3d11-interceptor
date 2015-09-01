@@ -15,9 +15,6 @@ struct PoseCluster
     vector<FrameID> allInstances;
 
     int index;
-    map<int, int> prevClusterCount;
-    map<int, int> nextClusterCount;
-
     vector<AnimationSequence*> animations;
 };
 
@@ -62,6 +59,7 @@ struct CharacterInstance
     int poseClusterIndex;
     AnimationFrame animation;
 
+    vec3f worldCentroid;
     map<UINT64, CharacterSegmentInstance> segments;
 
     int similarPoseChainCount;
@@ -103,7 +101,7 @@ struct Character
     void init(const vector<UINT64> &segments, int _characterIndex);
     void recordAllFrames(const ReplayDatabase &frames);
 
-    bool makeInstance(const ProcessedFrame &frame, CharacterInstance &result) const;
+    //bool makeInstance(const ProcessedFrame &frame, CharacterInstance &result) const;
     
     const CharacterInstance* findInstanceAtFrame(const FrameID &frameID) const
     {
@@ -176,6 +174,7 @@ struct Character
     vector< pair<CharacterInstance*, float> > findPoseChainsForwardRadius(const CharacterInstance &instance, float maxDistSq) const;
     vector< pair<CharacterInstance*, float> > findPoseChainsReverseRadius(const CharacterInstance &instance, float maxDistSq) const;
     PoseCluster* findBestPoseCluster(const CharacterInstance &instance, float maxDistSq) const;
+    vector< pair<PoseCluster*, float> > findPoseClustersRadius(const CharacterInstance &instance, float maxDistSq) const;
     
 private:
 
