@@ -47,16 +47,19 @@ void Character::recordAllFrames(const ReplayDatabase &frames)
     computePosePCA();
     computePoseDescriptors();
 
-    computeAnimationPCA();
-    computeAnimationDescriptors();
+    computePoseChainForwardPCA();
+    computePoseChainForwardDescriptors();
+
+    computePoseChainReversePCA();
+    computePoseChainReverseDescriptors();
 
     saveAnimationCurve();
 
     makePoseLSHSearch();
 
-    computeAnimationSequences();
+    makePoseClusters();
 
-    makeAnimationLSHSearch();
+    computeAnimationSequences();
 }
 
 void Character::computePoseDescriptors()
@@ -69,81 +72,158 @@ void Character::computePoseDescriptors()
     for (auto &instance : allInstances)
     {
         instance.second.makeRawPoseDescriptor(allSegmentsVec, rawPoseDescriptor.data());
-        posePCA.transform(rawPoseDescriptor, posePCADimension, instance.second.reducedPoseDescriptor);
+        posePCA.transform(rawPoseDescriptor, posePCADimension, instance.second.poseDescriptor);
     }
 }
 
-void Character::computeAnimationDescriptors()
+void Character::computePoseChainForwardDescriptors()
 {
-    cout << "Computing animation descriptors..." << endl;
+    cout << "Computing pose chain forward descriptors..." << endl;
 
-    const int animationFeatureCount = posePCADimension * Constants::animationPoseCount;
-    vector<float> rawAnimationDescriptor(animationFeatureCount);
+    const int poseChainFeatureCount = min(Constants::poseChainForwardMaxDim, posePCADimension) * Constants::poseChainForwardLength;
+    vector<float> rawPoseChainDescriptor(poseChainFeatureCount);
 
     for (auto &instance : allInstances)
     {
-        computeAnimationDescriptor(instance.first, rawAnimationDescriptor.data());
-        poseChainPCA.transform(rawAnimationDescriptor, poseChainPCADimension, instance.second.reducedPoseChainDescriptor);
+        computePoseChainForwardDescriptor(instance.first, rawPoseChainDescriptor.data());
+        poseChainForwardPCA.transform(rawPoseChainDescriptor, poseChainForwardPCADimension, instance.second.poseChainForwardDescriptor);
     }
 }
 
-bool Character::computeAnimationDescriptor(const FrameID &centerFrame, float *result)
+void Character::computePoseChainReverseDescriptors()
 {
+    cout << "Computing pose chain reverse descriptors..." << endl;
+
+    const int poseChainFeatureCount = min(Constants::poseChainReverseMaxDim, posePCADimension) * Constants::poseChainReverseLength;
+    vector<float> rawPoseChainDescriptor(poseChainFeatureCount);
+
+    for (auto &instance : allInstances)
+    {
+        computePoseChainReverseDescriptor(instance.first, rawPoseChainDescriptor.data());
+        poseChainForwardPCA.transform(rawPoseChainDescriptor, poseChainForwardPCADimension, instance.second.poseChainForwardDescriptor);
+    }
+}
+
+bool Character::computePoseChainForwardDescriptor(const FrameID &startFrame, float *result)
+{
+    const int poseDims = min(Constants::poseChainForwardMaxDim, posePCADimension);
+
     bool valid = true;
     int animationFeatureIndex = 0;
-    for (int windowOffset = 0; windowOffset < Constants::animationPoseCount; windowOffset++)
+    for (int windowOffset = 0; windowOffset < Constants::poseChainForwardLength; windowOffset++)
     {
-        const FrameID curFrame = centerFrame.delta(windowOffset);
+        const FrameID curFrame = startFrame.delta(windowOffset);
         const CharacterInstance *instance = findInstanceAtFrame(curFrame);
         if (instance == nullptr)
         {
             valid = false;
-            for (int poseFeatureIndex = 0; poseFeatureIndex < posePCADimension; poseFeatureIndex++)
+            for (int poseFeatureIndex = 0; poseFeatureIndex < poseDims; poseFeatureIndex++)
                 result[animationFeatureIndex++] = 0.0f;
         }
         else
         {
-            for (int poseFeatureIndex = 0; poseFeatureIndex < posePCADimension; poseFeatureIndex++)
-                result[animationFeatureIndex++] = instance->reducedPoseDescriptor[poseFeatureIndex];
+            for (int poseFeatureIndex = 0; poseFeatureIndex < poseDims; poseFeatureIndex++)
+                result[animationFeatureIndex++] = instance->poseDescriptor[poseFeatureIndex];
         }
     }
     return valid;
 }
 
-void Character::computeAnimationPCA()
+bool Character::computePoseChainReverseDescriptor(const FrameID &startFrame, float *result)
 {
-    const string PCADir = learningParams().datasetDir + "poseChainPCA/";
+    const int poseDims = min(Constants::poseChainReverseMaxDim, posePCADimension);
+
+    bool valid = true;
+    int animationFeatureIndex = 0;
+    for (int windowOffset = 0; windowOffset < Constants::poseChainReverseLength; windowOffset++)
+    {
+        const FrameID curFrame = startFrame.delta(-windowOffset);
+        const CharacterInstance *instance = findInstanceAtFrame(curFrame);
+        if (instance == nullptr)
+        {
+            valid = false;
+            for (int poseFeatureIndex = 0; poseFeatureIndex < poseDims; poseFeatureIndex++)
+                result[animationFeatureIndex++] = 0.0f;
+        }
+        else
+        {
+            for (int poseFeatureIndex = 0; poseFeatureIndex < poseDims; poseFeatureIndex++)
+                result[animationFeatureIndex++] = instance->poseDescriptor[poseFeatureIndex];
+        }
+    }
+    return valid;
+}
+
+void Character::computePoseChainForwardPCA()
+{
+    const string PCADir = learningParams().datasetDir + "poseChainForwardPCA/";
     const string PCAFile = PCADir + "character" + to_string(characterIndex) + ".dat";
 
     if (util::fileExists(PCAFile))
     {
         cout << "Loading animation PCA from " << PCAFile << endl;
-        poseChainPCA.load(PCAFile);
+        poseChainForwardPCA.load(PCAFile);
     }
     else
     {
-        const int animationFeatureCount = posePCADimension * Constants::animationPoseCount;
+        const int poseChainFeatureCount = min(Constants::poseChainForwardMaxDim, posePCADimension) * Constants::poseChainForwardLength;
 
-        DenseMatrixf M(Constants::animationPCASamples, animationFeatureCount);
+        DenseMatrixf M(Constants::poseChainPCASamples, poseChainFeatureCount);
 
-        for (int sampleIndex = 0; sampleIndex < Constants::animationPCASamples; sampleIndex++)
+        for (int sampleIndex = 0; sampleIndex < Constants::poseChainPCASamples; sampleIndex++)
         {
             bool valid = false;
             while (!valid)
             {
                 const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
-                valid = computeAnimationDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
+                valid = computePoseChainForwardDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
             }
         }
 
-        poseChainPCA.init(M);
+        poseChainForwardPCA.init(M);
 
         util::makeDirectory(PCADir);
-        poseChainPCA.save(PCAFile);
+        poseChainForwardPCA.save(PCAFile);
     }
 
-    poseChainPCADimension = (int)poseChainPCA.reducedDimension(learningParams().PCAEnergy);
-    cout << "Animation PCA dimension: " << poseChainPCADimension << endl;
+    poseChainForwardPCADimension = (int)poseChainForwardPCA.reducedDimension(learningParams().PCAEnergy);
+    cout << "Pose chain PCA dimension: " << poseChainForwardPCADimension << endl;
+}
+
+void Character::computePoseChainReversePCA()
+{
+    const string PCADir = learningParams().datasetDir + "poseChainReversePCA/";
+    const string PCAFile = PCADir + "character" + to_string(characterIndex) + ".dat";
+
+    if (util::fileExists(PCAFile))
+    {
+        cout << "Loading animation PCA from " << PCAFile << endl;
+        poseChainReversePCA.load(PCAFile);
+    }
+    else
+    {
+        const int poseChainFeatureCount = min(Constants::poseChainReverseMaxDim, posePCADimension) * Constants::poseChainReverseLength;
+
+        DenseMatrixf M(Constants::poseChainPCASamples, poseChainFeatureCount);
+
+        for (int sampleIndex = 0; sampleIndex < Constants::poseChainPCASamples; sampleIndex++)
+        {
+            bool valid = false;
+            while (!valid)
+            {
+                const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
+                valid = computePoseChainReverseDescriptor(randomInstance.frameID, &M(sampleIndex, 0));
+            }
+        }
+
+        poseChainReversePCA.init(M);
+
+        util::makeDirectory(PCADir);
+        poseChainReversePCA.save(PCAFile);
+    }
+
+    poseChainReversePCADimension = (int)poseChainReversePCA.reducedDimension(learningParams().PCAEnergy);
+    cout << "Pose chain PCA dimension: " << poseChainReversePCADimension << endl;
 }
 
 void Character::saveAnimationCurve()
@@ -165,8 +245,8 @@ void Character::saveAnimationCurve()
         for (int sampleIndex = 0; sampleIndex < allInstancesVec.size(); sampleIndex++)
         {
             const CharacterInstance &instance = *allInstancesVec[sampleIndex];
-            file << instance.reducedPoseDescriptor[0] << "," << instance.reducedPoseDescriptor[1] << ",";
-            file << instance.reducedPoseChainDescriptor[0] << "," << instance.reducedPoseChainDescriptor[1];
+            file << instance.poseDescriptor[0] << "," << instance.poseDescriptor[1] << ",";
+            //file << instance.reducedPoseChainDescriptor[0] << "," << instance.reducedPoseChainDescriptor[1];
             file << endl;
         }
     }
@@ -242,7 +322,7 @@ bool Character::makeInstance(const ProcessedFrame &frame, CharacterInstance &res
     vector<float> rawPoseDescriptor(poseFeatureCount);
 
     result.makeRawPoseDescriptor(allSegmentsVec, rawPoseDescriptor.data());
-    posePCA.transform(rawPoseDescriptor, posePCADimension, result.reducedPoseDescriptor);
+    posePCA.transform(rawPoseDescriptor, posePCADimension, result.poseDescriptor);
 
     return true;
 }
@@ -286,60 +366,48 @@ void Character::computeAnimationSequences()
     if (characterIndex == 0)
         return;
 
-    //ofstream file("logs/animationInfo.txt");
-    int minAnimationLength = 5;
-    for (float acceptanceScale = 1.0f; acceptanceScale <= 10.0f; acceptanceScale *= 1.5f)
-    //float acceptanceScale = 1.0f;
+    cout << "Filling priority queue" << endl;
+
+    priority_queue<CharacterInstance*, vector<CharacterInstance*>, CharacterInstanceCompare> seedQueue;
+    for (CharacterInstance *instance : allInstancesVec)
     {
-        addAnimationSequences(acceptanceScale, minAnimationLength);
-
-        if (minAnimationLength > 0) minAnimationLength--;
-
-        /*file << endl << "*** acceptanceScale = " << acceptanceScale << endl;
-        for (auto &instance : allInstancesVec)
+        vector< pair<CharacterInstance*, float> > candidates = findPoseChainsForwardRadius(*instance, (float)learningParams().poseChainDistSq);
+        instance->similarPoseChainCount = (int)candidates.size();
+        if (instance->similarPoseChainCount >= learningParams().minAnimationInstances)
         {
-            string animationName = "(none)";
-            if (instance->animations.size() > 0)
-                animationName = to_string(instance->animations[0].animation->index) + "-" + to_string(instance->animations[0].offset);
-            file << instance->frameID.toString() << '\t' << animationName << endl;
-        }*/
+            seedQueue.push(instance);
+        }
     }
 
-    for (CharacterInstance *inst : allInstancesVec)
+    cout << "Emptying priority queue" << endl;
+    while (!seedQueue.empty())
     {
-        if (inst->animation.animation != nullptr)
+        CharacterInstance &seedInstance = *seedQueue.top();
+        seedQueue.pop();
+
+        if (seedInstance.animation.sequence == nullptr)
         {
-            inst->animation.animation->instances.push_back(inst->frameID);
+            addNewAnimation(seedInstance);
         }
+    }
+
+    cout << "Animation count: " << animations.size() << endl;
+
+    for (CharacterInstance *instance : allInstancesVec)
+    {
+        if (instance->animation.sequence != nullptr)
+            instance->animation.sequence->instances.push_back(instance->frameID);
     }
 }
 
-int Character::computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale)
+void Character::addNewAnimation(const CharacterInstance &seed)
 {
-    vector<int> matches = animationMatchingFrames(seed, instance, animationLength, acceptanceScale);
-    if (matches.size() == 0) return 0;
-
-    double sum = 0.0;
-    for (int i = 0; i < animationLength; i++)
-    {
-        sum += matches[i];
-        const double matchingRatio = sum / (double)(i + 1);
-        if (matchingRatio < learningParams().requiredOverlapPercentage)
-        {
-            return i;
-        }
-    }
-    return animationLength;
-}
-
-void Character::addNewAnimation(const CharacterInstance &seed, int animationLength)
-{
-    animationLength = max(animationLength, learningParams().minAnimationLength);
+    const int animationLength = Constants::poseChainForwardLength;
     for (int offset = 0; offset < animationLength; offset++)
     {
         FrameID animationFrame = seed.frameID.delta(offset);
         CharacterInstance *animationInstance = findInstanceAtFrame(animationFrame);
-        if (animationInstance == nullptr)
+        if (animationInstance == nullptr || animationInstance->animation.sequence != nullptr)
         {
             cout << "Animation rejected" << endl;
             return;
@@ -349,166 +417,80 @@ void Character::addNewAnimation(const CharacterInstance &seed, int animationLeng
     AnimationSequence *animation = new AnimationSequence(seed.frameID, animationLength, (int)animations.size());
 
     int frameCount = 0;
-    for (int offset = 0; offset < animationLength; offset++)
+    
+    vector< pair<CharacterInstance*, float> > candidates = findPoseChainsForwardRadius(seed, (float)learningParams().poseChainDistSq);
+    for (auto &candidate : candidates)
+    {
+        for (int offset = 0; offset < animationLength; offset++)
+        {
+            FrameID candidateFrame = candidate.first->frameID.delta(offset);
+            CharacterInstance *otherInstance = findInstanceAtFrame(candidateFrame);
+
+            if (otherInstance != nullptr && otherInstance->animation.sequence == nullptr)
+            {
+                frameCount++;
+                otherInstance->animation.sequence = animation;
+                otherInstance->animation.offset = offset;
+                otherInstance->animation.poseDistSq = 0.0f;
+            }
+        }
+    }
+    /*for (int offset = 0; offset < animationLength; offset++)
     {
         FrameID animationFrame = seed.frameID.delta(offset);
         CharacterInstance *animationInstance = findInstanceAtFrame(animationFrame);
 
-        for (auto pose : findPosesRadius(*animationInstance, (float)learningParams().maxPoseDistSq))
+        for (auto pose : findPosesRadius(*animationInstance, (float)learningParams().poseDistSqThreshold))
         {
             CharacterInstance *otherInstance = pose.first;
             const float poseDistSq = pose.second;
             if (otherInstance->animation.poseDistSq > poseDistSq)
             {
-                if (otherInstance->animation.animation != animation)
+                if (otherInstance->animation.sequence != animation)
                     frameCount++;
-                otherInstance->animation.animation = animation;
+                otherInstance->animation.sequence = animation;
                 otherInstance->animation.offset = offset;
                 otherInstance->animation.poseDistSq = poseDistSq;
             }
         }
-    }
+    }*/
 
     cout << "New animation: length=" << animationLength << ", estFrameCount=" << frameCount << endl;
 
     animations.push_back(animation);
 }
 
-void Character::addAnimationSequences(float acceptanceScale, int minAnimationLength)
+void Character::makePoseClusters()
 {
-    cout << "Filling priority queue acceptanceScale=" << acceptanceScale << endl;
-    priority_queue<CharacterInstance*, vector<CharacterInstance*>, CharacterInstanceCompare> seedQueue;
+    cout << "Making pose clusters" << endl;
+
+    auto &params = learningParams();
+    poseClusterSearch.init(posePCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (CharacterInstance *instance : allInstancesVec)
     {
-        if (instance->animation.poseDistSq > learningParams().poseDistSqThreshold)
+        PoseCluster *cluster = findBestPoseCluster(*instance, (float)learningParams().poseDistSqThreshold);
+        if (cluster == nullptr)
         {
-            instance->optimalAnimationLength = evaluateBestAnimationLength(*instance, acceptanceScale, instance->estimatedAnimationInstanceCount);
-            if (minAnimationLength == 1 ||
-                (instance->estimatedAnimationInstanceCount >= learningParams().minAnimationInstances &&
-                 instance->optimalAnimationLength >= minAnimationLength))
-            {
-                seedQueue.push(instance);
-            }
+            cluster = new PoseCluster();
+            cluster->index = (int)poseClusters.size();
+            cluster->seedFrame = instance->frameID;
+            poseClusters.push_back(cluster);
+            poseClusterSearch.insert(instance->poseDescriptor, cluster);
         }
+        instance->poseClusterIndex = cluster->index;
+        //cout << "poseCluster=" << instance->poseClusterIndex << endl;
+        cluster->allInstances.push_back(instance->frameID);
     }
-
-    vector<FrameID> animationStartFrames;
-    cout << "Emptying priority queue" << endl;
-    while (!seedQueue.empty())
-    {
-        CharacterInstance &seedInstance = *seedQueue.top();
-        seedQueue.pop();
-
-        if (seedInstance.animation.poseDistSq > learningParams().poseDistSqThreshold)
-        {
-            addNewAnimation(seedInstance, seedInstance.optimalAnimationLength);
-        }
-    }
-
-    /*ofstream file("logs/animationStrength" + to_string(characterIndex) + ".txt");
-    for (int i = 0; i < allInstancesVec.size(); i += 10)
-    {
-    CharacterInstance &instance = *allInstancesVec[i];
-    file << instance.frameID.frameIndex;
-    file << '\t' << evaluateBestWindowSize(instance);
-    for (int windowSize = 0; windowSize <= 20; windowSize++)
-    {
-    file << '\t' << evaluateAnimationInstances(instance, windowSize);
-    }
-    file << endl;
-    }*/
-
-    cout << "Animation count: " << animations.size() << endl;
-
-    //updateFirstPoseMap();
-}
-
-vector<int> Character::animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale)
-{
-    vector<int> result(animationLength, 0);
-    for (int offset = 0; offset < animationLength; offset++)
-    {
-        CharacterInstance *instanceA = findInstanceAtFrame(frameA.frameID.delta(offset));
-        CharacterInstance *instanceB = findInstanceAtFrame(frameB.frameID.delta(offset));
-
-        if (instanceA == nullptr || instanceB == nullptr)
-        {
-            result.clear();
-            return result;
-        }
-
-        const float distSq = math::distSq(instanceA->reducedPoseChainDescriptor, instanceB->reducedPoseChainDescriptor);
-        if (distSq < learningParams().animationDistSqBase * acceptanceScale)
-            result[offset] = 1;
-    }
-    return result;
-}
-
-int Character::countAnimationInstances(const CharacterInstance &seed, int animationLength, float acceptanceScale)
-{
-    int matchingSequences = 0;
-    set<FrameID> invalidFrames;
-
-    auto candidatesUnsorted = poseChainSearch.findSimilar(seed.reducedPoseChainDescriptor);
-
-    vector< pair<CharacterInstance*, float> > candidatesSorted;
-    for (CharacterInstance *candidate : candidatesUnsorted)
-    {
-        const float distSq = math::distSq(candidate->reducedPoseChainDescriptor, seed.reducedPoseChainDescriptor);
-        if (distSq <= learningParams().animationDistSqBase * acceptanceScale)
-            candidatesSorted.push_back(make_pair(candidate, distSq));
-    }
-    sort(candidatesSorted.begin(), candidatesSorted.end(),
-        [](const pair<CharacterInstance*, float> &a, const pair<CharacterInstance*, float> &b) { return a.second < b.second; });
-
-    for (auto &c : candidatesSorted)
-    {
-        auto &candidate = *c.first;
-        const int animationDuration = computeAnimationDuration(seed, candidate, animationLength, acceptanceScale);
-
-        if (animationDuration >= animationLength)
-        {
-            bool valid = true;
-            for (int offset = 0; offset < animationLength; offset++)
-                if (invalidFrames.count(candidate.frameID.delta(offset)) > 0)
-                    valid = false;
-
-            if (valid)
-            {
-                for (int offset = 0; offset < animationLength; offset++)
-                    invalidFrames.insert(candidate.frameID.delta(offset));
-                matchingSequences++;
-            }
-        }
-    }
-
-    return matchingSequences;
-}
-
-int Character::evaluateBestAnimationLength(const CharacterInstance &seed, float acceptanceScale, int &instanceCount)
-{
-    const int startInstanceCount = countAnimationInstances(seed, 0, acceptanceScale);
-    const int minInstances = max(learningParams().minAnimationInstances, (int)ceil((double)startInstanceCount * learningParams().maxAnimationDropOffPercentage));
-
-    instanceCount = startInstanceCount;
-
-    for (int animationLength = 1; animationLength < learningParams().maxAnimationLength; animationLength++)
-    {
-        const int curInstanceCount = countAnimationInstances(seed, animationLength, acceptanceScale);
-        if (curInstanceCount < minInstances)
-            return animationLength - 1;
-        instanceCount = curInstanceCount;
-    }
-    return learningParams().maxAnimationLength;
+    cout << "Pose cluster count: " << poseClusters.size() << endl;
 }
 
 void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount)
 {
     cout << "Testing LSH " << pNorm << ", " << miniHashFunctionCount << ", " << macroTableCount << endl;
     LSHEuclidean<CharacterInstance*> search;
-    search.init(poseChainPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
+    search.init(poseChainForwardPCADimension, pNorm, miniHashFunctionCount, macroTableCount);
     for (auto &instance : allInstances)
-        search.insert(instance.second.reducedPoseChainDescriptor, &instance.second);
+        search.insert(instance.second.poseChainForwardDescriptor, &instance.second);
 
     const UINT testInstanceCount = 500;
     const float targetDistSq = 10.0f;
@@ -522,17 +504,17 @@ void Character::testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UIN
     {
         const CharacterInstance &randomInstance = *util::randomElement(allInstancesVec);
 
-        auto results = search.findSimilar(randomInstance.reducedPoseChainDescriptor);
+        auto results = search.findSimilar(randomInstance.poseChainForwardDescriptor);
         for (CharacterInstance *candidate : results)
         {
-            const float distSq = math::distSq(candidate->reducedPoseChainDescriptor, randomInstance.reducedPoseChainDescriptor);
+            const float distSq = math::distSq(candidate->poseChainForwardDescriptor, randomInstance.poseChainForwardDescriptor);
             if (distSq > targetDistSq)
                 wastedSamples++;
         }
 
         for (auto &instance : allInstancesVec)
         {
-            const float distSq = math::distSq(instance->reducedPoseChainDescriptor, randomInstance.reducedPoseChainDescriptor);
+            const float distSq = math::distSq(instance->poseChainForwardDescriptor, randomInstance.poseChainForwardDescriptor);
             if (test == 0)
                 fileDebug << distSq << endl;
             if (distSq < targetDistSq)
@@ -576,89 +558,63 @@ void Character::makePoseLSHSearch()
     poseSearch.init(posePCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (auto &instance : allInstances)
     {
-        poseSearch.insert(instance.second.reducedPoseDescriptor, &instance.second);
+        poseSearch.insert(instance.second.poseDescriptor, &instance.second);
     }
 
-    poseChainSearch.init(poseChainPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
+    poseChainForwardSearch.init(poseChainForwardPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
     for (auto &instance : allInstances)
     {
-        poseChainSearch.insert(instance.second.reducedPoseChainDescriptor, &instance.second);
+        poseChainForwardSearch.insert(instance.second.poseChainForwardDescriptor, &instance.second);
+    }
+
+    poseChainReverseSearch.init(poseChainForwardPCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
+    for (auto &instance : allInstances)
+    {
+        poseChainReverseSearch.insert(instance.second.poseChainReverseDescriptor, &instance.second);
     }
 }
 
-void Character::makeAnimationLSHSearch()
+PoseCluster* Character::findBestPoseCluster(const CharacterInstance &instance, float maxDistSq) const
 {
-    cout << "Building animation LSH tables" << endl;
-    auto &params = learningParams();
-    animationFrameSearch.init(posePCADimension, (float)params.LSHpNorm, params.LSHminiHashCount, params.LSHmacroTableCount);
-    for (AnimationSequence *animation : animations)
+    auto candidates = poseClusterSearch.findSimilar(instance.poseDescriptor);
+    
+    PoseCluster *bestCluster = nullptr;
+    float bestClusterDistSq = maxDistSq;
+
+    for (auto &candidateCluster : candidates)
     {
-        for (int offset = 0; offset < animation->length; offset++)
+        const CharacterInstance *candidateInstance = findInstanceAtFrame(candidateCluster->seedFrame);
+        const float distSq = math::distSq(instance.poseDescriptor, candidateInstance->poseDescriptor);
+        if (distSq < bestClusterDistSq)
         {
-            const FrameID frame = animation->seedFrame.delta(offset);
-            CharacterInstance *instance = findInstanceAtFrame(frame);
-            AnimationFrame animationFrame;
-            animationFrame.animation = animation;
-            animationFrame.offset = offset;
-            animationFrame.poseDistSq = 0.0f;
-            animationFrameSearch.insert(instance->reducedPoseDescriptor, animationFrame);
+            bestCluster = candidateCluster;
+            bestClusterDistSq = distSq;
         }
     }
+
+    return bestCluster;
 }
 
-/*vector<CharacterInstance*> Character::findAnimationsKNearest(const CharacterInstance &instance, int k)
+vector< pair<CharacterInstance*, float> > Character::findPosesRadius(const CharacterInstance &instance, float maxDistSq) const
 {
-    auto candidates = poseChainSearch.findSimilar(instance.reducedPoseChainDescriptor);
-    KNearestNeighborQueue<float, CharacterInstance*> queue;
-    queue.init(k, std::numeric_limits<float>::max());
-    for (auto &candidateInstance : candidates)
-    {
-        const float distSq = math::distSq(instance.reducedPoseChainDescriptor, candidateInstance->reducedPoseChainDescriptor);
-        queue.insert(candidateInstance, distSq);
-    }
-
-    vector<CharacterInstance*> result;
-    for (auto &entry : queue.queue())
-        if (entry.value != nullptr)
-            result.push_back(entry.value);
-    return result;
-}*/
-
-vector< AnimationFrame > Character::findAnimationFramesRadius(const CharacterInstance &instance, float maxDistSq) const
-{
-    auto candidates = animationFrameSearch.findSimilar(instance.reducedPoseDescriptor);
-    vector< AnimationFrame > result;
-    for (AnimationFrame candidateFrame : candidates)
-    {
-        FrameID candidateFrameID = candidateFrame.animation->seedFrame.delta(candidateFrame.offset);
-        const CharacterInstance &candidateInstance = *findInstanceAtFrame(candidateFrameID);
-        candidateFrame.poseDistSq = math::distSq(instance.reducedPoseDescriptor, candidateInstance.reducedPoseDescriptor);
-        if (candidateFrame.poseDistSq <= maxDistSq)
-            result.push_back(candidateFrame);
-    }
-    return result;
-}
-
-vector< pair<CharacterInstance*, float> > Character::findPoseChainsRadius(const CharacterInstance &instance, float maxDistSq) const
-{
-    auto candidates = poseChainSearch.findSimilar(instance.reducedPoseChainDescriptor);
+    auto candidates = poseSearch.findSimilar(instance.poseDescriptor);
     vector< pair<CharacterInstance*, float> > result;
     for (auto &candidateInstance : candidates)
     {
-        const float distSq = math::distSq(instance.reducedPoseChainDescriptor, candidateInstance->reducedPoseChainDescriptor);
+        const float distSq = math::distSq(instance.poseDescriptor, candidateInstance->poseDescriptor);
         if (distSq <= maxDistSq)
             result.push_back(make_pair(candidateInstance, distSq));
     }
     return result;
 }
 
-vector< pair<CharacterInstance*, float> > Character::findPosesRadius(const CharacterInstance &instance, float maxDistSq) const
+vector< pair<CharacterInstance*, float> > Character::findPoseChainsForwardRadius(const CharacterInstance &instance, float maxDistSq) const
 {
-    auto candidates = poseSearch.findSimilar(instance.reducedPoseDescriptor);
+    auto candidates = poseChainForwardSearch.findSimilar(instance.poseChainForwardDescriptor);
     vector< pair<CharacterInstance*, float> > result;
     for (auto &candidateInstance : candidates)
     {
-        const float distSq = math::distSq(instance.reducedPoseDescriptor, candidateInstance->reducedPoseDescriptor);
+        const float distSq = math::distSq(instance.poseChainForwardDescriptor, candidateInstance->poseChainForwardDescriptor);
         if (distSq <= maxDistSq)
             result.push_back(make_pair(candidateInstance, distSq));
     }

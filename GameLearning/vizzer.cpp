@@ -77,7 +77,7 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
             float poseDistance = curCharacter.poseDistance(state.anchorFrame, instance->frameID);
             poseFile << instance->frameID.toString() << '\t' << poseDistance << endl;
             
-            float animationDistance = curCharacter.animationDistance(state.anchorFrame, instance->frameID);
+            float animationDistance = curCharacter.poseChainForwardDistance(state.anchorFrame, instance->frameID);
             animationFile << instance->frameID.toString() << '\t' << animationDistance << endl;
         }
     });
@@ -151,9 +151,9 @@ void Vizzer::render(ApplicationData &app)
                 if (c.allSegmentsSet.count(signature) > 0)
                 {
                     const CharacterInstance *instance = c.findInstanceAtFrame(state.curFrame);
-                    if (instance != nullptr && instance->animation.animation != nullptr)
+                    if (instance != nullptr && instance->animation.sequence != nullptr)
                     {
-                        color = instance->animation.animation->color;
+                        color = instance->animation.sequence->color;
                     }
                 }
             }
@@ -166,11 +166,12 @@ void Vizzer::render(ApplicationData &app)
     const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
 
     const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
+    const CharacterInstance *curInstance = curCharacter.findInstanceAtFrame(state.curFrame);
     int anchorAnimationInstanceCount = 0;
-    if (anchorInstance != nullptr && anchorInstance->animation.animation > 0)
+    /*if (anchorInstance != nullptr && anchorInstance->animation.animation > 0)
     {
         anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
-    }
+    }*/
 
     GameState gameState;
     gameState.load(state.replays.getFrame(state.curFrame), state.characters);
@@ -180,9 +181,19 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()));
     text.push_back("Object count: " + to_string(frame.objectData.size()));
     text.push_back("Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()));
-    text.push_back("Anchor animation dist: " + to_string(curCharacter.animationDistance(state.anchorFrame, state.curFrame)));
+    text.push_back("Anchor forward chain dist: " + to_string(curCharacter.poseChainForwardDistance(state.anchorFrame, state.curFrame)));
+    text.push_back("Anchor reverse chain dist: " + to_string(curCharacter.poseChainReverseDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor pose dist: " + to_string(curCharacter.poseDistance(state.anchorFrame, state.curFrame)));
-    text.push_back("Anchor animation: " + to_string(state.anchorAnimationInstanceIndex) + " / " + to_string(anchorAnimationInstanceCount));
+
+    if (anchorInstance)
+        text.push_back("Anchor pose index: " + to_string(anchorInstance->poseClusterIndex));
+
+    if (curInstance)
+    {
+        text.push_back("Current pose index: " + to_string(curInstance->poseClusterIndex));
+        text.push_back("Current pose seed: " + to_string(curCharacter.poseClusters[curInstance->poseClusterIndex]->seedFrame.frameIndex));
+    }
+
     text.push_back("Character state: " + gameState.characterState[state.curCharacterIndex].describe());
     text.push_back("Controller 0: " + frame.padState[0].toString());
     text.push_back("Controller 1: " + frame.padState[1].toString());
@@ -232,9 +243,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     {
         const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
         const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
-        if (anchorInstance != nullptr && anchorInstance->animation.animation != nullptr)
+        if (anchorInstance != nullptr && anchorInstance->animation.sequence != nullptr)
         {
-            const AnimationSequence &curAnimation = *anchorInstance->animation.animation;
+            const AnimationSequence &curAnimation = *anchorInstance->animation.sequence;
             if (curAnimation.instances.size() > 0)
             {
                 state.anchorAnimationInstanceIndex = math::mod(state.anchorAnimationInstanceIndex + animationInstanceDelta, curAnimation.instances.size());

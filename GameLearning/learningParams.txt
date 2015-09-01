@@ -7,17 +7,17 @@ maxAnimationLength=200
 
 requiredOverlapPercentage=0.9
 
-animationDistSqBase=5.0
+poseChainDistSq=20.0
 
-poseDistSqThreshold=3.0
-maxPoseDistSq=5.0
+poseDistSqThreshold=10.0
+maxPoseDistSq=10.0
 
-LSHpNorm=0.02
+LSHpNorm=0.1
 LSHminiHashCount=30
 LSHmacroTableCount=20
 
 PCAEnergy=0.995
 
-transitionKNearest=7
+maxAnimationCount=200
 
 minObjectIndexCount=13

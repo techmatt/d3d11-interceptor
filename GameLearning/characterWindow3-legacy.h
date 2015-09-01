@@ -9,33 +9,21 @@ struct CharacterSegmentInstance
     vec3f centeredCentroid;
 };
 
-struct PoseCluster
-{
-    FrameID seedFrame;
-    vector<FrameID> allInstances;
-
-    int index;
-    map<int, int> prevClusterCount;
-    map<int, int> nextClusterCount;
-
-    vector<AnimationSequence*> animations;
-};
-
 struct AnimationFrame
 {
     AnimationFrame()
     {
-        sequence = nullptr;
+        animation = nullptr;
         offset = -1;
         poseDistSq = std::numeric_limits<float>::max();
     }
-    AnimationFrame(AnimationSequence *_sequence, int _offset, float _poseDistSq)
+    AnimationFrame(AnimationSequence *_animation, int _offset, float _poseDistSq)
     {
-        sequence = _sequence;
+        animation = _animation;
         offset = _offset;
         poseDistSq = _poseDistSq;
     }
-    AnimationSequence *sequence;
+    AnimationSequence *animation;
     int offset;
     float poseDistSq;
 };
@@ -45,43 +33,38 @@ struct AnimationFrame
 //
 struct CharacterInstance
 {
-    CharacterInstance()
-    {
-        poseClusterIndex = -1;
-        similarPoseChainCount = -1;
-    }
-    
+    FrameID frameID;
     void makeRawPoseDescriptor(const vector<UINT64> &segmentList, float *result) const;
 
-    vector<float> poseDescriptor;
-    vector<float> poseChainForwardDescriptor;
-    vector<float> poseChainReverseDescriptor;
+    vector<float> reducedPoseDescriptor;
+    vector<float> reducedPoseChainDescriptor;
 
-    FrameID frameID;
-
-    int poseClusterIndex;
     AnimationFrame animation;
 
     map<UINT64, CharacterSegmentInstance> segments;
 
-    int similarPoseChainCount;
+    int optimalAnimationLength;
+    int estimatedAnimationInstanceCount;
 };
 
 struct CharacterInstanceCompare
 {
     bool operator() (const CharacterInstance *a, const CharacterInstance *b)
     {
-        return a->similarPoseChainCount < b->similarPoseChainCount;
+        if (a->optimalAnimationLength == b->optimalAnimationLength)
+            return a->estimatedAnimationInstanceCount < b->estimatedAnimationInstanceCount;
+        return a->optimalAnimationLength < b->optimalAnimationLength;
     }
 };
 
 struct AnimationSequence
 {
-    AnimationSequence(FrameID _seedFrame, int _seedLength, int animationIndex)
+    AnimationSequence(FrameID _seedFrame, int _length, int animationIndex)
     {
         index = animationIndex;
         seedFrame = _seedFrame;
-        seedLength = _seedLength;
+        length = _length;
+        instances.push_back(seedFrame);
         
         color = vec3f::origin;
         while (color.length() < 0.5f)
@@ -91,12 +74,18 @@ struct AnimationSequence
     int index;
 
     FrameID seedFrame;
-    int seedLength;
+    int length;
 
     vec3f color;
-
     vector<FrameID> instances;
 };
+
+inline bool operator < (const AnimationFrame &a, const AnimationFrame &b)
+{
+    if (a.animation->index == b.animation->index)
+        return a.offset < b.offset;
+    return a.animation->index < b.animation->index;
+}
 
 struct Character
 {
@@ -119,22 +108,13 @@ struct Character
         return &(allInstances.find(frameID)->second);
     }
 
-    float poseChainForwardDistance(const FrameID &a, const FrameID &b) const
+    float animationDistance(const FrameID &a, const FrameID &b) const
     {
         const CharacterInstance *aInst = findInstanceAtFrame(a);
         const CharacterInstance *bInst = findInstanceAtFrame(b);
         if (aInst == nullptr || bInst == nullptr)
             return numeric_limits<float>::max();
-        return math::distSq(aInst->poseChainForwardDescriptor, bInst->poseChainForwardDescriptor);
-    }
-
-    float poseChainReverseDistance(const FrameID &a, const FrameID &b) const
-    {
-        const CharacterInstance *aInst = findInstanceAtFrame(a);
-        const CharacterInstance *bInst = findInstanceAtFrame(b);
-        if (aInst == nullptr || bInst == nullptr)
-            return numeric_limits<float>::max();
-        return math::distSq(aInst->poseChainReverseDescriptor, bInst->poseChainReverseDescriptor);
+        return math::distSq(aInst->reducedPoseChainDescriptor, bInst->reducedPoseChainDescriptor);
     }
 
     float poseDistance(const FrameID &a, const FrameID &b) const
@@ -143,7 +123,7 @@ struct Character
         const CharacterInstance *bInst = findInstanceAtFrame(b);
         if (aInst == nullptr || bInst == nullptr)
             return numeric_limits<float>::max();
-        return math::distSq(aInst->poseDescriptor, bInst->poseDescriptor);
+        return math::distSq(aInst->reducedPoseDescriptor, bInst->reducedPoseDescriptor);
     }
 
     int characterIndex;
@@ -154,37 +134,25 @@ struct Character
     map<FrameID, CharacterInstance> allInstances;
     vector<CharacterInstance*> allInstancesVec;
 
-    vector<PoseCluster*> poseClusters;
-
     vector<AnimationSequence*> animations;
 
     PCAf posePCA;
     int posePCADimension;
 
-    PCAf poseChainForwardPCA;
-    int poseChainForwardPCADimension;
+    PCAf poseChainPCA;
+    int poseChainPCADimension;
 
-    PCAf poseChainReversePCA;
-    int poseChainReversePCADimension;
-
+    LSHEuclidean<AnimationFrame> animationFrameSearch;
+    LSHEuclidean<CharacterInstance*> poseChainSearch;
     LSHEuclidean<CharacterInstance*> poseSearch;
-    LSHEuclidean<CharacterInstance*> poseChainForwardSearch;
-    LSHEuclidean<CharacterInstance*> poseChainReverseSearch;
-    LSHEuclidean<PoseCluster*> poseClusterSearch;
 
+    vector< AnimationFrame > findAnimationFramesRadius(const CharacterInstance &instance, float maxDistSq) const;
     vector< pair<CharacterInstance*, float> > findPosesRadius(const CharacterInstance &instance, float maxDistSq) const;
-    vector< pair<CharacterInstance*, float> > findPoseChainsForwardRadius(const CharacterInstance &instance, float maxDistSq) const;
-    vector< pair<CharacterInstance*, float> > findPoseChainsReverseRadius(const CharacterInstance &instance, float maxDistSq) const;
-    PoseCluster* findBestPoseCluster(const CharacterInstance &instance, float maxDistSq) const;
-    
+    vector< pair<CharacterInstance*, float> > findPoseChainsRadius(const CharacterInstance &instance, float maxDistSq) const;
+
 private:
-
-    //int animationsOverlap(const CharacterInstance &seedInstance, const CharacterInstance &otherInstance, int animationLength);
-    //int countSimilarAnimations(const CharacterInstance &seedInstance, int animationLength);
-
     void recordFramePoses(const ProcessedFrame &frame);
-    bool computePoseChainForwardDescriptor(const FrameID &startFrame, float *result);
-    bool computePoseChainReverseDescriptor(const FrameID &startFrame, float *result);
+    bool computeAnimationDescriptor(const FrameID &centerFrame, float *result);
 
     void saveAnimationCurve();
 
@@ -196,20 +164,25 @@ private:
     //
     void computePosePCA();
     void computePoseDescriptors();
-    void computePoseChainForwardPCA();
-    void computePoseChainForwardDescriptors();
-    void computePoseChainReversePCA();
-    void computePoseChainReverseDescriptors();
+    void computeAnimationPCA();
+    void computeAnimationDescriptors();
 
     //
     // LSH
     //
     void makePoseLSHSearch();
+    void makeAnimationLSHSearch();
     void testAnimationSearch(float pNorm, UINT miniHashFunctionCount, UINT macroTableCount);
 
-    void addNewAnimation(const CharacterInstance &seed);
+    vector<int> animationMatchingFrames(const CharacterInstance &frameA, const CharacterInstance &frameB, int animationLength, float acceptanceScale);
+    int countAnimationInstances(const CharacterInstance &seed, int animationLength, float acceptanceScale);
+    int evaluateBestAnimationLength(const CharacterInstance &seed, float acceptanceScale, int &instanceCount);
+    int computeAnimationDuration(const CharacterInstance &seed, const CharacterInstance &instance, int animationLength, float acceptanceScale);
 
-    void makePoseClusters();
+    void addAnimationSequences(float acceptanceScale, int minWindowSize);
+
+    void addNewAnimation(const CharacterInstance &seed, int animationLength);
+
     void computeAnimationSequences();
 };
 

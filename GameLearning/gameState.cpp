@@ -3,7 +3,7 @@
 
 void CharacterState::load(const Character &character, const CharacterInstance &instance)
 {
-    const int animationCount = (int)character.animations.size();
+    /*const int animationCount = (int)character.animations.size();
     
     bestPoseDistSq = numeric_limits<float>::max();
     activeAnimationsByIndex.clear();
@@ -34,12 +34,12 @@ void CharacterState::load(const Character &character, const CharacterInstance &i
             animationsToRemove.push_back(entry.first);
     }
     for (int animation : animationsToRemove)
-        activeAnimationsByIndex.erase(animation);
+        activeAnimationsByIndex.erase(animation);*/
 }
 
 string CharacterState::describe() const
 {
-    string result;
+    /*string result;
     if (activeAnimationsByIndex.size() == 0) return "<none>";
     for (auto &animation : activeAnimationsByIndex)
     {
@@ -47,7 +47,8 @@ string CharacterState::describe() const
             to_string(animation.second.offset) + ":" + to_string(animation.second.poseDistSq) + " | ";
         result += s;
     }
-    return result;
+    return result;*/
+    return "<none>";
 }
 
 void GameState::load(const ProcessedFrame &frame, const CharacterDatabase &characters)

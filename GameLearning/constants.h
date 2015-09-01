@@ -7,8 +7,12 @@
 struct Constants
 {
     static const int posePCASamples = 40000;
-    static const int animationPCASamples = 40000;
-    static const int animationPoseCount = 3;
+    static const int poseChainPCASamples = 40000;
+    static const int poseChainForwardLength = 8;
+    static const int poseChainForwardMaxDim = 20;
+
+    static const int poseChainReverseLength = 3;
+    static const int poseChainReverseMaxDim = 40;
     
     const float LSHpNorm = 0.0135f;
     const int LSHminiHashCount = 30;

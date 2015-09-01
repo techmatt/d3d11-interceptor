@@ -16,10 +16,9 @@ struct LearningParams
         params.readParameter("minAnimationLength", minAnimationLength);
         params.readParameter("maxAnimationLength", maxAnimationLength);
 
-        params.readParameter("animationDistSqBase", animationDistSqBase);
+        params.readParameter("poseChainDistSq", poseChainDistSq);
 
         params.readParameter("poseDistSqThreshold", poseDistSqThreshold);
-        params.readParameter("maxPoseDistSq", maxPoseDistSq);
 
         params.readParameter("LSHpNorm", LSHpNorm);
         params.readParameter("LSHminiHashCount", LSHminiHashCount);
@@ -40,10 +39,9 @@ struct LearningParams
     int minAnimationLength;
     int maxAnimationLength;
 
-    double animationDistSqBase;
+    double poseChainDistSq;
 
     double poseDistSqThreshold;
-    double maxPoseDistSq;
 
     double LSHpNorm;
     int LSHminiHashCount;

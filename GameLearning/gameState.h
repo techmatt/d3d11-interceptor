@@ -6,7 +6,7 @@ struct CharacterState
     string describe() const;
 
     float worldX, worldY;
-    map<int, AnimationFrame> activeAnimationsByIndex;
+    //map<int, AnimationFrame> activeAnimationsByIndex;
 
     float bestPoseDistSq;
 };

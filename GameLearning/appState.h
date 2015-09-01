@@ -4,7 +4,7 @@ struct AppState
     AppState()
     {
         curFrame = FrameID(0, 0);
-        curCharacterIndex = 0;
+        curCharacterIndex = 1;
         anchorAnimationInstanceIndex = 0;
         showBBoxes = false;
         showFullMesh = false;

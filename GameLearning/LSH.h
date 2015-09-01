@@ -34,9 +34,11 @@ public:
     
     void init(UINT dimension, float pNorm, UINT miniHashFunctionCount, UINT macroTableCount)
     {
+        _count = 0;
+
         Params params(dimension, pNorm, miniHashFunctionCount, macroTableCount);
-        tables.resize(params.macroTableCount);
-        for (Table &t : tables)
+        _tables.resize(params.macroTableCount);
+        for (Table &t : _tables)
         {
             t.function.hashFunctions.resize(params.miniHashFunctionCount);
             for (HashFunction &h : t.function.hashFunctions)
@@ -48,18 +50,25 @@ public:
 
     void insert(const vector<float> &point, ValueType value)
     {
-        for (Table &t : tables)
+        _count++;
+
+        for (Table &t : _tables)
             t.insert(point, value);
     }
 
     set<ValueType> findSimilar(const vector<float> &point) const
     {
         set<ValueType> result;
-        for (const Table &t : tables)
+        for (const Table &t : _tables)
         {
             t.appendSimilar(point, result);
         }
         return result;
+    }
+
+    size_t count()
+    {
+        return _count;
     }
 
 private:
@@ -133,5 +142,6 @@ private:
         AmplifiedHashFunction function;
     };
 
-    vector<Table> tables;
+    vector<Table> _tables;
+    size_t _count;
 };
