@@ -90,21 +90,25 @@ void Character::computePoseChainForwardDescriptors()
     }
 }
 
+int Character::poseChainReverseFeatureCount() const
+{
+    return min(Constants::poseChainReverseMaxDim, posePCADimension) * Constants::poseChainReverseLength;;
+}
+
 void Character::computePoseChainReverseDescriptors()
 {
     cout << "Computing pose chain reverse descriptors..." << endl;
 
-    const int poseChainFeatureCount = min(Constants::poseChainReverseMaxDim, posePCADimension) * Constants::poseChainReverseLength;
-    vector<float> rawPoseChainDescriptor(poseChainFeatureCount);
+    vector<float> rawPoseChainReverseDescriptor(poseChainReverseFeatureCount());
 
     for (auto &instance : allInstances)
     {
-        computePoseChainReverseDescriptor(instance.first, rawPoseChainDescriptor.data());
-        poseChainReversePCA.transform(rawPoseChainDescriptor, poseChainReversePCADimension, instance.second.poseChainReverseDescriptor);
+        computePoseChainReverseDescriptor(instance.first, rawPoseChainReverseDescriptor.data());
+        poseChainReversePCA.transform(rawPoseChainReverseDescriptor, poseChainReversePCADimension, instance.second.poseChainReverseDescriptor);
     }
 }
 
-bool Character::computePoseChainForwardDescriptor(const FrameID &startFrame, float *result)
+bool Character::computePoseChainForwardDescriptor(const FrameID &startFrame, float *result) const
 {
     const int poseDims = min(Constants::poseChainForwardMaxDim, posePCADimension);
 
@@ -129,7 +133,21 @@ bool Character::computePoseChainForwardDescriptor(const FrameID &startFrame, flo
     return valid;
 }
 
-bool Character::computePoseChainReverseDescriptor(const FrameID &startFrame, float *result)
+void Character::computePoseChainReverseDescriptor(const deque<const PoseCluster *> &clusterHistory, float *result) const
+{
+    const int poseDims = min(Constants::poseChainReverseMaxDim, posePCADimension);
+
+    int animationFeatureIndex = 0;
+    for (int windowOffset = 0; windowOffset < Constants::poseChainReverseLength; windowOffset++)
+    {
+        const PoseCluster &pose = *clusterHistory[windowOffset];
+        const CharacterInstance *instance = findInstanceAtFrame(pose.seedFrame);
+        for (int poseFeatureIndex = 0; poseFeatureIndex < poseDims; poseFeatureIndex++)
+            result[animationFeatureIndex++] = instance->poseDescriptor[poseFeatureIndex];
+    }
+}
+
+bool Character::computePoseChainReverseDescriptor(const FrameID &startFrame, float *result) const
 {
     const int poseDims = min(Constants::poseChainReverseMaxDim, posePCADimension);
 
@@ -487,7 +505,7 @@ void Character::makePoseClusters()
             poseClusters.push_back(cluster);
             poseClusterSearch.insert(instance->poseDescriptor, cluster);
         }
-        instance->poseClusterIndex = cluster->index;
+        instance->poseCluster = cluster;
         //cout << "poseCluster=" << instance->poseClusterIndex << endl;
         cluster->allInstances.push_back(instance->frameID);
     }
@@ -639,6 +657,26 @@ vector< pair<CharacterInstance*, float> > Character::findPoseChainsForwardRadius
     for (auto &candidateInstance : candidates)
     {
         const float distSq = math::distSq(instance.poseChainForwardDescriptor, candidateInstance->poseChainForwardDescriptor);
+        if (distSq <= maxDistSq)
+            result.push_back(make_pair(candidateInstance, distSq));
+    }
+    return result;
+}
+
+vector< pair<CharacterInstance*, float> > Character::findSimilarClusterHistoryInstances(const deque<const PoseCluster *> &clusterHistory, float maxDistSq) const
+{
+    vector<float> rawPoseChainReverseDescriptor(poseChainReverseFeatureCount());
+    vector<float> reducedDescriptor;
+
+    computePoseChainReverseDescriptor(clusterHistory, rawPoseChainReverseDescriptor.data());
+
+    poseChainReversePCA.transform(rawPoseChainReverseDescriptor, poseChainReversePCADimension, reducedDescriptor);
+
+    auto candidates = poseChainReverseSearch.findSimilar(reducedDescriptor);
+    vector< pair<CharacterInstance*, float> > result;
+    for (auto &candidateInstance : candidates)
+    {
+        const float distSq = math::distSq(reducedDescriptor, candidateInstance->poseChainReverseDescriptor);
         if (distSq <= maxDistSq)
             result.push_back(make_pair(candidateInstance, distSq));
     }

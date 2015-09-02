@@ -4,7 +4,6 @@ struct CharacterState
     CharacterState()
     {
         valid = false;
-        instance = nullptr;
     }
     int descriptorLength() const;
     void makeDescriptor(float *output, int &offset) const;
@@ -18,48 +17,46 @@ struct CharacterState
 
     //worldDerivatives[0] = (world_t - world_t-1)
     //worldDerivatives[1] = (world_t-1 - world_t-2) ...
-    vector<vec3f> worldDerivativeHistory;
+    deque<vec3f> worldDerivativeHistory;
     
-    const CharacterInstance *instance;
+    // poseHistory[0] = cluster_t
+    // poseHistory[1] = cluster_t-1 ...
+    deque<const PoseCluster*> poseHistory;
 };
 
-struct CharacterStatePrediction
+struct CharacterStateTransition
 {
     int descriptorLength() const;
     void makeDescriptor(float *output, int &offset) const;
     void makeHeader(vector<string> &output) const;
 
     vec3f worldPosDelta;
-    vector<float> poseClusters;
+    const PoseCluster *newCluster;
 };
 
 struct ControllerState
 {
-    void LoadGamecube(const GCPadStatus &pad);
+    void LoadGamecube(const GCPadStatus &pad, int controllerIndex);
 
-    int descriptorLength() const;
-    void makeDescriptor(float *output, int &offset) const;
-    void makeHeader(const string &prefix, vector<string> &output) const;
-
-    static const int ControllerButtonCount = 7;
-    float buttons[ControllerButtonCount];
-
-    vec2f stick;
-};
-
-struct ControllerStateHistory
-{
     int descriptorLength() const;
     void makeDescriptor(float *output, int &offset) const;
     void makeHeader(vector<string> &output) const;
 
-    //history[0] = current frame
-    vector<ControllerState> history;
+    static const int ControllerButtonCount = 7;
+    static const int ControllerCount = 1;
+
+    struct Controller
+    {
+        float buttons[ControllerButtonCount];
+        vec2f stick;
+    };
+
+    Controller controllers[ControllerCount];
 };
 
 struct GameState
 {
-    void load(const FrameID &frameID, const ReplayDatabase &replays, const CharacterDatabase &characters);
+    void load(const FrameID &frameID, const ReplayDatabase &replays, const CharacterDatabase &characterDatabase);
     
     int descriptorLength() const;
     void makeDescriptor(float *output) const;
@@ -70,11 +67,11 @@ struct GameState
     //
     // input state
     //
-    CharacterState characterState[CharacterCount];
-    ControllerStateHistory controllerStateHistory[CharacterCount];
+    CharacterState characters[CharacterCount];
+    deque<ControllerState> controllerHistory;
+};
 
-    //
-    // predicted output
-    //
-    CharacterStatePrediction characterPrediction[CharacterCount];
+struct StateTransitionData
+{
+    CharacterStateTransition character[GameState::CharacterCount];
 };

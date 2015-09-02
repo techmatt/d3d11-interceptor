@@ -21,6 +21,7 @@
     <ClInclude Include="constants.h" />
     <ClInclude Include="datasetProcessor.h" />
     <ClInclude Include="frameAlignment.h" />
+    <ClInclude Include="gameModel.h" />
     <ClInclude Include="gameState.h" />
     <ClInclude Include="learningParams.h" />
     <ClInclude Include="LSH.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="character.cpp" />
     <ClCompile Include="datasetProcessor.cpp" />
     <ClCompile Include="frameAlignment.cpp" />
+    <ClCompile Include="gameModel.cpp" />
     <ClCompile Include="gameState.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

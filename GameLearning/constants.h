@@ -15,6 +15,6 @@ struct Constants
     static const int poseChainReverseMaxDim = 40;
     
     const float LSHpNorm = 0.0135f;
-    const int LSHminiHashCount = 30;
-    const int LSHmacroTableCount = 20;
+    static const int LSHminiHashCount = 30;
+    static const int LSHmacroTableCount = 20;
 };

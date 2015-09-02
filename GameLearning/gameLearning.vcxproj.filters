@@ -72,6 +72,9 @@
     <ClInclude Include="..\shared\GCPadStatus.h">
       <Filter>Shared</Filter>
     </ClInclude>
+    <ClInclude Include="gameModel.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -111,6 +114,9 @@
       <Filter>Shared</Filter>
     </ClCompile>
     <ClCompile Include="gameState.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="gameModel.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>

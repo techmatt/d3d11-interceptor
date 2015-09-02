@@ -34,6 +34,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "segmentAnalyzer.h"
 
 #include "gameState.h"
+#include "gameModel.h"
 
 #include "appState.h"
 #include "datasetProcessor.h"

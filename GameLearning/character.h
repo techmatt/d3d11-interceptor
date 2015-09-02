@@ -44,7 +44,7 @@ struct CharacterInstance
 {
     CharacterInstance()
     {
-        poseClusterIndex = -1;
+        poseCluster = nullptr;
         similarPoseChainCount = -1;
     }
     
@@ -56,7 +56,7 @@ struct CharacterInstance
 
     FrameID frameID;
 
-    int poseClusterIndex;
+    PoseCluster *poseCluster;
     AnimationFrame animation;
 
     vec3f worldCentroid;
@@ -173,6 +173,7 @@ struct Character
     vector< pair<CharacterInstance*, float> > findPosesRadius(const CharacterInstance &instance, float maxDistSq) const;
     vector< pair<CharacterInstance*, float> > findPoseChainsForwardRadius(const CharacterInstance &instance, float maxDistSq) const;
     vector< pair<CharacterInstance*, float> > findPoseChainsReverseRadius(const CharacterInstance &instance, float maxDistSq) const;
+    vector< pair<CharacterInstance*, float> > findSimilarClusterHistoryInstances(const deque<const PoseCluster *> &clusterHistory, float maxDistSq) const;
     PoseCluster* findBestPoseCluster(const CharacterInstance &instance, float maxDistSq) const;
     vector< pair<PoseCluster*, float> > findPoseClustersRadius(const CharacterInstance &instance, float maxDistSq) const;
     
@@ -182,8 +183,9 @@ private:
     //int countSimilarAnimations(const CharacterInstance &seedInstance, int animationLength);
 
     void recordFramePoses(const ProcessedFrame &frame);
-    bool computePoseChainForwardDescriptor(const FrameID &startFrame, float *result);
-    bool computePoseChainReverseDescriptor(const FrameID &startFrame, float *result);
+    bool computePoseChainForwardDescriptor(const FrameID &startFrame, float *result) const;
+    bool computePoseChainReverseDescriptor(const FrameID &startFrame, float *result) const;
+    void computePoseChainReverseDescriptor(const deque<const PoseCluster *> &clusterHistory, float *result) const;
 
     void saveAnimationCurve();
 
@@ -199,6 +201,8 @@ private:
     void computePoseChainForwardDescriptors();
     void computePoseChainReversePCA();
     void computePoseChainReverseDescriptors();
+
+    int poseChainReverseFeatureCount() const;
 
     //
     // LSH

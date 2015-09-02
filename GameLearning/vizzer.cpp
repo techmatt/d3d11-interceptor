@@ -181,13 +181,20 @@ void Vizzer::render(ApplicationData &app)
         ofstream file("state.csv");
         for (string s : gameState.makeHeader())
             file << s << ',';
+        file << "empty";
         file << endl;
 
         vector<float> descriptor(gameState.descriptorLength());
-        gameState.makeDescriptor(descriptor.data());
-        for (float f : descriptor)
-            file << f << ',';
-        file << endl;
+
+        for (CharacterInstance *instance : state.characters.characters[1].allInstancesVec)
+        {
+            gameState.load(instance->frameID, state.replays, state.characters);
+            gameState.makeDescriptor(descriptor.data());
+            for (float f : descriptor)
+                file << f << ',';
+            file << "0";
+            file << endl;
+        }
     }
 
     vector<string> text;
@@ -200,12 +207,12 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Anchor pose dist: " + to_string(curCharacter.poseDistance(state.anchorFrame, state.curFrame)));
 
     if (anchorInstance)
-        text.push_back("Anchor pose index: " + to_string(anchorInstance->poseClusterIndex));
+        text.push_back("Anchor pose index: " + to_string(anchorInstance->poseCluster->index));
 
     if (curInstance)
     {
-        text.push_back("Current pose index: " + to_string(curInstance->poseClusterIndex));
-        text.push_back("Current pose seed: " + to_string(curCharacter.poseClusters[curInstance->poseClusterIndex]->seedFrame.frameIndex));
+        text.push_back("Current pose index: " + to_string(curInstance->poseCluster->index));
+        text.push_back("Current pose seed: " + to_string(curInstance->poseCluster->seedFrame.frameIndex));
     }
 
     //text.push_back("Character state: " + gameState.characterState[state.curCharacterIndex].describe());
