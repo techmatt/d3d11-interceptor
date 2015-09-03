@@ -36,6 +36,7 @@ struct CharacterStateTransition
 
 struct ControllerState
 {
+    void LoadGamecube(const ProcessedFrame &frame);
     void LoadGamecube(const GCPadStatus &pad, int controllerIndex);
 
     int descriptorLength() const;
@@ -71,7 +72,7 @@ struct GameState
     deque<ControllerState> controllerHistory;
 };
 
-struct StateTransitionData
+struct StateTransition
 {
     CharacterStateTransition character[GameState::CharacterCount];
 };

@@ -4,6 +4,7 @@ struct AppState
     AppState()
     {
         curFrame = FrameID(0, 0);
+        gameModelPredictedCharacterFrame = FrameID(0, 0);
         curCharacterIndex = 1;
         anchorAnimationInstanceIndex = 0;
         showBBoxes = false;
@@ -27,6 +28,8 @@ struct AppState
     vector<D3D11TriMesh> curFrameMeshesFull;
     vector<D3D11TriMesh> curFrameMeshesRigidTransform;
 
+    vector<D3D11TriMesh> gameModelFrameMeshesRigidTransform;
+
     SegmentAnalyzer analyzer;
     CharacterDatabase characters;
     ReplayDatabase replays;
@@ -36,6 +39,11 @@ struct AppState
     int curCharacterIndex;
     int anchorAnimationInstanceIndex;
     
+    GameModel gameModel;
+    GameState gameModelState;
+    FrameID gameModelFrame;
+    FrameID gameModelPredictedCharacterFrame;
+
     Cameraf camera;
 
     UINT64 selectedSignature;

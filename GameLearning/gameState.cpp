@@ -114,6 +114,14 @@ vector<string> GameState::makeHeader() const
     return result;
 }
 
+void ControllerState::LoadGamecube(const ProcessedFrame &frame)
+{
+    for (int controllerIndex = 0; controllerIndex < ControllerState::ControllerCount; controllerIndex++)
+    {
+        LoadGamecube(frame.frame->padState[controllerIndex], controllerIndex);
+    }
+}
+
 void ControllerState::LoadGamecube(const GCPadStatus &pad, int controllerIndex)
 {
     Controller &c = controllers[controllerIndex];
@@ -158,13 +166,10 @@ void GameState::load(const FrameID &frameID, const ReplayDatabase &replays, cons
     {
         const ProcessedFrame *historyFrame = replays.getFrame(frameID.delta(-historyOffset));
 
-        for (int controllerIndex = 0; controllerIndex < ControllerState::ControllerCount; controllerIndex++)
-        {
-            if (historyFrame == nullptr)
-                controllerHistory[historyOffset].LoadGamecube(baseFrame->frame->padState[controllerIndex], controllerIndex);
-            else
-                controllerHistory[historyOffset].LoadGamecube(historyFrame->frame->padState[controllerIndex], controllerIndex);
-        }
+        if (historyFrame == nullptr)
+            controllerHistory[historyOffset].LoadGamecube(*baseFrame);
+        else
+            controllerHistory[historyOffset].LoadGamecube(*historyFrame);
     }
 
     //

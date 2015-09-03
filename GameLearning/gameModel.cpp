@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-void GameModel::advanceGameState(GameState &state, const StateTransitionData &transition, const ControllerState &nextController)
+void GameModel::advanceGameState(GameState &state, const StateTransition &transition, const ControllerState &nextController)
 {
     for (int characterIndex = 0; characterIndex < GameState::CharacterCount; characterIndex++)
     {
@@ -20,4 +20,25 @@ void GameModel::advanceGameState(GameState &state, const StateTransitionData &tr
 
     state.controllerHistory.push_front(nextController);
     state.controllerHistory.pop_back();
+}
+
+void GameModel::predictTransition(const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition)
+{
+    const Character &characterEntry = characterDatabase.characters[1];
+    auto candidates = characterEntry.findSimilarClusterHistoryInstances(state.characters[0].poseHistory, (float)learningParams().poseChainDistSq);
+
+    transition.character[0].newCluster = characterEntry.poseClusters[0];
+    transition.character[0].worldPosDelta = vec3f::origin;
+
+    for (auto &candidate : candidates)
+    {
+        const CharacterInstance *nextInstance = characterEntry.findInstanceAtFrame(candidate.first->frameID.delta(1));
+        if (nextInstance != nullptr)
+        {
+            transition.character[0].newCluster = nextInstance->poseCluster;
+            transition.character[0].worldPosDelta = nextInstance->worldCentroid - candidate.first->worldCentroid;
+        }
+    }
+
+    
 }

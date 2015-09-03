@@ -163,6 +163,33 @@ void Vizzer::render(ApplicationData &app)
             state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective(), color);
     }
 
+    const bool showModelState = true;
+    if (showModelState)
+    {
+        auto &meshes = state.gameModelFrameMeshesRigidTransform;
+        for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
+        {
+            const UINT64 signature = frame.objectData[meshIndex].signature;
+            const SegmentStats &segmentInfo = state.analyzer.segments[signature];
+            vec3f color(0.5f, 1.0f, 0.5f);
+            
+            mat4f worldTransform = mat4f::identity();
+            for (const Character &c : state.characters.characters)
+            {
+                if (c.characterIndex == state.curCharacterIndex && c.allSegmentsSet.count(signature) > 0)
+                {
+                    const CharacterInstance *predictedInstance = c.findInstanceAtFrame(state.gameModelPredictedCharacterFrame);
+                    if (predictedInstance != nullptr)
+                    {
+                        const vec3f worldPosDiff = predictedInstance->worldCentroid - state.gameModelState.characters[c.characterIndex].worldPos;
+                    }
+
+                    state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective() * worldTransform, color);
+                }
+            }
+        }
+    }
+
     const Character &curCharacter = state.characters.characters[state.curCharacterIndex];
 
     const CharacterInstance *anchorInstance = curCharacter.findInstanceAtFrame(state.anchorFrame);
@@ -237,12 +264,15 @@ void Vizzer::drawText(ApplicationData &app, vector<string> &text)
 
 void Vizzer::reloadFrame(ApplicationData &app)
 {
-    GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
-    const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
+    FrameObjectData *curFrame = state.replays.getFrame(state.curFrame)->frame;
+    FrameObjectData *modelFrame = state.replays.getFrame(state.gameModelPredictedCharacterFrame)->frame;
 
     //makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
     //makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
-    makeFrameMeshesRigidTransform(app, frame, state.curFrameMeshesRigidTransform);
+    makeFrameMeshesRigidTransform(app, *curFrame, state.curFrameMeshesRigidTransform);
+
+    if (modelFrame)
+        makeFrameMeshesRigidTransform(app, *modelFrame, state.gameModelFrameMeshesRigidTransform);
 
     frameDirty = false;
 }
@@ -254,7 +284,32 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (key == KEY_K) state.curCharacterIndex = math::mod(state.curCharacterIndex - 1, state.analyzer.characterSegments.size());
     if (key == KEY_L) state.curCharacterIndex = math::mod(state.curCharacterIndex + 1, state.analyzer.characterSegments.size());
     
-    if (key == KEY_J) state.anchorFrame = state.curFrame;
+    if (key == KEY_J)
+    {
+        state.anchorFrame = state.curFrame;
+        state.gameModelState.load(state.anchorFrame, state.replays, state.characters);
+        state.gameModelFrame = state.curFrame;
+
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[0].poseHistory[0]->seedFrame;
+    }
+
+    if (key == KEY_B)
+    {
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[0].poseHistory[0]->seedFrame;
+        state.gameModelFrame = state.curFrame.delta(1);
+
+        ControllerState controller;
+        const ProcessedFrame *nextFrame = state.replays.getFrame(state.gameModelFrame);
+
+        if (nextFrame != nullptr)
+            controller.LoadGamecube(*nextFrame);
+
+        StateTransition transition;
+        state.gameModel.predictTransition(state.characters, state.gameModelState, transition);
+        state.gameModel.advanceGameState(state.gameModelState, transition, controller);
+
+        frameDirty = true;
+    }
 
     int animationInstanceDelta = 0;
     if (key == KEY_N) animationInstanceDelta = -1;
