@@ -18,6 +18,7 @@ struct LearningParams
         params.readParameter("poseChainDistSq", poseChainDistSq);
 
         params.readParameter("poseDistSqThreshold", poseDistSqThreshold);
+        params.readParameter("predictionReverseChainDistSq", predictionReverseChainDistSq);
 
         params.readParameter("LSHpNorm", LSHpNorm);
         params.readParameter("LSHminiHashCount", LSHminiHashCount);
@@ -37,9 +38,11 @@ struct LearningParams
     int controllerHistorySize;
     int worldPosHistorySize;
 
-    double poseChainDistSq;
+    float poseChainDistSq;
 
-    double poseDistSqThreshold;
+    float predictionReverseChainDistSq;
+
+    float poseDistSqThreshold;
 
     double LSHpNorm;
     int LSHminiHashCount;

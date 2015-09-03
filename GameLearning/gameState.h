@@ -55,8 +55,16 @@ struct ControllerState
     Controller controllers[ControllerCount];
 };
 
+struct ControllerHistory
+{
+    ControllerHistory() {}
+    ControllerHistory(const FrameID &frameID, const ReplayDatabase &replays);
+    deque<ControllerState> history;
+};
+
 struct GameState
 {
+    
     void load(const FrameID &frameID, const ReplayDatabase &replays, const CharacterDatabase &characterDatabase);
     
     int descriptorLength() const;
@@ -69,7 +77,7 @@ struct GameState
     // input state
     //
     CharacterState characters[CharacterCount];
-    deque<ControllerState> controllerHistory;
+    ControllerHistory controllers;
 };
 
 struct StateTransition

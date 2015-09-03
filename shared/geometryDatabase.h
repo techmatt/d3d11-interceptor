@@ -22,6 +22,7 @@ struct GeometryDatabase
         util::makeDirectory(geometryDir);
         util::makeDirectory(imagesDir);
     }
+
     bool hasSignature(UINT64 signature)
     {
         if (geometry.count(signature) == 0)

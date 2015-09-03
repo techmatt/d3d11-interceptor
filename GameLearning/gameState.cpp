@@ -88,8 +88,8 @@ int GameState::descriptorLength() const
     for (int i = 0; i < CharacterCount; i++)
         sum += characters[i].descriptorLength();
 
-    for (int i = 0; i < controllerHistory.size(); i++)
-        sum += controllerHistory[i].descriptorLength();
+    for (int i = 0; i < controllers.history.size(); i++)
+        sum += controllers.history[i].descriptorLength();
     return sum;
 }
 
@@ -99,8 +99,8 @@ void GameState::makeDescriptor(float *output) const
     for (int i = 0; i < CharacterCount; i++)
         characters[i].makeDescriptor(output, offset);
 
-    for (int i = 0; i < controllerHistory.size(); i++)
-        controllerHistory[i].makeDescriptor(output, offset);
+    for (int i = 0; i < controllers.history.size(); i++)
+        controllers.history[i].makeDescriptor(output, offset);
 }
 
 vector<string> GameState::makeHeader() const
@@ -109,8 +109,8 @@ vector<string> GameState::makeHeader() const
     for (int i = 0; i < CharacterCount; i++)
         characters[i].makeHeader(result);
 
-    for (int i = 0; i < controllerHistory.size(); i++)
-        controllerHistory[i].makeHeader(result);
+    for (int i = 0; i < controllers.history.size(); i++)
+        controllers.history[i].makeHeader(result);
     return result;
 }
 
@@ -154,23 +154,24 @@ string CharacterState::describe() const
     return "<none>";
 }
 
-void GameState::load(const FrameID &frameID, const ReplayDatabase &replays, const CharacterDatabase &characterDatabase)
+ControllerHistory::ControllerHistory(const FrameID &frameID, const ReplayDatabase &replays)
 {
     const ProcessedFrame *baseFrame = replays.getFrame(frameID);
-    
-    //
-    // controllerHistory
-    //
-    controllerHistory.resize(learningParams().controllerHistorySize);
+    history.resize(learningParams().controllerHistorySize);
     for (int historyOffset = 0; historyOffset < learningParams().controllerHistorySize; historyOffset++)
     {
         const ProcessedFrame *historyFrame = replays.getFrame(frameID.delta(-historyOffset));
 
         if (historyFrame == nullptr)
-            controllerHistory[historyOffset].LoadGamecube(*baseFrame);
+            history[historyOffset].LoadGamecube(*baseFrame);
         else
-            controllerHistory[historyOffset].LoadGamecube(*historyFrame);
+            history[historyOffset].LoadGamecube(*historyFrame);
     }
+}
+
+void GameState::load(const FrameID &frameID, const ReplayDatabase &replays, const CharacterDatabase &characterDatabase)
+{
+    controllers = ControllerHistory(frameID, replays);
 
     //
     // characters

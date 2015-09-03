@@ -137,7 +137,7 @@ struct Character
 
     float poseChainReverseDistance(const deque<const PoseCluster *> &clusterHistory, const FrameID &a) const
     {
-        if (clusterHistory.size() != Constants::poseChainReverseLength) return 0.0f;
+        if (clusterHistory.size() != Constants::poseChainReverseLength) return -1.0f;
 
         const CharacterInstance *aInst = findInstanceAtFrame(a);
         if (aInst == nullptr)
@@ -150,7 +150,7 @@ struct Character
 
         poseChainReversePCA.transform(rawPoseChainReverseDescriptor, poseChainReversePCADimension, reducedDescriptor);
 
-        return math::distSq(aInst->poseDescriptor, reducedDescriptor);
+        return math::distSq(aInst->poseChainReverseDescriptor, reducedDescriptor);
     }
 
     float poseDistance(const FrameID &a, const FrameID &b) const

@@ -18,8 +18,8 @@ void GameModel::advanceGameState(GameState &state, const StateTransition &transi
         characterState.worldPos += characterState.worldDerivativeHistory[0];
     }
 
-    state.controllerHistory.push_front(nextController);
-    state.controllerHistory.pop_back();
+    state.controllers.history.push_front(nextController);
+    state.controllers.history.pop_back();
 }
 
 void GameModel::predictTransition(const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition)
@@ -30,7 +30,9 @@ void GameModel::predictTransition(const CharacterDatabase &characterDatabase, co
 
         const Character &characterEntry = characterDatabase.characters[characterIndex];
 
-        auto candidates = characterEntry.findSimilarClusterHistoryInstances(state.characters[characterIndex].poseHistory, (float)learningParams().poseChainDistSq);
+        const auto candidates = characterEntry.findSimilarClusterHistoryInstances(
+            state.characters[characterIndex].poseHistory,
+            learningParams().predictionReverseChainDistSq);
 
         transition.character[characterIndex].newCluster = characterEntry.poseClusters[0];
         transition.character[characterIndex].worldPosDelta = vec3f::origin;

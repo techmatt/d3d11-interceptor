@@ -7,8 +7,8 @@ worldPosHistorySize=3
 
 poseChainDistSq=20.0
 
-poseDistSqThreshold=10.0
-maxPoseDistSq=10.0
+poseDistSqThreshold=5.0
+maxPoseDistSq=5.0
 
 LSHpNorm=0.1
 LSHminiHashCount=30
@@ -19,3 +19,5 @@ PCAEnergy=0.995
 maxAnimationCount=200
 
 minObjectIndexCount=13
+
+predictionReverseChainDistSq=10.0
