@@ -63,7 +63,7 @@ struct GameState
     void makeDescriptor(float *output) const;
     vector<string> makeHeader() const;
 
-    static const int CharacterCount = 1;
+    static const int CharacterCount = 2;
 
     //
     // input state

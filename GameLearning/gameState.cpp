@@ -180,7 +180,7 @@ void GameState::load(const FrameID &frameID, const ReplayDatabase &replays, cons
         //
         // CharacterState
         //
-        const Character &character = characterDatabase.characters[1];
+        const Character &character = characterDatabase.characters[characterIndex];
         CharacterState &characterState = characters[characterIndex];
 
         const CharacterInstance *instance = character.findInstanceAtFrame(frameID);

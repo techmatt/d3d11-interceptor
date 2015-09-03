@@ -205,7 +205,7 @@ void Character::computePoseChainForwardPCA()
     }
 
     poseChainForwardPCADimension = (int)poseChainForwardPCA.reducedDimension(learningParams().PCAEnergy);
-    cout << "Pose chain PCA dimension: " << poseChainForwardPCADimension << endl;
+    cout << "Pose chain forward PCA dimension: " << poseChainForwardPCADimension << endl;
 }
 
 void Character::computePoseChainReversePCA()
@@ -241,7 +241,7 @@ void Character::computePoseChainReversePCA()
     }
 
     poseChainReversePCADimension = (int)poseChainReversePCA.reducedDimension(learningParams().PCAEnergy);
-    cout << "Pose chain PCA dimension: " << poseChainReversePCADimension << endl;
+    cout << "Pose chain reverse PCA dimension: " << poseChainReversePCADimension << endl;
 }
 
 void Character::saveAnimationCurve()

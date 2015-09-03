@@ -135,6 +135,24 @@ struct Character
         return math::distSq(aInst->poseChainReverseDescriptor, bInst->poseChainReverseDescriptor);
     }
 
+    float poseChainReverseDistance(const deque<const PoseCluster *> &clusterHistory, const FrameID &a) const
+    {
+        if (clusterHistory.size() != Constants::poseChainReverseLength) return 0.0f;
+
+        const CharacterInstance *aInst = findInstanceAtFrame(a);
+        if (aInst == nullptr)
+            return numeric_limits<float>::max();
+
+        vector<float> rawPoseChainReverseDescriptor(poseChainReverseFeatureCount());
+        vector<float> reducedDescriptor;
+
+        computePoseChainReverseDescriptor(clusterHistory, rawPoseChainReverseDescriptor.data());
+
+        poseChainReversePCA.transform(rawPoseChainReverseDescriptor, poseChainReversePCADimension, reducedDescriptor);
+
+        return math::distSq(aInst->poseDescriptor, reducedDescriptor);
+    }
+
     float poseDistance(const FrameID &a, const FrameID &b) const
     {
         const CharacterInstance *aInst = findInstanceAtFrame(a);
@@ -186,6 +204,8 @@ private:
     bool computePoseChainForwardDescriptor(const FrameID &startFrame, float *result) const;
     bool computePoseChainReverseDescriptor(const FrameID &startFrame, float *result) const;
     void computePoseChainReverseDescriptor(const deque<const PoseCluster *> &clusterHistory, float *result) const;
+    
+    int poseChainReverseFeatureCount() const;
 
     void saveAnimationCurve();
 
@@ -201,8 +221,6 @@ private:
     void computePoseChainForwardDescriptors();
     void computePoseChainReversePCA();
     void computePoseChainReverseDescriptors();
-
-    int poseChainReverseFeatureCount() const;
 
     //
     // LSH

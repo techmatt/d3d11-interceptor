@@ -6,13 +6,13 @@
 
 struct Constants
 {
-    static const int posePCASamples = 40000;
-    static const int poseChainPCASamples = 40000;
-    static const int poseChainForwardLength = 8;
-    static const int poseChainForwardMaxDim = 20;
+    static const int posePCASamples = 80000;
+    static const int poseChainPCASamples = 80000;
+    static const int poseChainForwardLength = 4;
+    static const int poseChainForwardMaxDim = 100;
 
     static const int poseChainReverseLength = 3;
-    static const int poseChainReverseMaxDim = 40;
+    static const int poseChainReverseMaxDim = 100;
     
     const float LSHpNorm = 0.0135f;
     static const int LSHminiHashCount = 30;

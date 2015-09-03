@@ -89,8 +89,8 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
-    const FrameObjectData &frame = *replay.frames[state.curFrame.frameIndex];
+    const GameReplay &replay = *state.replays.entries[state.curFrame.replayIndex].get().replay;
+    const FrameObjectData &frame = *state.replays.getFrame(state.curFrame)->frame;
 
     if (frameDirty)
         reloadFrame(app);
@@ -167,6 +167,7 @@ void Vizzer::render(ApplicationData &app)
     if (showModelState)
     {
         auto &meshes = state.gameModelFrameMeshesRigidTransform;
+        const FrameObjectData &frame = *state.replays.getFrame(state.gameModelPredictedCharacterFrame)->frame;
         for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
         {
             const UINT64 signature = frame.objectData[meshIndex].signature;
@@ -181,7 +182,8 @@ void Vizzer::render(ApplicationData &app)
                     const CharacterInstance *predictedInstance = c.findInstanceAtFrame(state.gameModelPredictedCharacterFrame);
                     if (predictedInstance != nullptr)
                     {
-                        const vec3f worldPosDiff = predictedInstance->worldCentroid - state.gameModelState.characters[c.characterIndex].worldPos;
+                        const vec3f worldPosDiff = state.gameModelState.characters[c.characterIndex].worldPos - predictedInstance->worldCentroid;
+                        worldTransform = mat4f::translation(worldPosDiff);
                     }
 
                     state.assets.renderMesh(meshes[meshIndex], state.camera.getCameraPerspective() * worldTransform, color);
@@ -200,7 +202,7 @@ void Vizzer::render(ApplicationData &app)
         anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
     }*/
 
-    if (GetAsyncKeyState(VK_F4))
+    /*if (GetAsyncKeyState(VK_F4))
     {
         GameState gameState;
         gameState.load(state.curFrame, state.replays, state.characters);
@@ -222,7 +224,7 @@ void Vizzer::render(ApplicationData &app)
             file << "0";
             file << endl;
         }
-    }
+    }*/
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
@@ -232,6 +234,9 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Anchor forward chain dist: " + to_string(curCharacter.poseChainForwardDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor reverse chain dist: " + to_string(curCharacter.poseChainReverseDistance(state.anchorFrame, state.curFrame)));
     text.push_back("Anchor pose dist: " + to_string(curCharacter.poseDistance(state.anchorFrame, state.curFrame)));
+
+    auto &predictedPoseHistory = state.gameModelState.characters[state.curCharacterIndex].poseHistory;
+    text.push_back("Predicted reverse chain dist: " + to_string(curCharacter.poseChainReverseDistance(predictedPoseHistory, state.curFrame)));
 
     if (anchorInstance)
         text.push_back("Anchor pose index: " + to_string(anchorInstance->poseCluster->index));
@@ -272,7 +277,12 @@ void Vizzer::reloadFrame(ApplicationData &app)
     makeFrameMeshesRigidTransform(app, *curFrame, state.curFrameMeshesRigidTransform);
 
     if (modelFrame)
+    {
+        cout << "predicted frame: " << state.gameModelPredictedCharacterFrame.toString() << endl;
         makeFrameMeshesRigidTransform(app, *modelFrame, state.gameModelFrameMeshesRigidTransform);
+    }
+    else
+        cout << "ModelFrame == nullptr" << endl;
 
     frameDirty = false;
 }
@@ -290,12 +300,13 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         state.gameModelState.load(state.anchorFrame, state.replays, state.characters);
         state.gameModelFrame = state.curFrame;
 
-        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[0].poseHistory[0]->seedFrame;
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;
+
+        frameDirty = true;
     }
 
     if (key == KEY_B)
     {
-        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[0].poseHistory[0]->seedFrame;
         state.gameModelFrame = state.curFrame.delta(1);
 
         ControllerState controller;
@@ -307,6 +318,8 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         StateTransition transition;
         state.gameModel.predictTransition(state.characters, state.gameModelState, transition);
         state.gameModel.advanceGameState(state.gameModelState, transition, controller);
+
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;
 
         frameDirty = true;
     }

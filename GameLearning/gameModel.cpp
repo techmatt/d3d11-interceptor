@@ -24,21 +24,30 @@ void GameModel::advanceGameState(GameState &state, const StateTransition &transi
 
 void GameModel::predictTransition(const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition)
 {
-    const Character &characterEntry = characterDatabase.characters[1];
-    auto candidates = characterEntry.findSimilarClusterHistoryInstances(state.characters[0].poseHistory, (float)learningParams().poseChainDistSq);
-
-    transition.character[0].newCluster = characterEntry.poseClusters[0];
-    transition.character[0].worldPosDelta = vec3f::origin;
-
-    for (auto &candidate : candidates)
+    for (int characterIndex = 0; characterIndex < GameState::CharacterCount; characterIndex++)
     {
-        const CharacterInstance *nextInstance = characterEntry.findInstanceAtFrame(candidate.first->frameID.delta(1));
-        if (nextInstance != nullptr)
-        {
-            transition.character[0].newCluster = nextInstance->poseCluster;
-            transition.character[0].worldPosDelta = nextInstance->worldCentroid - candidate.first->worldCentroid;
-        }
-    }
+        if (characterIndex == 0) continue;
 
-    
+        const Character &characterEntry = characterDatabase.characters[characterIndex];
+
+        auto candidates = characterEntry.findSimilarClusterHistoryInstances(state.characters[characterIndex].poseHistory, (float)learningParams().poseChainDistSq);
+
+        transition.character[characterIndex].newCluster = characterEntry.poseClusters[0];
+        transition.character[characterIndex].worldPosDelta = vec3f::origin;
+
+        cout << "Prediction candidates: " << candidates.size() << endl;
+
+        for (auto &candidate : candidates)
+        {
+            const CharacterInstance *nextInstance = characterEntry.findInstanceAtFrame(candidate.first->frameID.delta(1));
+            if (nextInstance != nullptr)
+            {
+                transition.character[characterIndex].newCluster = nextInstance->poseCluster;
+                transition.character[characterIndex].worldPosDelta = nextInstance->worldCentroid - candidate.first->worldCentroid;
+            }
+        }
+
+        cout << "Predicted cluster index: " << transition.character[characterIndex].newCluster->index << endl;
+        cout << "Predicted world pos delta: " << transition.character[characterIndex].worldPosDelta << endl;
+    }
 }
