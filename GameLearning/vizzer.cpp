@@ -251,6 +251,7 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Controller 0: " + frame.padState[0].toString());
     text.push_back("Controller 1: " + frame.padState[1].toString());
 
+    text.push_back("Prediction index: " + to_string(state.predictionIndex));
     text.push_back("Prediction pose chain dist: " + to_string(state.gameModelPrediction.poseChainDistSq));
     text.push_back("Controller dist: " + to_string(state.gameModelPrediction.controllerDist));
     text.push_back("Velocity dist: " + to_string(state.gameModelPrediction.velocityDist));
@@ -332,13 +333,13 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         frameDirty = true;
     }
 
-    int transitionDelta = 0;
-    if (key == KEY_Z) transitionDelta = -1;
-    if (key == KEY_X) transitionDelta = 1;
+    int predictionDelta = 0;
+    if (key == KEY_Z) predictionDelta = -1;
+    if (key == KEY_X) predictionDelta = 1;
 
-    if (transitionDelta)
+    if (predictionDelta)
     {
-        state.transitionIndex += transitionDelta;
+        state.predictionIndex += predictionDelta;
 
         state.gameModelState = state.gameModelStateStore;
 
@@ -349,7 +350,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
             controller.LoadGamecube(*nextFrame);
 
         StateTransition transition;
-        state.gameModelPrediction = state.gameModel.predictTransition(state.replays, state.characters, state.gameModelState, transition, state.transitionIndex);
+        state.gameModelPrediction = state.gameModel.predictTransition(state.replays, state.characters, state.gameModelState, transition, state.predictionIndex);
         state.gameModel.advanceGameState(state.gameModelState, transition, controller);
 
         state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;

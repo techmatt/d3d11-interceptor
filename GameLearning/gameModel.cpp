@@ -44,7 +44,10 @@ vector<PredictionEntry> GameModel::candidateTransitions(const ReplayDatabase &re
             entry.controllers = ControllerHistory(entry.baseFrameID, replays);
             entry.velocity = VelocityHistory(entry.baseFrameID, replays, characterEntry);
             entry.poseChainDistSq = candidate.second;
-            entry.controllerDist = compareControllerHistory(entry.controllers, state.controllers, characterIndex);
+
+            // TODO: learn mapping from controller to player
+            entry.controllerDist = compareControllerHistory(entry.controllers, state.controllers, 0);
+
             entry.velocityDist = compareVelocityHistory(entry.velocity, state.characters[characterIndex].velocity);
 
             entry.transition.newCluster = nextInstance->poseCluster;
@@ -56,7 +59,7 @@ vector<PredictionEntry> GameModel::candidateTransitions(const ReplayDatabase &re
     return entries;
 }
 
-PredictionEntry GameModel::predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int transitionIndex)
+PredictionEntry GameModel::predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int predictionIndex)
 {
     PredictionEntry chosenEntry;
     for (int characterIndex = 0; characterIndex < GameState::CharacterCount; characterIndex++)
@@ -78,9 +81,10 @@ PredictionEntry GameModel::predictTransition(const ReplayDatabase &replays, cons
 
         stable_sort(entries.begin(), entries.end());
 
-        transition.character[characterIndex] = entries[transitionIndex % entries.size()].transition;
+        const PredictionEntry &entry = entries[math::clamp(predictionIndex, 0, (int)entries.size() - 1)];
+        transition.character[characterIndex] = entry.transition;
 
-        chosenEntry = entries[transitionIndex % entries.size()];
+        chosenEntry = entry;
 
 
         cout << "Predicted cluster index: " << transition.character[characterIndex].newCluster->index << endl;
