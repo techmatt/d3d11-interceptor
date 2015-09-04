@@ -46,6 +46,7 @@ struct AppState
     GameState gameModelStateStore;
     FrameID gameModelFrame;
     FrameID gameModelPredictedCharacterFrame;
+    PredictionEntry gameModelPrediction;
 
     Cameraf camera;
 

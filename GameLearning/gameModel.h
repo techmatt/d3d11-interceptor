@@ -31,7 +31,7 @@ struct GameModel
     static void advanceGameState(GameState &state, const StateTransition &transition, const ControllerState &nextController);
 
     vector<PredictionEntry> candidateTransitions(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, int characterIndex);
-    int predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int transitionIndex);
+    PredictionEntry predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int transitionIndex);
 
 private:
     float compareControllerHistory(const ControllerHistory &a, const ControllerHistory &b, int controllerIndex);

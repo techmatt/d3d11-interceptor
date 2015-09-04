@@ -56,9 +56,9 @@ vector<PredictionEntry> GameModel::candidateTransitions(const ReplayDatabase &re
     return entries;
 }
 
-int GameModel::predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int transitionIndex)
+PredictionEntry GameModel::predictTransition(const ReplayDatabase &replays, const CharacterDatabase &characterDatabase, const GameState &state, StateTransition &transition, int transitionIndex)
 {
-    int transitionCount = 0;
+    PredictionEntry chosenEntry;
     for (int characterIndex = 0; characterIndex < GameState::CharacterCount; characterIndex++)
     {
         if (characterIndex == 0) continue;
@@ -69,8 +69,7 @@ int GameModel::predictTransition(const ReplayDatabase &replays, const CharacterD
         transition.character[characterIndex].worldPosDelta = vec3f::origin;
 
         vector<PredictionEntry> entries = candidateTransitions(replays, characterDatabase, state, characterIndex);
-        transitionCount = (int)entries.size();
-
+        
         if (entries.size() == 0)
         {
             cout << "No valid entries" << endl;
@@ -81,11 +80,14 @@ int GameModel::predictTransition(const ReplayDatabase &replays, const CharacterD
 
         transition.character[characterIndex] = entries[transitionIndex % entries.size()].transition;
 
+        chosenEntry = entries[transitionIndex % entries.size()];
+
+
         cout << "Predicted cluster index: " << transition.character[characterIndex].newCluster->index << endl;
         cout << "Predicted world pos delta: " << transition.character[characterIndex].worldPosDelta << endl;
     }
 
-    return transitionCount;
+    return chosenEntry;
 }
 
 float GameModel::compareControllerState(const ControllerState &a, const ControllerState &b, int controllerIndex)
