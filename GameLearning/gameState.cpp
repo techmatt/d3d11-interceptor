@@ -1,9 +1,25 @@
 
 #include "main.h"
 
+VelocityHistory::VelocityHistory(const FrameID &frameID, const ReplayDatabase &replays, const Character &character)
+{
+    const ProcessedFrame *baseFrame = replays.getFrame(frameID);
+    history.resize(learningParams().velocityHistorySize);
+    for (int historyOffset = 0; historyOffset < learningParams().velocityHistorySize; historyOffset++)
+    {
+        const CharacterInstance *instanceA = character.findInstanceAtFrame(frameID.delta(-historyOffset));
+        const CharacterInstance *instanceB = character.findInstanceAtFrame(frameID.delta(-historyOffset - 1));
+
+        if (instanceA != nullptr && instanceB != nullptr)
+        {
+            history[historyOffset] = instanceA->worldCentroid - instanceB->worldCentroid;
+        }
+    }
+}
+
 int CharacterState::descriptorLength() const
 {
-    return 3 + 3 * (int)worldDerivativeHistory.size() + Constants::poseChainReverseLength;
+    return 3 + 3 * (int)velocity.history.size() + Constants::poseChainReverseLength;
 }
 
 void CharacterState::makeDescriptor(float *output, int &offset) const
@@ -12,7 +28,7 @@ void CharacterState::makeDescriptor(float *output, int &offset) const
     output[offset++] = worldPos.y;
     output[offset++] = worldPos.z;
 
-    for (vec3f v : worldDerivativeHistory)
+    for (vec3f v : velocity.history)
     {
         output[offset++] = v.x;
         output[offset++] = v.y;
@@ -32,7 +48,7 @@ void CharacterState::makeHeader(vector<string> &output) const
     output.push_back("WorldPos.z");
 
     int index = 0;
-    for (vec2f v : worldDerivativeHistory)
+    for (vec2f v : velocity.history)
     {
         output.push_back("WorldDeriv" + to_string(index) + ".x");
         output.push_back("WorldDeriv" + to_string(index) + ".y");
@@ -198,19 +214,10 @@ void GameState::load(const FrameID &frameID, const ReplayDatabase &replays, cons
             characterState.worldPos = instance->worldCentroid;
         }
 
-        characterState.worldDerivativeHistory.resize(learningParams().worldPosHistorySize);
-        for (int historyOffset = 0; historyOffset < learningParams().worldPosHistorySize; historyOffset++)
-        {
-            const CharacterInstance *instanceA = character.findInstanceAtFrame(frameID.delta(-historyOffset));
-            const CharacterInstance *instanceB = character.findInstanceAtFrame(frameID.delta(-historyOffset - 1));
-            if (instanceA != nullptr && instanceB != nullptr)
-            {
-                characterState.worldDerivativeHistory[historyOffset] = instanceA->worldCentroid - instanceB->worldCentroid;
-            }
-        }
-
+        characterState.velocity = VelocityHistory(frameID, replays, character);
+        
         characterState.poseHistory.resize(Constants::poseChainReverseLength);
-        for (int historyOffset = 0; historyOffset < learningParams().worldPosHistorySize; historyOffset++)
+        for (int historyOffset = 0; historyOffset < learningParams().poseHistorySize; historyOffset++)
         {
             const CharacterInstance *instance = character.findInstanceAtFrame(frameID.delta(-historyOffset));
             if (instance == nullptr)

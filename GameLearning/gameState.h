@@ -1,4 +1,14 @@
 
+struct VelocityHistory
+{
+    VelocityHistory() {}
+    VelocityHistory(const FrameID &frameID, const ReplayDatabase &replays, const Character &character);
+
+    //velocity[0] = (world_t - world_t-1)
+    //velocity[1] = (world_t-1 - world_t-2) ...
+    deque<vec3f> history;
+};
+
 struct CharacterState
 {
     CharacterState()
@@ -15,9 +25,7 @@ struct CharacterState
 
     vec3f worldPos;
 
-    //worldDerivatives[0] = (world_t - world_t-1)
-    //worldDerivatives[1] = (world_t-1 - world_t-2) ...
-    deque<vec3f> worldDerivativeHistory;
+    VelocityHistory velocity;
     
     // poseHistory[0] = cluster_t
     // poseHistory[1] = cluster_t-1 ...

@@ -14,6 +14,7 @@ struct AppState
         showCharacterSegments = false;
         showAnimationLabel = false;
         selectedSignature = (UINT64)-1;
+        transitionIndex = 0;
     }
 
     UIConnection ui;
@@ -39,8 +40,10 @@ struct AppState
     int curCharacterIndex;
     int anchorAnimationInstanceIndex;
     
+    int transitionIndex;
     GameModel gameModel;
     GameState gameModelState;
+    GameState gameModelStateStore;
     FrameID gameModelFrame;
     FrameID gameModelPredictedCharacterFrame;
 

@@ -3,12 +3,12 @@ datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
 minAnimationInstances=4
 
 controllerHistorySize=3
-worldPosHistorySize=3
+velocityHistorySize=3
+poseHistorySize=3
 
 poseChainDistSq=20.0
 
-poseDistSqThreshold=5.0
-maxPoseDistSq=5.0
+poseDistSqThreshold=1.0
 
 LSHpNorm=0.1
 LSHminiHashCount=30

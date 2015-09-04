@@ -11,7 +11,8 @@ struct LearningParams
         params.readParameter("datasetDir", datasetDir);
 
         params.readParameter("controllerHistorySize", controllerHistorySize);
-        params.readParameter("worldPosHistorySize", worldPosHistorySize);
+        params.readParameter("velocityHistorySize", velocityHistorySize);
+        params.readParameter("poseHistorySize", poseHistorySize);
 
         params.readParameter("minAnimationInstances", minAnimationInstances);
         
@@ -35,8 +36,9 @@ struct LearningParams
 
     int minAnimationInstances;
 
+    int velocityHistorySize;
     int controllerHistorySize;
-    int worldPosHistorySize;
+    int poseHistorySize;
 
     float poseChainDistSq;
 

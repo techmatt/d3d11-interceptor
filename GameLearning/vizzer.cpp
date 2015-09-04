@@ -307,7 +307,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     if (key == KEY_B)
     {
-        state.gameModelFrame = state.curFrame.delta(1);
+        state.gameModelFrame = state.gameModelFrame.delta(1);
 
         ControllerState controller;
         const ProcessedFrame *nextFrame = state.replays.getFrame(state.gameModelFrame);
@@ -316,7 +316,34 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
             controller.LoadGamecube(*nextFrame);
 
         StateTransition transition;
-        state.gameModel.predictTransition(state.characters, state.gameModelState, transition);
+        state.gameModel.predictTransition(state.replays, state.characters, state.gameModelState, transition, 0);
+        state.gameModel.advanceGameState(state.gameModelState, transition, controller);
+
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;
+
+        state.gameModelStateStore = state.gameModelState;
+
+        frameDirty = true;
+    }
+
+    int transitionDelta = 0;
+    if (key == KEY_Z) transitionDelta = -1;
+    if (key == KEY_X) transitionDelta = 1;
+
+    if (transitionDelta)
+    {
+        state.transitionIndex += transitionDelta;
+
+        state.gameModelState = state.gameModelStateStore;
+
+        ControllerState controller;
+        const ProcessedFrame *nextFrame = state.replays.getFrame(state.gameModelFrame.delta(1));
+
+        if (nextFrame != nullptr)
+            controller.LoadGamecube(*nextFrame);
+
+        StateTransition transition;
+        state.gameModel.predictTransition(state.replays, state.characters, state.gameModelState, transition, state.transitionIndex);
         state.gameModel.advanceGameState(state.gameModelState, transition, controller);
 
         state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;
