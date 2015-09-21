@@ -1,5 +1,9 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\SSBM\
 
+maxReplayCount = 0
+
+PCAEnergy=0.995
+
 minAnimationInstances=4
 
 controllerHistorySize=3
@@ -13,8 +17,6 @@ poseDistSqThreshold=1.0
 LSHpNorm=0.1
 LSHminiHashCount=30
 LSHmacroTableCount=20
-
-PCAEnergy=0.995
 
 maxAnimationCount=200
 

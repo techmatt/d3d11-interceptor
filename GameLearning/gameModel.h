@@ -7,8 +7,8 @@ struct PredictionEntry
 
     double combinedDist() const
     {
-        //return controllerDist * 100.0 + velocityDist;
-        return controllerDist * 100.0;
+        return controllerDist * 100.0 + velocityDist;
+        //return controllerDist * 100.0;
     }
 
     float poseChainDistSq;

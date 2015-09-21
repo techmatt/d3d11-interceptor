@@ -37,7 +37,7 @@ vector<PredictionEntry> GameModel::candidateTransitions(const ReplayDatabase &re
     for (auto &candidate : candidates)
     {
         const CharacterInstance *nextInstance = characterEntry.findInstanceAtFrame(candidate.first->frameID.delta(1));
-        if (nextInstance != nullptr)
+        if (nextInstance != nullptr && nextInstance->frameID.replayIndex != replays.entries.size() - 1)
         {
             PredictionEntry entry;
             entry.baseFrameID = candidate.first->frameID;

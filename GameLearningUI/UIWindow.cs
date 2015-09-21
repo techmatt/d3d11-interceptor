@@ -188,7 +188,7 @@ namespace UIWindow
 
         private void buttonLoadFrame_Click(object sender, EventArgs e)
         {
-            SendMessage("loadFrame " + textBoxFrameIndex.Text);
+            SendMessage("loadFrame " + textBoxReplayIndex.Text + " " + textBoxFrameIndex.Text);
         }
 
         private void checkBoxAnimationLabel_CheckedChanged(object sender, EventArgs e)

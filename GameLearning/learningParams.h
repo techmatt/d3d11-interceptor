@@ -10,6 +10,10 @@ struct LearningParams
     {
         params.readParameter("datasetDir", datasetDir);
 
+        params.readParameter("maxReplayCount", maxReplayCount);
+
+        params.readParameter("PCAEnergy", PCAEnergy);
+
         params.readParameter("controllerHistorySize", controllerHistorySize);
         params.readParameter("velocityHistorySize", velocityHistorySize);
         params.readParameter("poseHistorySize", poseHistorySize);
@@ -25,12 +29,12 @@ struct LearningParams
         params.readParameter("LSHminiHashCount", LSHminiHashCount);
         params.readParameter("LSHmacroTableCount", LSHmacroTableCount);
 
-        params.readParameter("PCAEnergy", PCAEnergy);
-
         params.readParameter("minObjectIndexCount", minObjectIndexCount);
     }
 
     string datasetDir;
+
+    int maxReplayCount;
 
     double PCAEnergy;
 

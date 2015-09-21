@@ -42,7 +42,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
         state.selectedSignature = util::convertTo<UINT64>(params[1]);
     });
     state.eventMap.registerEvent("loadFrame", [&](const vector<string> &params) {
-        state.curFrame.frameIndex = util::convertTo<int>(params[1]);
+        state.curFrame.replayIndex = util::convertTo<int>(params[1]);
+        state.curFrame.replayIndex = math::clamp(state.curFrame.replayIndex, 0, (int)state.replays.entries.size() - 1);
+        state.curFrame.frameIndex = util::convertTo<int>(params[2]);
         if (state.curFrame.frameIndex < 0 || state.curFrame.frameIndex >= state.replays.entries[state.curFrame.replayIndex].get().replay->frames.size())
         {
             state.curFrame.frameIndex = 0;
@@ -85,6 +87,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
 
 void Vizzer::render(ApplicationData &app)
 {
+    const float targetFPS = 20.0f;
+    //Sleep(DWORD(1000.0f / targetFPS));
+
     timer.frame();
 
     state.eventMap.dispatchEvents(state.ui);
@@ -106,12 +111,14 @@ void Vizzer::render(ApplicationData &app)
     }
     auto &meshes = *meshesPtr;
 
+    const bool useSignatureCorrespondenceDebugColoring = false;
+
     for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
     {
         const UINT64 signature = frame.objectData[meshIndex].signature;
         const SegmentStats &segmentInfo = state.analyzer.segments[signature];
         vec3f color(1.0f, 1.0f, 1.0f);
-        /*if (useSignatureCorrespondenceDebugColoring)
+        if (useSignatureCorrespondenceDebugColoring)
         {
                 
             const int r = util::hash32(signature) & 255;
@@ -119,7 +126,7 @@ void Vizzer::render(ApplicationData &app)
             const int b = util::hash32(signature * 127 + 13) & 255;
             const vec3f sigColor(r / 255.0f, g / 255.0f, b / 255.0f);
             color = math::lerp(sigColor, vec3f(1.0f, 1.0f, 1.0f), 0.5f);
-        }*/
+        }
         if (state.showTrackable)
             if (segmentInfo.trackableSegment())
                 color = vec3f(0.3f, 0.3f, 1.3f);
@@ -228,6 +235,7 @@ void Vizzer::render(ApplicationData &app)
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
+    text.push_back("Replay " + to_string(state.curFrame.replayIndex) + " / " + to_string(state.replays.entries.size()));
     text.push_back("Frame " + to_string(state.curFrame.frameIndex) + " / " + to_string(replay.frames.size()));
     text.push_back("Object count: " + to_string(frame.objectData.size()));
     text.push_back("Selected character: " + to_string(state.curCharacterIndex) + " / " + to_string(state.analyzer.characterSegments.size()));
@@ -256,8 +264,9 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Controller dist: " + to_string(state.gameModelPrediction.controllerDist));
     text.push_back("Velocity dist: " + to_string(state.gameModelPrediction.velocityDist));
 
-    
-    drawText(app, text);
+    const bool useText = true;
+    if (useText)
+        drawText(app, text);
 }
 
 void Vizzer::resize(ApplicationData &app)
@@ -279,8 +288,8 @@ void Vizzer::reloadFrame(ApplicationData &app)
     FrameObjectData *curFrame = state.replays.getFrame(state.curFrame)->frame;
     FrameObjectData *modelFrame = state.replays.getFrame(state.gameModelPredictedCharacterFrame)->frame;
 
-    //makeFrameMeshesBox(app, frame, state.curFrameMeshesBox);
-    //makeFrameMeshesFull(app, frame, state.curFrameMeshesFull);
+    //makeFrameMeshesBox(app, *curFrame, state.curFrameMeshesBox);
+    makeFrameMeshesFull(app, *curFrame, state.curFrameMeshesFull);
     makeFrameMeshesRigidTransform(app, *curFrame, state.curFrameMeshesRigidTransform);
 
     if (modelFrame)
@@ -312,7 +321,9 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         frameDirty = true;
     }
 
-    if (key == KEY_B)
+    bool advanceModel = (key == KEY_B || key == KEY_V);
+    
+    if (advanceModel)
     {
         state.gameModelFrame = state.gameModelFrame.delta(1);
 
@@ -380,7 +391,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 
     int frameDelta = 0;
     if (key == KEY_O) frameDelta = -1;
-    if (key == KEY_P) frameDelta = 1;
+    if (key == KEY_P || key == KEY_V) frameDelta = 1;
 
     if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
 
