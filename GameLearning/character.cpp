@@ -244,6 +244,35 @@ void Character::computePoseChainReversePCA()
     cout << "Pose chain reverse PCA dimension: " << poseChainReversePCADimension << endl;
 }
 
+/*void Character::saveControllerCurve()
+{
+    const string curveDir = learningParams().datasetDir + "curves/";
+    const string curveFile = curveDir + "controller" + to_string(characterIndex) + ".csv";
+
+    if (util::fileExists(curveFile))
+    {
+        cout << "Controller curve already exported" << endl;
+    }
+    else
+    {
+        util::makeDirectory(curveDir);
+        ofstream file(curveFile);
+
+        file << "pose0,pose1,animation0,animation1" << endl;
+
+        for (int sampleIndex = 0; sampleIndex < allInstancesVec.size(); sampleIndex++)
+        {
+            const CharacterInstance &instance = *allInstancesVec[sampleIndex];
+            file << instance.poseDescriptor[0] << "," << instance.poseDescriptor[1] << ",";
+            //file << instance.reducedPoseChainDescriptor[0] << "," << instance.reducedPoseChainDescriptor[1];
+            file << endl;
+        }
+    }
+
+    posePCADimension = (int)posePCA.reducedDimension(learningParams().PCAEnergy);
+    cout << "Pose PCA dimension: " << posePCADimension << endl;
+}*/
+
 void Character::saveAnimationCurve()
 {
     const string curveDir = learningParams().datasetDir + "curves/";

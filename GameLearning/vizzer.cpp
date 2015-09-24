@@ -88,7 +88,7 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
 void Vizzer::render(ApplicationData &app)
 {
     const float targetFPS = 20.0f;
-    //Sleep(DWORD(1000.0f / targetFPS));
+    Sleep(DWORD(1000.0f / targetFPS));
 
     timer.frame();
 
@@ -111,7 +111,7 @@ void Vizzer::render(ApplicationData &app)
     }
     auto &meshes = *meshesPtr;
 
-    const bool useSignatureCorrespondenceDebugColoring = false;
+    const bool useSignatureCorrespondenceDebugColoring = true;
 
     for (int meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
     {
@@ -209,7 +209,7 @@ void Vizzer::render(ApplicationData &app)
         anchorAnimationInstanceCount = (int)anchorInstance->animation.animation->instances.size();
     }*/
 
-    /*if (GetAsyncKeyState(VK_F4))
+    if (GetAsyncKeyState(VK_F4))
     {
         GameState gameState;
         gameState.load(state.curFrame, state.replays, state.characters);
@@ -231,7 +231,7 @@ void Vizzer::render(ApplicationData &app)
             file << "0";
             file << endl;
         }
-    }*/
+    }
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
@@ -264,7 +264,7 @@ void Vizzer::render(ApplicationData &app)
     text.push_back("Controller dist: " + to_string(state.gameModelPrediction.controllerDist));
     text.push_back("Velocity dist: " + to_string(state.gameModelPrediction.velocityDist));
 
-    const bool useText = true;
+    const bool useText = false;
     if (useText)
         drawText(app, text);
 }

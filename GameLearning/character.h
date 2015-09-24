@@ -208,6 +208,7 @@ private:
     int poseChainReverseFeatureCount() const;
 
     void saveAnimationCurve();
+    void saveControllerCurve();
 
     void saveAnimations(const string &filename) const;
     void loadAnimations(const string &filename);

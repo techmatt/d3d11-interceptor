@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{b1023fa1-dcdd-4642-a611-7700fb97822c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{1e6e8584-c28c-4717-94d0-efd4f536a471}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Learning">
+      <UniqueIdentifier>{13827184-1dda-49a8-ac44-01919881e9db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="mLibInclude.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="vizzer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="appState.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="learningParams.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="LSH.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mLibSource.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="vizzer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="learningParams.txt">
+      <Filter>Core</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
