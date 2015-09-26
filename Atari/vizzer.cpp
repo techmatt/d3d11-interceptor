@@ -32,15 +32,22 @@ void Vizzer::init(ApplicationData &app)
 
     state.aleBillboard = D3D11TriMesh(app.graphics, ml::Shapesf::rectangleZ(vec2f(-50.0f, -50.0f), vec2f(50.0f, 50.0f)));
 
-    const ColourPalette &palette = state.ale.theOSystem->colourPalette();
+    state.processor.go(state);
+    /*const ColourPalette &palette = state.ale.theOSystem->colourPalette();
 
     string replayDir = learningParams().ROMDatasetDir + "replays/";
     Replay replay;
-    replay.load(replayDir + "1149494339278655681.dat");
+    replay.load(replayDir + "15414451539455309733.dat");
+    //replay.load(replayDir + "1149494339278655681.dat");
     //replay.frames[0]->image.toBmp(palette, state.aleScreenBmp);
     
-    state.segmentManager.recordSegments(palette, *replay.frames[0]);
-    state.segmentManager.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");
+    for (ReplayFrame *frame : replay.frames)
+    {
+        if (frame->index % 100 == 0)
+            cout << "Frame " << frame->index << " / " << replay.frames.size() << endl;
+        state.segmentManager.recordSegments(palette, *frame);
+    }
+    state.segmentManager.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");*/
 
     registerEventHandlers(app);
 }

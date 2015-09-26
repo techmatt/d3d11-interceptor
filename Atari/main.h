@@ -18,6 +18,8 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "atariUtil.h"
 #include "replay.h"
 #include "segmentManager.h"
+#include "replayDatabase.h"
+#include "databaseProcessor.h"
 
 #include "appState.h"
 #include "vizzer.h"

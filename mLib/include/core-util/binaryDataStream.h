@@ -215,6 +215,17 @@ inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(Bina
 	}
 	return s;
 }
+
+template<class BinaryDataBuffer, class BinaryDataCompressor, class T>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const std::set<T>& l) {
+    s << (UINT64)l.size();
+    s.reserve(sizeof(T)*l.size());
+    for (const T &entry : l) {
+        s << entry;
+    }
+    return s;
+}
+
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator<<(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const std::string& l) {
 	s << (UINT64)l.size();
@@ -302,17 +313,31 @@ inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(Bina
 }
 
 template<class BinaryDataBuffer, class BinaryDataCompressor, class T>
-inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, const std::list<T>& l) {
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, std::list<T>& l) {
 	UINT64 size;
 	s >> size;
 	l.clear();
 	for (size_t i = 0; i < size; i++) {
 		T curr;
 		s >> curr;
-		l.push_back(l);
+		l.push_back(curr);
 	}
 	return s;
 }
+
+template<class BinaryDataBuffer, class BinaryDataCompressor, class T>
+inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, std::set<T>& l) {
+    UINT64 size;
+    s >> size;
+    l.clear();
+    for (size_t i = 0; i < size; i++) {
+        T curr;
+        s >> curr;
+        l.insert(curr);
+    }
+    return s;
+}
+
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& s, std::string& v) {
 	UINT64 size;

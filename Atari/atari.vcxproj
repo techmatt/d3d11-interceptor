@@ -14,6 +14,7 @@
     <ClInclude Include="appState.h" />
     <ClInclude Include="atariUtil.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="databaseProcessor.h" />
     <ClInclude Include="learningParams.h" />
     <ClInclude Include="LSH.h" />
     <ClInclude Include="main.h" />
@@ -25,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atariUtil.cpp" />
+    <ClCompile Include="databaseProcessor.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -76,7 +78,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>./;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;../mLib/include;../mLib/external/include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;..\..\mLibExternal\libsWindows\lib64;C:\Code\Arcade-Learning-Environment-0.5.0\bin\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;..\..\mLibExternal\libsWindows\lib64;C:\Code\Arcade-Learning-Environment-0.5.0\bin\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\binLearning\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

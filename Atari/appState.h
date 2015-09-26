@@ -6,6 +6,11 @@ struct AppState
 
     }
 
+    const ColourPalette& getPalette() const
+    {
+        return ale.theOSystem->colourPalette();
+    }
+
     ALEInterface ale;
     Bitmap aleScreenBmp;
 
@@ -15,6 +20,8 @@ struct AppState
     D3D11AssetRenderer assets;
 
     SegmentManager segmentManager;
+
+    DatabaseProcessor processor;
 
     Replay replay;
 

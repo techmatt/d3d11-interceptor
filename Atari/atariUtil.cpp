@@ -1,6 +1,32 @@
 
 #include "main.h"
 
+int AtariUtil::maskDiff(const set<vec2s> &a, const set<vec2s> &b)
+{
+    int diffCount = 0;
+    for (vec2s aValue : a)
+    {
+        if (b.count(aValue) == 0)
+            diffCount++;
+    }
+    for (vec2s bValue : b)
+    {
+        if (a.count(bValue) == 0)
+            diffCount++;
+    }
+    return diffCount;
+}
+
+UINT64 AtariUtil::animationHash(const set<vec2s> &mask, BYTE color)
+{
+    UINT64 result = util::hash32(color);
+    for (vec2s v : mask)
+    {
+        result += util::hash32(v);
+    }
+    return result;
+}
+
 vec4uc AtariUtil::getAtariColor(BYTE color, const ColourPalette &palette)
 {
     int r, g, b;
