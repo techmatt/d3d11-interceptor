@@ -1,14 +1,26 @@
 
 #include "main.h"
 
+void SegmentManager::init()
+{
+    for (const string &s : util::getFileLines(learningParams().ROMDatasetDir + "colorBlacklist.txt", 3))
+    {
+        auto parts = util::split(s, ' ');
+        if (parts.size() == 3)
+        {
+            colorBlacklist.push_back(vec4uc(convert::toInt(parts[0]), convert::toInt(parts[1]), convert::toInt(parts[2]), 255));
+        }
+    }
+}
+
 void SegmentManager::save(const string &filename) const
 {
     BinaryDataStreamFile file(filename, true);
 
-    UINT64 animationCount = animationsByHash.size();
+    UINT64 animationCount = segmentsByHash.size();
     file << processedReplays << animationCount;
 
-    for (auto &a : animationsByHash)
+    for (auto &a : segmentsByHash)
     {
         file << a.second->hash;
         file << a.second->dimensions;
@@ -30,8 +42,8 @@ void SegmentManager::load(const string &filename)
 
     BinaryDataStreamFile file(filename, false);
 
-    animationsByColor.clear();
-    animationsByHash.clear();
+    segmentsByColor.clear();
+    segmentsByHash.clear();
 
     UINT64 animationCount;
     file >> processedReplays >> animationCount;
@@ -44,72 +56,40 @@ void SegmentManager::load(const string &filename)
         file >> newAnimation->color;
         file >> newAnimation->count;
         file >> newAnimation->mask;
-        animationsByColor[newAnimation->color].push_back(newAnimation);
-        animationsByHash[newAnimation->hash] = newAnimation;
+        segmentsByColor[newAnimation->color].push_back(newAnimation);
+        segmentsByHash[newAnimation->hash] = newAnimation;
+        newAnimation->index = (int)animationIndex;
     }
 
     file.closeStream();
 }
 
-Bitmap SegmentManager::makeAnimationViz(const ColourPalette &palette, BYTE color)
+void SegmentManager::saveVizColors(const ColourPalette &palette, const string &dir)
 {
-    const vec4uc colorRGB = AtariUtil::getAtariColor(color, palette);
-
-    const vector<SegmentAnimation*> &animations = animationsByColor[color];
-
-    vec2s maxDimensions;
-    for (SegmentAnimation *animation : animations)
-        maxDimensions = vec2s(max(maxDimensions.x, animation->dimensions.x), max(maxDimensions.y, animation->dimensions.y));
-
-    int padding = 1;
-    vec2s cellDims = maxDimensions + vec2s(padding * 2, padding * 2);
-
-    const int maxImageWidth = 512;
-
-    int XBlocks = min((int)animations.size(), maxImageWidth / cellDims.x);
-    
-    const int YBlocks = (int)ceil((int)animations.size() / XBlocks);
-
-    Bitmap bmp(XBlocks * cellDims.x, YBlocks * cellDims.y);
-    bmp.setPixels(vec4uc(0, 0, 0, 255));
-
-    int animationIndex = 0;
-    for (int yBlock = 0; yBlock < YBlocks; yBlock++)
-    {
-        for (int xBlock = 0; xBlock < XBlocks; xBlock++)
-        {
-            if (animationIndex >= animations.size())
-                continue;
-
-            for (int xRect = 0; xRect < maxDimensions.x; xRect++)
-                for (int yRect = 0; yRect < maxDimensions.y; yRect++)
-                    bmp(xBlock * cellDims.x + padding + xRect, yBlock * cellDims.y + padding + yRect) = vec4uc(255, 0, 255, 255);
-
-            for (vec2s v : animations[animationIndex++]->mask)
-            {
-                bmp(xBlock * cellDims.x + padding + v.x, yBlock * cellDims.y + padding + v.y) = colorRGB;
-            }
-        }
-    }
-
-    return bmp;
-}
-
-void SegmentManager::saveAllViz(const ColourPalette &palette, const string &dir)
-{
-    cout << "Saving all visualiations to " << dir << endl;
+    cout << "Saving visualiation by color to " << dir << endl;
     util::makeDirectory(dir);
-    for (auto &p : animationsByColor)
+    for (auto &p : segmentsByColor)
     {
         if (p.second.size() > 0)
         {
-            const Bitmap bmp = makeAnimationViz(palette, p.first);
+            const Bitmap bmp = AtariUtil::makeSegmentViz(palette, p.second);
             LodePNG::save(bmp, dir + to_string(p.first) + ".png");
         }
     }
 }
 
-void SegmentManager::recordSegments(const ColourPalette &palette, const ReplayFrame &frame)
+void SegmentManager::saveVizObjects(const ColourPalette &palette, const string &dir)
+{
+    cout << "Saving visualiation by object to " << dir << endl;
+    util::makeDirectory(dir);
+    for (GameObject *o : objects)
+    {
+        const Bitmap bmp = AtariUtil::makeSegmentViz(palette, o->segments);
+        LodePNG::save(bmp, dir + to_string(o->index) + ".png");
+    }
+}
+
+void SegmentManager::recordAndAnnotateSegments(const ColourPalette &palette, ReplayFrame &frame)
 {
     //Bitmap temp;
     //frame.image.toBmp(palette, temp);
@@ -126,22 +106,25 @@ void SegmentManager::recordSegments(const ColourPalette &palette, const ReplayFr
     for (BYTE color : allColors)
     {
         const vec4uc RGBColor = AtariUtil::getAtariColor(color, palette);
-        recordSegments(frame, color);
+        if (util::contains(colorBlacklist, RGBColor))
+            continue;
+
+        recordAndAnnotateSegments(frame, color);
     }
 }
 
 SegmentAnimation* SegmentManager::findExactMask(const set<vec2s> &mask, BYTE color)
 {
     const UINT64 hash = AtariUtil::animationHash(mask, color);
-    if (animationsByHash.count(hash) == 0)
+    if (segmentsByHash.count(hash) == 0)
         return nullptr;
-    return animationsByHash.find(hash)->second;
+    return segmentsByHash.find(hash)->second;
 }
 
 pair<SegmentAnimation*, int> SegmentManager::findClosestMask(const set<vec2s> &mask, BYTE color)
 {
     pair<SegmentAnimation*, int> result = pair<SegmentAnimation*, int>(nullptr, 100000);
-    for (auto &p : animationsByColor[color])
+    for (auto &p : segmentsByColor[color])
     {
         const int diff = AtariUtil::maskDiff(p->mask, mask);
         if (diff < result.second)
@@ -150,7 +133,7 @@ pair<SegmentAnimation*, int> SegmentManager::findClosestMask(const set<vec2s> &m
     return result;
 }
 
-void SegmentManager::recordSegments(const ReplayFrame &frame, BYTE color)
+void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
 {
     scratchpad.setValues(0);
     for (auto &p : frame.image.data)
@@ -161,22 +144,19 @@ void SegmentManager::recordSegments(const ReplayFrame &frame, BYTE color)
             if (scratchpad(coord) == 1)
                 continue;
 
-            const set<vec2s> mask = extractMask(frame, coord);
+            vec2s maskOrigin;
+            const set<vec2s> mask = extractMask(frame, coord, maskOrigin);
 
             if (mask.size() == 0)
                 continue;
 
             //pair<SegmentAnimation*, int> bestFit = findClosestMask(mask, color);
             SegmentAnimation* match = findExactMask(mask, color);
-            if (match != nullptr)
-            {
-                match->count++;
-            }
-            else
+            if (match == nullptr)
             {
                 SegmentAnimation *newAnimation = new SegmentAnimation();
                 newAnimation->color = color;
-                newAnimation->count = 1;
+                newAnimation->count = 0;
                 newAnimation->mask = mask;
                 newAnimation->dimensions = vec2s(0, 0);
                 for (vec2s v : mask)
@@ -187,14 +167,19 @@ void SegmentManager::recordSegments(const ReplayFrame &frame, BYTE color)
                 newAnimation->dimensions += vec2s(1, 1);
                 newAnimation->hash = AtariUtil::animationHash(mask, color);
 
-                animationsByColor[color].push_back(newAnimation);
-                animationsByHash[newAnimation->hash] = newAnimation;
+                segmentsByColor[color].push_back(newAnimation);
+                segmentsByHash[newAnimation->hash] = newAnimation;
+
+                match = newAnimation;
             }
+
+            match->count++;
+            frame.annotations.push_back(ReplayAnnotation(maskOrigin, match->hash));
         }
     }
 }
 
-set<vec2s> SegmentManager::extractMask(const ReplayFrame &frame, const vec2s &seed)
+set<vec2s> SegmentManager::extractMask(const ReplayFrame &frame, const vec2s &seed, vec2s &maskOriginOut)
 {
     const BYTE color = frame.image.data(seed);
 
@@ -238,6 +223,8 @@ set<vec2s> SegmentManager::extractMask(const ReplayFrame &frame, const vec2s &se
         visit(baseCoord + vec2s(1, 1));
         visit(baseCoord + vec2s(-1, 1));
     }
+
+    maskOriginOut = minCoord;
 
     set<vec2s> result;
     for (vec2s v : mask)

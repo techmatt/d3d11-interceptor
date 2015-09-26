@@ -64,3 +64,45 @@ Action AtariUtil::actionFromKeyboard()
     
     return a;
 }
+
+Bitmap AtariUtil::makeSegmentViz(const ColourPalette &palette, const vector<SegmentAnimation*> &segments)
+{
+    vec2s maxDimensions;
+    for (SegmentAnimation *segment : segments)
+        maxDimensions = vec2s(max(maxDimensions.x, segment->dimensions.x), max(maxDimensions.y, segment->dimensions.y));
+
+    int padding = 1;
+    vec2s cellDims = maxDimensions + vec2s(padding * 2, padding * 2);
+
+    const int maxImageWidth = 512;
+
+    int XBlocks = min((int)segments.size(), maxImageWidth / cellDims.x);
+
+    const int YBlocks = (int)ceil((int)segments.size() / XBlocks);
+
+    Bitmap bmp(XBlocks * cellDims.x, YBlocks * cellDims.y);
+    bmp.setPixels(vec4uc(0, 0, 0, 255));
+
+    int segmentIndex = 0;
+    for (int yBlock = 0; yBlock < YBlocks; yBlock++)
+    {
+        for (int xBlock = 0; xBlock < XBlocks; xBlock++)
+        {
+            if (segmentIndex >= segments.size())
+                continue;
+
+            for (int xRect = 0; xRect < maxDimensions.x; xRect++)
+                for (int yRect = 0; yRect < maxDimensions.y; yRect++)
+                    bmp(xBlock * cellDims.x + padding + xRect, yBlock * cellDims.y + padding + yRect) = vec4uc(255, 0, 255, 255);
+
+            const vec4uc colorRGB = AtariUtil::getAtariColor(segments[segmentIndex]->color, palette);
+
+            for (vec2s v : segments[segmentIndex++]->mask)
+            {
+                bmp(xBlock * cellDims.x + padding + v.x, yBlock * cellDims.y + padding + v.y) = colorRGB;
+            }
+        }
+    }
+
+    return bmp;
+}

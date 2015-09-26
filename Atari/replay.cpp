@@ -1,6 +1,14 @@
 
 #include "main.h"
 
+void Replay::clearImages()
+{
+    for (ReplayFrame *frame : frames)
+    {
+        frame->image.data.free();
+    }
+}
+
 void Replay::save(const string &filename) const
 {
     BinaryDataStreamVector stream;
@@ -12,7 +20,9 @@ void Replay::save(const string &filename) const
         int reward = frame->reward;
         stream << action;
         stream << reward;
+
         stream.writePrimitiveContainer(frame->image.data);
+        stream.writePrimitiveVector(frame->annotations);
     }
     
     const vector<BYTE> &data = stream.getBuffer().getData();
@@ -42,6 +52,7 @@ void Replay::load(const string &filename)
         stream >> reward;
 
         stream.readPrimitiveContainer(frame->image.data);
+        stream.readPrimitiveVector(frame->annotations);
 
         frame->index = i;
         frames[i] = frame;

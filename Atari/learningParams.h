@@ -13,6 +13,8 @@ struct LearningParams
         
         params.readParameter("ROMName", ROMName);
 
+        params.readParameter("objectMotionRadius", objectMotionRadius);
+
         ROMDatasetDir = datasetDir + ROMName + "/";
     }
 
@@ -20,8 +22,9 @@ struct LearningParams
     string datasetDir;
     string ROMDatasetDir;
     
-
     string ROMName;
+
+    int objectMotionRadius;
 };
 
 extern LearningParams g_learningParams;

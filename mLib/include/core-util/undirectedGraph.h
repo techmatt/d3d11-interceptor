@@ -109,6 +109,20 @@ public:
         return result;
     }
 
+    bool hasEdge(UINT n0, UINT n1)
+    {
+        if (n0 > n1) std::swap(n0, n1);
+        const Node &node0 = _nodes[n0];
+        const UINT edgeCount = (UINT)node0.edges.size();
+        for (UINT edgeIndex = 0; edgeIndex < edgeCount; edgeIndex++)
+        {
+            Edge &edge = _edges[node0.edges[edgeIndex]];
+            if (edge.node0 == n0 && edge.node1 == n1)
+                return true;
+        }
+        return false;
+    }
+
     Edge& getEdge(UINT n0, UINT n1)
     {
         if (n0 > n1) std::swap(n0, n1);

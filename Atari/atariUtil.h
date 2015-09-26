@@ -1,4 +1,6 @@
 
+struct SegmentAnimation;
+
 class AtariUtil
 {
 public:
@@ -6,4 +8,5 @@ public:
     static int maskDiff(const set<vec2s> &a, const set<vec2s> &b);
     static Action actionFromKeyboard();
     static vec4uc getAtariColor(BYTE color, const ColourPalette &palette);
+    static Bitmap makeSegmentViz(const ColourPalette &palette, const vector<SegmentAnimation*> &segments);
 };

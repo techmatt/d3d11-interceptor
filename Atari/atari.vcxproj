@@ -21,6 +21,7 @@
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="replay.h" />
     <ClInclude Include="replayDatabase.h" />
+    <ClInclude Include="segmentAnalyzer.h" />
     <ClInclude Include="segmentManager.h" />
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
@@ -34,6 +35,7 @@
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="replay.cpp" />
     <ClCompile Include="replayDatabase.cpp" />
+    <ClCompile Include="segmentAnalyzer.cpp" />
     <ClCompile Include="segmentManager.cpp" />
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>

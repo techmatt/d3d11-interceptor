@@ -87,7 +87,7 @@ void Vizzer::render(ApplicationData &app)
     {
         state.replay.romName = learningParams().ROMName;
 
-        string dir = learningParams().ROMDatasetDir + "replays/";
+        string dir = learningParams().ROMDatasetDir + "replaysRaw/";
         util::makeDirectory(dir);
         state.replay.save(dir + to_string(state.replay.id) + ".dat");
         state.replay = Replay();

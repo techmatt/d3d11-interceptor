@@ -19,6 +19,7 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "replay.h"
 #include "segmentManager.h"
 #include "replayDatabase.h"
+#include "segmentAnalyzer.h"
 #include "databaseProcessor.h"
 
 #include "appState.h"

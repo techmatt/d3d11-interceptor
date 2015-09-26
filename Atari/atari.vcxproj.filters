@@ -48,6 +48,9 @@
     <ClInclude Include="databaseProcessor.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="segmentAnalyzer.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -72,6 +75,9 @@
       <Filter>Learning</Filter>
     </ClCompile>
     <ClCompile Include="databaseProcessor.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="segmentAnalyzer.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>
