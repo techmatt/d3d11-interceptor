@@ -12,6 +12,7 @@
 
 #include "mLibCore.h"
 #include "mLibLodePNG.h"
+#include "mLibZLib.h"
 
 #include "mLibD3D11.h"
 #include "mLibD3D11Font.h"

@@ -16,12 +16,16 @@ public:
     static void CompressStreamToMemory(const std::vector<BYTE> &decompressedStream, std::vector<BYTE> &compressedStream, bool writeHeader);
 
     static void CompressStreamToMemory(const BYTE *decompressedStream, UINT64 decompressedStreamLength, std::vector<BYTE> &compressedStream, bool writeHeader);
+
+    static void CompressStreamToFile(const BYTE *decompressedStream, UINT64 decompressedStreamLength, const std::string &filename);
     
     static std::vector<BYTE> DecompressStreamFromMemory(const std::vector<BYTE> &compressedStream);
 
     static void DecompressStreamFromMemory(const std::vector<BYTE> &compressedStream, std::vector<BYTE> &decompressedStream);
 
     static void DecompressStreamFromMemory(const BYTE *compressedStream, UINT64 compressedStreamLength, BYTE *decompressedStream, UINT64 decompressedStreamLength);
+
+    static std::vector<BYTE> DecompressStreamFromFile(const std::string &filename);
 
 };
 

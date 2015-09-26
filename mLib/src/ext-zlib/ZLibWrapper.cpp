@@ -38,7 +38,7 @@ void ZLibWrapper::CompressStreamToMemory(const BYTE *decompressedStream, UINT64 
     zstream.avail_out = (uInt)decompressedStreamLength + 64;
 
     int headerOffset = sizeof(UINT64);
-    if (!writeHeader)	headerOffset = 0;
+    if (!writeHeader) headerOffset = 0;
     zstream.next_out = &compressedStream[0] + headerOffset;
 
     const int Level = 7; // 1 (fastest speed) to 9 (best compression)
@@ -54,7 +54,10 @@ void ZLibWrapper::CompressStreamToMemory(const BYTE *decompressedStream, UINT64 
         ((UINT64*)&compressedStream[0])[0] = decompressedStreamLength;
     }
 
-    compressedStream.resize(zstream.total_out + sizeof(UINT64));
+    int compressedSize = zstream.total_out;
+    if (writeHeader)
+        compressedSize += sizeof(UINT64);
+    compressedStream.resize(compressedSize);
 }
 
 std::vector<BYTE> ZLibWrapper::DecompressStreamFromMemory(const std::vector<BYTE> &compressedStream)
@@ -79,6 +82,32 @@ void ZLibWrapper::DecompressStreamFromMemory(const BYTE *compressedStream, UINT6
     int result = uncompress(decompressedStream, &finalByteCount, compressedStream, (uLong)compressedStreamLength);
     if (result != Z_OK) throw MLIB_EXCEPTION("uncompress failed");
     if (finalByteCount != decompressedStreamLength) throw MLIB_EXCEPTION("Decompression returned invalid length");
+}
+
+void ZLibWrapper::CompressStreamToFile(const BYTE *decompressedStream, UINT64 decompressedStreamLength, const std::string &filename)
+{
+    FILE *file = util::checkedFOpen(filename.c_str(), "wb");
+    std::vector<BYTE> compressedStream = CompressStreamToMemory(decompressedStream, decompressedStreamLength, true);
+    //CompressStreamToMemory(const BYTE *decompressedStream, UINT64 decompressedStreamLength, std::vector<BYTE> &compressedStream, bool writeHeader)
+    
+    size_t length = compressedStream.size();
+    util::checkedFWrite(&length, sizeof(size_t), 1, file);
+    util::checkedFWrite(compressedStream.data(), sizeof(BYTE) * compressedStream.size(), 1, file);
+    fclose(file);
+}
+
+std::vector<BYTE> ZLibWrapper::DecompressStreamFromFile(const std::string &filename)
+{
+    FILE *file = util::checkedFOpen(filename.c_str(), "rb");
+
+    size_t length = -1;
+    util::checkedFRead(&length, sizeof(size_t), 1, file);
+
+    std::vector<BYTE> compressedStream(length);
+    util::checkedFRead(compressedStream.data(), sizeof(BYTE) * compressedStream.size(), 1, file);
+    fclose(file);
+
+    return DecompressStreamFromMemory(compressedStream);
 }
 
 }  // namespace ml

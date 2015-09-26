@@ -27,10 +27,20 @@ void Vizzer::init(ApplicationData &app)
 
     //state.ui.init("GameLearningUI.exe", "GameLearningUI");
     
-    state.ale.setBool("color_averaging", true);
-    state.ale.loadROM(R"(C:\Code\Arcade-Learning-Environment-0.5.0\roms\ms_pacman.bin)");
+    state.ale.setBool("color_averaging", false);
+    state.ale.loadROM(learningParams().ROMDir + learningParams().ROMName + ".bin");
 
     state.aleBillboard = D3D11TriMesh(app.graphics, ml::Shapesf::rectangleZ(vec2f(-50.0f, -50.0f), vec2f(50.0f, 50.0f)));
+
+    const ColourPalette &palette = state.ale.theOSystem->colourPalette();
+
+    string replayDir = learningParams().ROMDatasetDir + "replays/";
+    Replay replay;
+    replay.load(replayDir + "1149494339278655681.dat");
+    //replay.frames[0]->image.toBmp(palette, state.aleScreenBmp);
+    
+    state.segmentManager.recordSegments(palette, *replay.frames[0]);
+    state.segmentManager.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");
 
     registerEventHandlers(app);
 }
@@ -53,63 +63,38 @@ void Vizzer::render(ApplicationData &app)
 
     ActionVect legalActions = state.ale.getMinimalActionSet();
 
-    bool left = GetAsyncKeyState(VK_LEFT) != 0;
-    bool right = GetAsyncKeyState(VK_RIGHT) != 0;
-    bool up = GetAsyncKeyState(VK_UP) != 0;
-    bool down = GetAsyncKeyState(VK_DOWN) != 0;
-    bool fire = GetAsyncKeyState(VK_SPACE) != 0;
+    ReplayFrame *frame = new ReplayFrame();
 
-    //Action a = util::randomElement(legalActions);
-
-    Action a = PLAYER_A_NOOP;
-
-    if (fire) a = PLAYER_A_FIRE;
-    if (up) a = PLAYER_A_UP;
-    if (right) a = PLAYER_A_RIGHT;
-    if (left) a = PLAYER_A_LEFT;
-    if (down) a = PLAYER_A_DOWN;
-    if (right && up) a = PLAYER_A_UPRIGHT;
-    if (left && up) a = PLAYER_A_UPLEFT;
-    if (right && down) a = PLAYER_A_DOWNRIGHT;
-    if (left && down) a = PLAYER_A_DOWNLEFT;
-    if (up && fire) a = PLAYER_A_UPFIRE;
-    if (right && fire) a = PLAYER_A_RIGHTFIRE;
-    if (left && fire) a = PLAYER_A_LEFTFIRE;
-    if (down && fire) a = PLAYER_A_DOWNFIRE;
-    if (left && up && fire) a = PLAYER_A_UPLEFTFIRE;
-    if (right && up && fire) a = PLAYER_A_UPRIGHTFIRE;
-    if (down && right && fire) a = PLAYER_A_DOWNRIGHTFIRE;
-    if (left && down && fire) a = PLAYER_A_DOWNLEFTFIRE;
-
-    float reward = state.ale.act(a);
-
-    if (state.ale.game_over())
-    {
-        state.ale.reset_game();
-    }
+    //frame->action = util::randomElement(legalActions);
+    frame->action = AtariUtil::actionFromKeyboard();
+    
+    frame->reward = state.ale.act(frame->action);
 
     const ALEScreen &screen = state.ale.getScreen();
     const ColourPalette &palette = state.ale.theOSystem->colourPalette();
 
-    if (state.aleScreen.getWidth() != screen.width())
-        state.aleScreen.allocate(screen.width(), screen.height());
+    frame->image.fromScreen(screen);
+    state.replay.frames.push_back(frame);
 
-    for (auto &p : state.aleScreen)
+    if (state.ale.game_over())
     {
-        int r, g, b;
-        palette.getRGB(screen.get(state.aleScreen.getHeight() - 1 - p.y, p.x), r, g, b);
-        p.value = vec4uc(r, g, b, 255);
+        state.replay.romName = learningParams().ROMName;
 
-        if (p.x == 0 || p.y == 0 || p.x == state.aleScreen.getWidth() - 1 || p.y == state.aleScreen.getHeight() - 1)
-            p.value = vec4uc(255, 255, 255, 255);
+        string dir = learningParams().ROMDatasetDir + "replays/";
+        util::makeDirectory(dir);
+        state.replay.save(dir + to_string(state.replay.id) + ".dat");
+        state.replay = Replay();
+        state.ale.reset_game();
     }
 
-    state.aleTexture.load(app.graphics, state.aleScreen);
+    frame->image.toBmp(palette, state.aleScreenBmp);
+
+    state.aleTexture.load(app.graphics, state.aleScreenBmp);
     state.aleTexture.bind();
 
     state.assets.renderMesh(state.aleBillboard, state.camera.getCameraPerspective());
 
-    //LodePNG::save(state.aleScreen, "debug.png");
+    //LodePNG::save(state.aleScreenBmp, "debug.png");
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));

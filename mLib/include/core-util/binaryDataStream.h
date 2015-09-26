@@ -5,6 +5,8 @@
 namespace ml
 {
 
+template<typename T> class Grid2;
+
 template<class BinaryDataBuffer, class BinaryDataCompressor>
 class BinaryDataStream {
 public:
@@ -71,6 +73,16 @@ public:
     }
 
     template<class T>
+    void writePrimitiveContainer(const Grid2<T> &g)
+    {
+        const size_t dimX = g.getDimX();
+        const size_t dimY = g.getDimY();
+        writeData(dimX);
+        writeData(dimY);
+        writeData((const BYTE *)g.getPointer(), sizeof(T) * dimX * dimY);
+    }
+
+    template<class T>
     void readPrimitiveVector(std::vector<T> &v)
     {
         size_t size;
@@ -78,6 +90,16 @@ public:
         v.clear();
         v.resize(size);
         readData((BYTE *)v.data(), sizeof(T) * v.size());
+    }
+
+    template<class T>
+    void readPrimitiveContainer(Grid2<T> &g)
+    {
+        size_t dimX, dimY;
+        readData(&dimX);
+        readData(&dimY);
+        g.allocate(dimX, dimY);
+        readData((BYTE *)g.getPointer(), sizeof(T) * dimX * dimY);
     }
 
 	//! clears the read offset: copies all data to the front of the data array and frees all unnecessary memory
@@ -107,6 +129,11 @@ public:
 	void flush() {
 		m_DataBuffer.flushBufferStream();
 	}
+
+    const BinaryDataBuffer& getBuffer() const
+    {
+        return m_DataBuffer;
+    }
 private:
 	BinaryDataBuffer		m_DataBuffer;
 	BinaryDataCompressor	m_DataCompressor;

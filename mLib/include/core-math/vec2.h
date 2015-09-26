@@ -148,10 +148,9 @@ public:
 	}
 
 	inline bool operator<(const vec2& other) const {
-		if ((x < other.x) && (y < other.y))
-			return true;
-
-		return false;
+        if (x == other.x)
+            return y < other.y;
+        return x < other.x;
 	}
 
 	inline T lengthSq() const {
@@ -266,6 +265,7 @@ template <class T> inline std::istream& operator>>(std::istream& s, vec2<T>& v) 
 typedef vec2<double> vec2d;
 typedef vec2<float> vec2f;
 typedef vec2<int> vec2i;
+typedef vec2<short> vec2s;
 typedef vec2<unsigned int> vec2ui;
 typedef vec2<unsigned char> vec2uc;
 typedef vec2<UINT64> vec2ul;

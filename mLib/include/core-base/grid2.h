@@ -226,6 +226,16 @@ namespace ml
             return (*this)(coord.x, coord.y);
         }
 
+        inline T& operator() (const vec2s &coord)
+        {
+            return (*this)(coord.x, coord.y);
+        }
+
+        inline const T& operator() (const vec2s &coord) const
+        {
+            return (*this)(coord.x, coord.y);
+        }
+
 		inline size_t getDimX() const
 		{
 			return m_dimX;

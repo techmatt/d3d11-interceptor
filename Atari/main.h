@@ -15,5 +15,9 @@ typedef ColorImageR8G8B8A8 Bitmap;
 
 #include "LSH.h"
 
+#include "atariUtil.h"
+#include "replay.h"
+#include "segmentManager.h"
+
 #include "appState.h"
 #include "vizzer.h"
