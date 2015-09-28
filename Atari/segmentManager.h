@@ -6,8 +6,10 @@ struct GameObject
     GameObject()
     {
         index = -1;
+        colorSignature = AtariUtil::randomSignatureColor();
     }
     int index;
+    vec4uc colorSignature;
     vector<SegmentAnimation*> segments;
 };
 
@@ -74,6 +76,7 @@ private:
     set<vec2s> extractMask(const ReplayFrame &frame, const vec2s &seed, vec2s &maskOriginOut);
     pair<SegmentAnimation*, int> findClosestMask(const set<vec2s> &mask, BYTE color);
     SegmentAnimation* findExactMask(const set<vec2s> &mask, BYTE color);
+    SegmentAnimation* findExactMask(UINT64 segmentHash);
 
     //
     // utility
@@ -82,4 +85,5 @@ private:
 
     Grid2<BYTE> scratchpad;
     vector<vec4uc> colorBlacklist;
+    unordered_set<UINT64> segmentBlacklist;
 };

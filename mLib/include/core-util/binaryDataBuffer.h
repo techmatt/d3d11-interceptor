@@ -190,6 +190,7 @@ public:
 	}
 
 	void readData(BYTE* result, size_t size) {
+        if (size == 0) return;
 		MLIB_ASSERT(m_readOffset + size <= m_Data.size());
 
 		memcpy(result, &m_Data[0] + m_readOffset, size);

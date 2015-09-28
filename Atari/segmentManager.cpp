@@ -11,6 +11,19 @@ void SegmentManager::init()
             colorBlacklist.push_back(vec4uc(convert::toInt(parts[0]), convert::toInt(parts[1]), convert::toInt(parts[2]), 255));
         }
     }
+
+    const string filename = learningParams().ROMDatasetDir + "blacklistedSegments.dat";
+    if (util::fileExists(filename))
+    {
+        vector<UINT64> segmentBlacklistVec;
+        BinaryDataStreamFile file(filename, false);
+        file.readPrimitiveVector(segmentBlacklistVec);
+        file.closeStream();
+
+        for (UINT64 s : segmentBlacklistVec)
+            segmentBlacklist.insert(s);
+    }
+    
 }
 
 void SegmentManager::save(const string &filename) const
@@ -113,12 +126,17 @@ void SegmentManager::recordAndAnnotateSegments(const ColourPalette &palette, Rep
     }
 }
 
+SegmentAnimation* SegmentManager::findExactMask(UINT64 segmentHash)
+{
+    if (segmentsByHash.count(segmentHash) == 0)
+        return nullptr;
+    return segmentsByHash.find(segmentHash)->second;
+}
+
 SegmentAnimation* SegmentManager::findExactMask(const set<vec2s> &mask, BYTE color)
 {
     const UINT64 hash = AtariUtil::animationHash(mask, color);
-    if (segmentsByHash.count(hash) == 0)
-        return nullptr;
-    return segmentsByHash.find(hash)->second;
+    return findExactMask(hash);
 }
 
 pair<SegmentAnimation*, int> SegmentManager::findClosestMask(const set<vec2s> &mask, BYTE color)
@@ -151,7 +169,11 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
                 continue;
 
             //pair<SegmentAnimation*, int> bestFit = findClosestMask(mask, color);
-            SegmentAnimation* match = findExactMask(mask, color);
+            const UINT64 hash = AtariUtil::animationHash(mask, color);
+            if (segmentBlacklist.count(hash) > 0)
+                continue;
+
+            SegmentAnimation* match = findExactMask(hash);
             if (match == nullptr)
             {
                 SegmentAnimation *newAnimation = new SegmentAnimation();
@@ -165,7 +187,7 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
                     newAnimation->dimensions.y = max(newAnimation->dimensions.y, v.y);
                 }
                 newAnimation->dimensions += vec2s(1, 1);
-                newAnimation->hash = AtariUtil::animationHash(mask, color);
+                newAnimation->hash = hash;
 
                 segmentsByColor[color].push_back(newAnimation);
                 segmentsByHash[newAnimation->hash] = newAnimation;
@@ -174,7 +196,7 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
             }
 
             match->count++;
-            frame.annotations.push_back(ReplayAnnotation(maskOrigin, match->hash));
+            frame.segmentAnnotations.push_back(SegmentAnnotation(maskOrigin, match->hash));
         }
     }
 }

@@ -21,6 +21,7 @@ struct AppState
 
     SegmentManager segmentManager;
     SegmentAnalyzer segmentAnalyzer;
+    ObjectAnalyzer objectAnalyzer;
 
     DatabaseProcessor processor;
 

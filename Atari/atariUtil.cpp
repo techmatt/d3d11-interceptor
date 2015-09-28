@@ -106,3 +106,43 @@ Bitmap AtariUtil::makeSegmentViz(const ColourPalette &palette, const vector<Segm
 
     return bmp;
 }
+
+Bitmap AtariUtil::makeFrameObjectImage(const SegmentManager &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame)
+{
+    Bitmap result;
+    frame.image.toBmp(palette, result);
+    result.setPixels(vec4uc(0, 0, 0, 255));
+    
+    //for (const ObjectAnnotation &o : frame.objectAnnotations)
+    for (int objectIndex = 0; objectIndex < frame.objectAnnotations.size(); objectIndex++)
+    {
+        const ObjectAnnotation &o = frame.objectAnnotations[objectIndex];
+        const SegmentAnnotation &segmentAnnotation = frame.segmentAnnotations[o.segments[0]];
+        
+        const SegmentAnimation *segmentInfo = segments.getSegment(segmentAnnotation.segmentHash);
+        
+        const ObjectTrack &track = tracks.findObjectTrack(FrameID(replayIndex, frame.index), objectIndex);
+        
+        //const vec4uc color = segmentInfo->object->colorSignature;
+        const vec4uc color = track.colorSignature;
+
+        for (vec2s offset : segmentInfo->mask)
+        {
+            const vec2s target = offset + segmentAnnotation.origin;
+            if (result.isValidCoordinate(target.x, target.y))
+            {
+                result(target.x, target.y) = color;
+            }
+        }
+        
+    }
+    return result;
+}
+
+vec4uc AtariUtil::randomSignatureColor()
+{
+    vec3f color = vec3f::origin;
+    while (color.length() < 0.5f)
+        color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
+    return vec4uc(color * 255.0f, 255);
+}

@@ -22,7 +22,8 @@ void Replay::save(const string &filename) const
         stream << reward;
 
         stream.writePrimitiveContainer(frame->image.data);
-        stream.writePrimitiveVector(frame->annotations);
+        stream.writePrimitiveVector(frame->segmentAnnotations);
+        stream << frame->objectAnnotations;
     }
     
     const vector<BYTE> &data = stream.getBuffer().getData();
@@ -52,10 +53,24 @@ void Replay::load(const string &filename)
         stream >> reward;
 
         stream.readPrimitiveContainer(frame->image.data);
-        stream.readPrimitiveVector(frame->annotations);
+        stream.readPrimitiveVector(frame->segmentAnnotations);
+        stream >> frame->objectAnnotations;
 
         frame->index = i;
         frames[i] = frame;
+    }
+}
+
+void Replay::updateObjectIDs(const SegmentManager &database)
+{
+    for (ReplayFrame *frame : frames)
+    {
+        for (ObjectAnnotation &o : frame->objectAnnotations)
+        {
+            const UINT64 segmentHash = frame->segmentAnnotations[o.segments[0]].segmentHash;
+            SegmentAnimation *segment = database.getSegment(segmentHash);
+            o.objectID = (segment == nullptr || segment->object == nullptr) ? -1 : segment->object->index;
+        }
     }
 }
 
@@ -68,6 +83,13 @@ void AtariImage::fromScreen(const ALEScreen &screen)
     {
         d.value = screen.get((int)d.y, (int)d.x);
     }
+}
+
+Bitmap AtariImage::toBmp(const ColourPalette &palette) const
+{
+    Bitmap result;
+    toBmp(palette, result);
+    return result;
 }
 
 void AtariImage::toBmp(const ColourPalette &palette, Bitmap &bmpOut) const

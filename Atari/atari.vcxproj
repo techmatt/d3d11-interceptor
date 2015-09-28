@@ -19,6 +19,7 @@
     <ClInclude Include="LSH.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mLibInclude.h" />
+    <ClInclude Include="objectAnalyzer.h" />
     <ClInclude Include="replay.h" />
     <ClInclude Include="replayDatabase.h" />
     <ClInclude Include="segmentAnalyzer.h" />
@@ -33,6 +34,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="mLibSource.cpp" />
+    <ClCompile Include="objectAnalyzer.cpp" />
     <ClCompile Include="replay.cpp" />
     <ClCompile Include="replayDatabase.cpp" />
     <ClCompile Include="segmentAnalyzer.cpp" />
@@ -41,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt" />
+    <Text Include="Seaquest.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28114563-F715-4042-A798-B2A73D9C8AC4}</ProjectGuid>

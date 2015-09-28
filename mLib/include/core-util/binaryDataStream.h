@@ -31,6 +31,7 @@ public:
 	//start compression after that byte size (only if compression is enabled)
 #define COMPRESSION_THRESHOLD_ 1024 
 	void writeData(const BYTE* t, size_t size) {
+        if (size == 0) return;
 		const bool useCompression = !std::is_same<BinaryDataCompressorNone, BinaryDataCompressor>::value;
 		if (useCompression && size > COMPRESSION_THRESHOLD_) {
 			std::vector<BYTE> compressedT;

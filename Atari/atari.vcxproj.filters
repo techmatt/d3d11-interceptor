@@ -51,6 +51,9 @@
     <ClInclude Include="segmentAnalyzer.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="objectAnalyzer.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -80,10 +83,14 @@
     <ClCompile Include="segmentAnalyzer.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
+    <ClCompile Include="objectAnalyzer.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt">
       <Filter>Core</Filter>
     </Text>
+    <Text Include="Seaquest.txt" />
   </ItemGroup>
 </Project>

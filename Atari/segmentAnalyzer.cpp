@@ -16,17 +16,17 @@ void SegmentAnalyzer::init(const SegmentManager &segments)
 
 void SegmentAnalyzer::recordFramePair(const SegmentManager &segments, const ReplayFrame &frameA, const ReplayFrame &frameB)
 {
-    for (const ReplayAnnotation &frameAInst : frameA.annotations)
+    for (const SegmentAnnotation &frameAInst : frameA.segmentAnnotations)
     {
         recordObjectMatch(segments, frameAInst, frameB);
     }
 }
 
-void SegmentAnalyzer::recordObjectMatch(const SegmentManager &segments, const ReplayAnnotation &frameAInst, const ReplayFrame &frameB)
+void SegmentAnalyzer::recordObjectMatch(const SegmentManager &segments, const SegmentAnnotation &frameAInst, const ReplayFrame &frameB)
 {
     const SegmentAnimation &segmentA = *segments.getSegment(frameAInst.segmentHash);
     
-    for (const ReplayAnnotation &frameBInst : frameB.annotations)
+    for (const SegmentAnnotation &frameBInst : frameB.segmentAnnotations)
     {
         int xDiff = abs(frameBInst.origin.x - frameAInst.origin.x);
         int yDiff = abs(frameBInst.origin.y - frameAInst.origin.y);
@@ -60,10 +60,24 @@ vector<GameObject*> SegmentAnalyzer::extractObjects()
         for (const SegmentGraph::Node *segment : component)
         {
             newObject->segments.push_back(segment->data);
+            segment->data->object = newObject;
         }
         newObject->index = (int)result.size();
 
         result.push_back(newObject);
     }
     return result;
+}
+
+void SegmentAnalyzer::annotateObjects(ReplayFrame &frame)
+{
+    frame.objectAnnotations.clear();
+    int segmentIndex = 0;
+    for (const SegmentAnnotation &s : frame.segmentAnnotations)
+    {
+        ObjectAnnotation newObject(s.origin);
+        newObject.segments.push_back(segmentIndex);
+        frame.objectAnnotations.push_back(newObject);
+        segmentIndex++;
+    }
 }

@@ -1,0 +1,18 @@
+
+
+
+Global variables:
+Lives (counter)
+Divers (counter)
+Oxygen (bar)
+Score (base-10 display)
+GameState
+
+
+
+Trigger:
+When the player dies
+Actions
+	Lives--
+
+NewLife
