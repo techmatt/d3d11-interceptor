@@ -9,13 +9,21 @@ void DatabaseProcessor::go(AppState &state)
     computeObjects(state);
     annotateObjects(state);
 
-    //dumpDebugFrames(state, FrameID(0, 3000), 500);
+    dumpDebugFrames(state, FrameID(0, 1505), 20);
     //dumpDebugFrames(state, FrameID(0, 5600), 100);
 
-    state.segmentManager.saveVizColors(state.getPalette(), learningParams().ROMDatasetDir + "vizColors/");
-    state.segmentManager.saveVizObjects(state.getPalette(), learningParams().ROMDatasetDir + "vizObjects/");
-    state.objectAnalyzer.outputViz(learningParams().ROMDatasetDir + "statsObjects/");
-    
+    const bool dumpViz = true;
+    if (dumpViz)
+    {
+        state.segmentManager.saveVizColors(state.getPalette(), learningParams().ROMDatasetDir + "vizColors/");
+        state.segmentManager.saveVizObjects(state.getPalette(), learningParams().ROMDatasetDir + "vizObjects/");
+        state.objectAnalyzer.outputViz(learningParams().ROMDatasetDir + "statsObjects/");
+    }
+
+    state.model.initStateSpec(state.objectAnalyzer, learningParams().ROMDatasetDir + "modelSpec/variableSpec.txt");
+    state.model.describeModel(learningParams().ROMDatasetDir + "model.csv");
+
+    dumpReplayStateGraphs(state);
 }
 
 void DatabaseProcessor::dumpDebugFrames(AppState &state, FrameID startFrame, int length)
@@ -143,7 +151,7 @@ void DatabaseProcessor::annotateObjects(AppState &state)
         if (replayIndex == 0)
         {
             cout << "Outputting segment blacklist" << endl;
-            state.objectAnalyzer.outputSegmentBlacklist(replay);
+            state.objectAnalyzer.outputSegmentBlacklist(state, replay);
         }
         
         //replay.clearImages();
@@ -152,4 +160,26 @@ void DatabaseProcessor::annotateObjects(AppState &state)
     }
 
     state.objectAnalyzer.finalizeTracks();
+    state.objectAnalyzer.assignObjectNames();
+}
+
+void DatabaseProcessor::dumpReplayStateGraphs(AppState &state)
+{
+    const string replayAnnotatedDir = learningParams().ROMDatasetDir + "replaysAnnotated/";
+    const string graphDir = learningParams().ROMDatasetDir + "stateGraphs/";
+
+    util::makeDirectory(graphDir);
+
+    for (const string &filename : Directory::enumerateFiles(replayAnnotatedDir, ".dat"))
+    {
+        Replay replay;
+        cout << "Dumping replay graphs in " << filename << endl;
+        replay.load(replayAnnotatedDir + filename);
+
+        replay.updateObjectIDs(state.segmentManager);
+
+        vector<Game::StateInst> states;
+        state.modelLearner.loadReplayStates(state, replay, state.model, states);
+        AtariUtil::saveStateGraph(states, graphDir + util::replace(filename, ".dat", ".csv"));
+    }
 }

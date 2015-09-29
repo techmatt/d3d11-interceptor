@@ -14,6 +14,7 @@ struct LearningParams
         params.readParameter("ROMName", ROMName);
 
         params.readParameter("objectMotionRadius", objectMotionRadius);
+        params.readParameter("minMaskSize", minMaskSize);
 
         ROMDatasetDir = datasetDir + ROMName + "/";
     }
@@ -25,6 +26,7 @@ struct LearningParams
     string ROMName;
 
     int objectMotionRadius;
+    int minMaskSize;
 };
 
 extern LearningParams g_learningParams;

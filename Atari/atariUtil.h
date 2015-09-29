@@ -1,10 +1,4 @@
 
-struct SegmentAnimation;
-struct ReplayFrame;
-class ColourPalette;
-struct SegmentManager;
-struct ObjectAnalyzer;
-
 class AtariUtil
 {
 public:
@@ -15,4 +9,6 @@ public:
     static Bitmap makeSegmentViz(const ColourPalette &palette, const vector<SegmentAnimation*> &segments);
     static Bitmap makeFrameObjectImage(const SegmentManager &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame);
     static vec4uc randomSignatureColor();
+
+    static void saveStateGraph(const vector<Game::StateInst> &states, const string &filename);
 };

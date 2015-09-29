@@ -10,6 +10,9 @@
     <Filter Include="Learning">
       <UniqueIdentifier>{13827184-1dda-49a8-ac44-01919881e9db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Modeling">
+      <UniqueIdentifier>{8772b448-89c7-4e79-aa85-b246a7fbfd07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -54,6 +57,12 @@
     <ClInclude Include="objectAnalyzer.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="gameModel.h">
+      <Filter>Modeling</Filter>
+    </ClInclude>
+    <ClInclude Include="modelLearner.h">
+      <Filter>Modeling</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -85,6 +94,12 @@
     </ClCompile>
     <ClCompile Include="objectAnalyzer.cpp">
       <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="gameModel.cpp">
+      <Filter>Modeling</Filter>
+    </ClCompile>
+    <ClCompile Include="modelLearner.cpp">
+      <Filter>Modeling</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

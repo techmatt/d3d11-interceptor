@@ -20,10 +20,21 @@ void SegmentManager::init()
         file.readPrimitiveVector(segmentBlacklistVec);
         file.closeStream();
 
+        cout << "Blacklisted segments: " << endl;
         for (UINT64 s : segmentBlacklistVec)
+        {
+            cout << s << ",";
             segmentBlacklist.insert(s);
+        }
+        cout << endl;
     }
     
+    const string blacklistImageFile = learningParams().ROMDatasetDir + "blacklist.png";
+    if (util::fileExists(blacklistImageFile))
+    {
+        blacklistImage = LodePNG::load(blacklistImageFile);
+        //cout << "Blacklist image loaded " << blacklistImage(0, 0).toString(",") << endl;
+    }
 }
 
 void SegmentManager::save(const string &filename) const
@@ -108,7 +119,18 @@ void SegmentManager::recordAndAnnotateSegments(const ColourPalette &palette, Rep
     //frame.image.toBmp(palette, temp);
     //LodePNG::save(temp, "debug3.png");
 
+    frame.segmentAnnotations.clear();
+    frame.objectAnnotations.clear();
+
     scratchpad = frame.image.data;
+
+    for (auto &p : blacklistImage)
+    {
+        if (p.value == vec4uc(255, 0, 255, 255))
+        {
+            frame.image.data(p.x, p.y) = 1;
+        }
+    }
 
     set<BYTE> allColors;
     for (auto &p : frame.image.data)
@@ -165,7 +187,7 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
             vec2s maskOrigin;
             const set<vec2s> mask = extractMask(frame, coord, maskOrigin);
 
-            if (mask.size() == 0)
+            if (mask.size() < learningParams().minMaskSize)
                 continue;
 
             //pair<SegmentAnimation*, int> bestFit = findClosestMask(mask, color);
@@ -196,6 +218,7 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
             }
 
             match->count++;
+
             frame.segmentAnnotations.push_back(SegmentAnnotation(maskOrigin, match->hash));
         }
     }

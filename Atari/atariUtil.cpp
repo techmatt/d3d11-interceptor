@@ -113,7 +113,6 @@ Bitmap AtariUtil::makeFrameObjectImage(const SegmentManager &segments, const Col
     frame.image.toBmp(palette, result);
     result.setPixels(vec4uc(0, 0, 0, 255));
     
-    //for (const ObjectAnnotation &o : frame.objectAnnotations)
     for (int objectIndex = 0; objectIndex < frame.objectAnnotations.size(); objectIndex++)
     {
         const ObjectAnnotation &o = frame.objectAnnotations[objectIndex];
@@ -145,4 +144,37 @@ vec4uc AtariUtil::randomSignatureColor()
     while (color.length() < 0.5f)
         color = vec3f((float)util::randomUniform(), (float)util::randomUniform(), (float)util::randomUniform());
     return vec4uc(color * 255.0f, 255);
+}
+
+void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const string &filename)
+{
+    ofstream file(filename);
+
+    file << "frame,";
+    for (auto &o : states[0].variables)
+    {
+        file << o.first << ',';
+    }
+
+    for (auto &o : states[0].objects)
+    {
+        file << o.first << ',';
+    }
+    file << endl;
+
+    const int frameCount = (int)states.size();
+    for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
+    {
+        file << frameIndex << ',';
+        auto &state = states[frameIndex];
+        for (auto &o : state.variables)
+        {
+            file << o.second << ',';
+        }
+        for (auto &o : state.objects)
+        {
+            file << o.second.size() << ',';
+        }
+        file << endl;
+    }
 }

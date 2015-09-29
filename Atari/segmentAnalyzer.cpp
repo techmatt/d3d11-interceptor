@@ -3,7 +3,16 @@
 
 bool SegmentAnalyzer::segmentsSoftMatch(const SegmentAnimation &segmentA, const SegmentAnimation &segmentB)
 {
-    return (segmentA.color == segmentB.color);
+    const UINT64 hashA = AtariUtil::animationHash(segmentA.mask, 0);
+    const UINT64 hashB = AtariUtil::animationHash(segmentB.mask, 0);
+    
+    const bool horzLineA = (segmentA.dimensions.y == 1);
+    const bool horzLineB = (segmentB.dimensions.y == 1);
+    //if (horzLineA != horzLineB)
+    //    return false;
+
+    return (segmentA.color == segmentB.color ||
+            (hashA == hashB && segmentA.mask.size() >= 10));
 }
 
 void SegmentAnalyzer::init(const SegmentManager &segments)

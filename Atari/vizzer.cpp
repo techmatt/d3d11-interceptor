@@ -76,11 +76,16 @@ void Vizzer::render(ApplicationData &app)
     frame->action = AtariUtil::actionFromKeyboard();
     
     frame->reward = state.ale.act(frame->action);
-
+    
     const ALEScreen &screen = state.ale.getScreen();
     const ColourPalette &palette = state.ale.theOSystem->colourPalette();
 
     frame->image.fromScreen(screen);
+
+    state.segmentManager.recordAndAnnotateSegments(state.getPalette(), *frame);
+    state.segmentAnalyzer.annotateObjects(*frame);
+    frame->updateObjectIDs(state.segmentManager);
+
     state.replay.frames.push_back(frame);
 
     if (state.ale.game_over())
@@ -89,9 +94,16 @@ void Vizzer::render(ApplicationData &app)
 
         string dir = learningParams().ROMDatasetDir + "replaysRaw/";
         util::makeDirectory(dir);
-        state.replay.save(dir + to_string(state.replay.id) + ".dat");
+        //state.replay.save(dir + to_string(state.replay.id) + ".dat");
         state.replay = Replay();
         state.ale.reset_game();
+    }
+
+    if (GetAsyncKeyState(KEY_P))
+    {
+        string dir = learningParams().ROMDatasetDir + "replaysRaw/";
+        util::makeDirectory(dir);
+        state.replay.save(dir + to_string(state.replay.id) + ".dat");
     }
 
     frame->image.toBmp(palette, state.aleScreenBmp);
@@ -101,10 +113,23 @@ void Vizzer::render(ApplicationData &app)
 
     state.assets.renderMesh(state.aleBillboard, state.camera.getCameraPerspective());
 
+    Game::StateInst gameStateInst;
+    state.model.loadObjects(state, state.objectAnalyzer, *frame, gameStateInst);
+    state.model.readVariables(state.segmentManager, gameStateInst);
+
     //LodePNG::save(state.aleScreenBmp, "debug.png");
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
+
+    const bool displayVariables = true;
+    if (displayVariables)
+    {
+        for (auto &v : gameStateInst.variables)
+        {
+            text.push_back(v.first + " = " + to_string(v.second));
+        }
+    }
     
     const bool useText = true;
     if (useText)

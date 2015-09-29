@@ -36,6 +36,7 @@ void ObjectAnalyzer::AnalyzeFrame(const SegmentManager &segments, const ReplayFr
     {
         objectOccurrences[o.objectID]++;
         objects[o.objectID].heatmap(o.origin.x, o.origin.y) = vec4uc(255, 0, 0, 255);
+        objects[o.objectID].segmentHashes.insert(frame.segmentAnnotations[o.segments[0]].segmentHash);
     }
 
     for (auto &p : objectOccurrences)
@@ -58,6 +59,17 @@ void ObjectAnalyzer::outputViz(const string &dir) const
         for (int j = 0; j < objects[i].frameOccurrenceCount.size(); j++)
         {
             file << "," << objects[i].frameOccurrenceCount[j];
+        }
+        file << endl;
+    }
+
+    file << "Object index,Segment hashes" << endl;
+    for (int i = 0; i < objects.size(); i++)
+    {
+        file << i;
+        for (UINT64 s : objects[i].segmentHashes)
+        {
+            file << "," << s;
         }
         file << endl;
     }
@@ -127,7 +139,9 @@ void ObjectAnalyzer::trackFrames(const ReplayFrame &frameA, const ReplayFrame &f
         {
             processedObjectsB[objectBMatch] = 1;
             ObjectTrack *liveTrack = liveTracks[objectIndexA];
+
             liveTrack->track.push_back(objectBMatch);
+
             newTracks[objectBMatch] = liveTrack;
         }
     }
@@ -140,6 +154,7 @@ void ObjectAnalyzer::trackFrames(const ReplayFrame &frameA, const ReplayFrame &f
             ObjectTrack *newTrack = new ObjectTrack;
             newTrack->startFrame = FrameID(liveReplayIndex, frameB.index);
             newTrack->track.push_back(objectIndexB);
+            
             objects[annotationB.objectID].tracks.push_back(newTrack);
 
             newTracks[objectIndexB] = newTrack;
@@ -164,9 +179,9 @@ void ObjectAnalyzer::finalizeTracks()
     }
 }
 
-void ObjectAnalyzer::outputSegmentBlacklist(const Replay &replay) const
+void ObjectAnalyzer::outputSegmentBlacklist(AppState &state, const Replay &replay) const
 {
-    vector<UINT64> blacklistedSegmentHashes;
+    unordered_set<UINT64> blacklistedSegmentHashes;
 
     const ReplayFrame &firstFrame = *replay.frames[0];
     for (int i = 0; i < objects.size(); i++)
@@ -181,13 +196,39 @@ void ObjectAnalyzer::outputSegmentBlacklist(const Replay &replay) const
                 const UINT objectIndex = track->track[0];
                 const ObjectAnnotation &objectAnnotation = firstFrame.objectAnnotations[objectIndex];
                 const UINT64 hash = firstFrame.segmentAnnotations[objectAnnotation.segments[0]].segmentHash;
-                blacklistedSegmentHashes.push_back(hash);
+                blacklistedSegmentHashes.insert(hash);
             }
         }
     }
 
+    for (UINT64 hash : state.segmentManager.segmentBlacklist)
+        blacklistedSegmentHashes.insert(hash);
+
+    vector<UINT64> blacklistedSegmentHashesVec;
+    for (UINT64 hash : blacklistedSegmentHashes)
+        blacklistedSegmentHashesVec.push_back(hash);
+
     const string filename = learningParams().ROMDatasetDir + "blacklistedSegments.dat";
     BinaryDataStreamFile file(filename, true);
-    file.writePrimitiveVector(blacklistedSegmentHashes);
+    file.writePrimitiveVector(blacklistedSegmentHashesVec);
     file.closeStream();
+}
+
+void ObjectAnalyzer::assignObjectNames()
+{
+    for (const string &line : util::getFileLines(learningParams().ROMDatasetDir + "modelSpec/objectNames.txt", 3))
+    {
+        const vector<string> words = util::split(line, '\t');
+        if (words.size() == 2)
+        {
+            const UINT64 segmentHash = convert::toUInt64(words[0]);
+            const string objectName = words[1];
+
+            for (int i = 0; i < objects.size(); i++)
+            {
+                if (objects[i].segmentHashes.count(segmentHash) > 0)
+                    objects[i].name = objectName;
+            }
+        }
+    }
 }

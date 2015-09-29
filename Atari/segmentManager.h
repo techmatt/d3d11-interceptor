@@ -69,6 +69,7 @@ struct SegmentManager
     map<UINT64, SegmentAnimation* > segmentsByHash;
 
     vector<GameObject*> objects;
+    unordered_set<UINT64> segmentBlacklist;
 
 private:
 
@@ -84,6 +85,6 @@ private:
     //Bitmap makeAnimationViz(const ColourPalette &palette, BYTE color);
 
     Grid2<BYTE> scratchpad;
+    Bitmap blacklistImage;
     vector<vec4uc> colorBlacklist;
-    unordered_set<UINT64> segmentBlacklist;
 };

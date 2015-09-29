@@ -38,7 +38,11 @@ struct AtariImage
 
 struct SegmentAnnotation
 {
-    SegmentAnnotation() {}
+    SegmentAnnotation()
+    {
+        origin = vec2s(-1000, -1000);
+        segmentHash = 0;
+    }
     SegmentAnnotation(const vec2s &_origin, UINT64 _segmentHash)
     {
         origin = _origin;
@@ -50,7 +54,10 @@ struct SegmentAnnotation
 
 struct ObjectAnnotation
 {
-    ObjectAnnotation() {}
+    ObjectAnnotation()
+    {
+        objectID = -1;
+    }
     ObjectAnnotation(const vec2s &_origin)
     {
         objectID = -1;
@@ -77,6 +84,8 @@ inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(Bina
 
 struct ReplayFrame
 {
+    void updateObjectIDs(const SegmentManager &database);
+
     int index;
     Action action;
     int reward;

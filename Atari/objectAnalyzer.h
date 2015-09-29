@@ -16,6 +16,12 @@ struct ObjectTrack
 
 struct ObjectStatistics
 {
+    ObjectStatistics()
+    {
+        name = "unnamed";
+    }
+    string name;
+    unordered_set<UINT64> segmentHashes;
     vector<int> frameOccurrenceCount;
     Bitmap heatmap;
     vector<ObjectTrack*> tracks;
@@ -34,7 +40,9 @@ struct ObjectAnalyzer
 
     void finalizeTracks();
 
-    void outputSegmentBlacklist(const Replay &replay) const;
+    void assignObjectNames();
+
+    void outputSegmentBlacklist(AppState &state, const Replay &replay) const;
     void outputViz(const string &dir) const;
 
     vector<ObjectStatistics> objects;

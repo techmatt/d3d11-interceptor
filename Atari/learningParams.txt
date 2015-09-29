@@ -1,8 +1,8 @@
 datasetDir=C:\Code\d3d11-interceptor\datasets\Atari\
 ROMDir=C:\Code\Arcade-Learning-Environment-0.5.0\roms\
 
-ROMName=seaquest
+ROMName=pong
 
-objectMotionRadius=10
+objectMotionRadius=16
 
-objectTrackRadius=3
+minMaskSize=3

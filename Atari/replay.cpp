@@ -51,6 +51,8 @@ void Replay::load(const string &filename)
         int action, reward;
         stream >> action;
         stream >> reward;
+        frame->action = (Action)action;
+        frame->reward = reward;
 
         stream.readPrimitiveContainer(frame->image.data);
         stream.readPrimitiveVector(frame->segmentAnnotations);
@@ -61,16 +63,21 @@ void Replay::load(const string &filename)
     }
 }
 
+void ReplayFrame::updateObjectIDs(const SegmentManager &database)
+{
+    for (ObjectAnnotation &o : objectAnnotations)
+    {
+        const UINT64 segmentHash = segmentAnnotations[o.segments[0]].segmentHash;
+        SegmentAnimation *segment = database.getSegment(segmentHash);
+        o.objectID = (segment == nullptr || segment->object == nullptr) ? -1 : segment->object->index;
+    }
+}
+
 void Replay::updateObjectIDs(const SegmentManager &database)
 {
     for (ReplayFrame *frame : frames)
     {
-        for (ObjectAnnotation &o : frame->objectAnnotations)
-        {
-            const UINT64 segmentHash = frame->segmentAnnotations[o.segments[0]].segmentHash;
-            SegmentAnimation *segment = database.getSegment(segmentHash);
-            o.objectID = (segment == nullptr || segment->object == nullptr) ? -1 : segment->object->index;
-        }
+        frame->updateObjectIDs(database);
     }
 }
 

@@ -1,14 +1,16 @@
 
-
-
 Global variables:
 Lives (counter)
 Divers (counter)
 Oxygen (bar)
 Score (base-10 display)
-GameState
+OxygenDecrementDelay
+OxygenIncrementDelay
+Refueling (bool)
 
-
+Frame Step
+	ProcessAllTriggers()
+	OxygenDecrementCount--
 
 Trigger:
 When the player dies
@@ -16,3 +18,40 @@ Actions
 	Lives--
 
 NewLife
+
+Trigger:
+	Missile contacts fish
+Actions:
+	Destroy fish
+	Destroy missile
+	Increase score
+
+Trigger:
+	SubmarineY >= 100
+Actions:
+	OxygenDecrementCount--
+
+Trigger:
+	OxygenDecrementCount == 0
+Actions:
+	OxygenDecrementCount = 50
+
+
+Trigger:
+	Refueling
+Actions:
+	Oxygen++
+
+Trigger:
+	Oxygen == 100
+Actions:
+	Refueling = false
+
+Trigger:
+	SubmarineY <= 120 && Oxygen != 1000
+Actions:
+	if(Divers == 0)
+		Death
+	else
+		Refueling = true
+		Divers--

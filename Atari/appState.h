@@ -23,6 +23,9 @@ struct AppState
     SegmentAnalyzer segmentAnalyzer;
     ObjectAnalyzer objectAnalyzer;
 
+    Game::Model model;
+    Game::ModelLearner modelLearner;
+
     DatabaseProcessor processor;
 
     Replay replay;

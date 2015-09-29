@@ -15,6 +15,18 @@ typedef ColorImageR8G8B8A8 Bitmap;
 
 #include "LSH.h"
 
+struct AppState;
+struct SegmentAnimation;
+struct ReplayFrame;
+class ColourPalette;
+struct SegmentManager;
+struct ObjectAnalyzer;
+
+namespace Game
+{
+    struct StateInst;
+}
+
 #include "atariUtil.h"
 #include "replay.h"
 #include "segmentManager.h"
@@ -22,6 +34,9 @@ typedef ColorImageR8G8B8A8 Bitmap;
 #include "segmentAnalyzer.h"
 #include "objectAnalyzer.h"
 #include "databaseProcessor.h"
+
+#include "gameModel.h"
+#include "modelLearner.h"
 
 #include "appState.h"
 #include "vizzer.h"
