@@ -6,6 +6,16 @@ void ReplayDatabase::init()
     
 }
 
+ReplayFrame& ReplayDatabase::getFrame(FrameID id)
+{
+    return *replays[id.replayIndex]->frames[id.frameIndex];
+}
+
+const ReplayFrame& ReplayDatabase::getFrame(FrameID id) const
+{
+    return *replays[id.replayIndex]->frames[id.frameIndex];
+}
+
 void ReplayDatabase::loadAnnotatedReplays()
 {
     const string replayAnnotatedDir = learningParams().ROMDatasetDir + "replaysAnnotated/";

@@ -16,6 +16,9 @@ struct LearningParams
         params.readParameter("objectMotionRadius", objectMotionRadius);
         params.readParameter("minMaskSize", minMaskSize);
 
+        params.readParameter("maxGhostFrames", maxGhostFrames);
+        
+
         ROMDatasetDir = datasetDir + ROMName + "/";
     }
 
@@ -27,6 +30,7 @@ struct LearningParams
 
     int objectMotionRadius;
     int minMaskSize;
+    int maxGhostFrames;
 };
 
 extern LearningParams g_learningParams;
