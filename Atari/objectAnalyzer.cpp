@@ -201,7 +201,7 @@ void ObjectAnalyzer::outputSegmentBlacklist(AppState &state, const Replay &repla
         }
     }
 
-    for (UINT64 hash : state.SegmentDatabase.segmentBlacklist)
+    for (UINT64 hash : state.segmentDatabase.segmentBlacklist)
         blacklistedSegmentHashes.insert(hash);
 
     vector<UINT64> blacklistedSegmentHashesVec;

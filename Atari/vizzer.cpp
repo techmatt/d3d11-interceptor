@@ -45,9 +45,9 @@ void Vizzer::init(ApplicationData &app)
     {
         if (frame->index % 100 == 0)
             cout << "Frame " << frame->index << " / " << replay.frames.size() << endl;
-        state.SegmentDatabase.recordSegments(palette, *frame);
+        state.segmentDatabase.recordSegments(palette, *frame);
     }
-    state.SegmentDatabase.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");*/
+    state.segmentDatabase.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");*/
 
     registerEventHandlers(app);
 }
@@ -82,9 +82,9 @@ void Vizzer::render(ApplicationData &app)
 
     frame->image.fromScreen(screen);
 
-    state.SegmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
+    state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
     state.segmentAnalyzer.annotateObjects(*frame);
-    frame->updateObjectIDs(state.SegmentDatabase);
+    frame->updateObjectIDs(state.segmentDatabase);
 
     state.replay.frames.push_back(frame);
 
@@ -115,7 +115,7 @@ void Vizzer::render(ApplicationData &app)
 
     Game::StateInst gameStateInst;
     state.model.loadObjects(state, state.objectAnalyzer, *frame, gameStateInst);
-    state.model.readVariables(state.SegmentDatabase, gameStateInst);
+    state.model.readVariables(state.segmentDatabase, gameStateInst);
 
     //LodePNG::save(state.aleScreenBmp, "debug.png");
 

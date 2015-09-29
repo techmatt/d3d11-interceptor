@@ -19,7 +19,7 @@ struct AppState
 
     D3D11AssetRenderer assets;
 
-    SegmentDatabase SegmentDatabase;
+    SegmentDatabase segmentDatabase;
     SegmentAnalyzer segmentAnalyzer;
     ObjectAnalyzer objectAnalyzer;
 

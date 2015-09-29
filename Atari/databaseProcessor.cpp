@@ -3,7 +3,7 @@
 
 void DatabaseProcessor::go(AppState &state)
 {
-    state.SegmentDatabase.init();
+    state.segmentDatabase.init();
 
     processRawReplays(state);
 
@@ -18,8 +18,8 @@ void DatabaseProcessor::go(AppState &state)
     const bool dumpViz = true;
     if (dumpViz)
     {
-        state.SegmentDatabase.saveVizColors(state.getPalette(), learningParams().ROMDatasetDir + "vizColors/");
-        state.SegmentDatabase.saveVizObjects(state.getPalette(), learningParams().ROMDatasetDir + "vizObjects/");
+        state.segmentDatabase.saveVizColors(state.getPalette(), learningParams().ROMDatasetDir + "vizColors/");
+        state.segmentDatabase.saveVizObjects(state.getPalette(), learningParams().ROMDatasetDir + "vizObjects/");
         state.objectAnalyzer.outputViz(learningParams().ROMDatasetDir + "statsObjects/");
     }
 
@@ -42,7 +42,7 @@ void DatabaseProcessor::dumpDebugFrames(AppState &state, FrameID startFrame, int
     {
         FrameID frameID = startFrame.delta(frameOffset);
         const ReplayFrame &frame = *replay.frames[frameID.frameIndex];
-        const Bitmap imageA = AtariUtil::makeFrameObjectImage(state.SegmentDatabase, state.getPalette(), state.objectAnalyzer, frameID.replayIndex, frame);
+        const Bitmap imageA = AtariUtil::makeFrameObjectImage(state.segmentDatabase, state.getPalette(), state.objectAnalyzer, frameID.replayIndex, frame);
         const Bitmap imageB = frame.image.toBmp(state.getPalette());
         LodePNG::save(imageA, outDir + frameID.toString() + "_A.png");
         LodePNG::save(imageB, outDir + frameID.toString() + "_B.png");
@@ -51,7 +51,7 @@ void DatabaseProcessor::dumpDebugFrames(AppState &state, FrameID startFrame, int
 
 void DatabaseProcessor::processRawReplays(AppState &state)
 {
-    state.SegmentDatabase.load(learningParams().ROMDatasetDir + "segments.dat");
+    state.segmentDatabase.load(learningParams().ROMDatasetDir + "segments.dat");
 
     const string replayRawDir = learningParams().ROMDatasetDir + "replaysRaw/";
     const string replayAnnotatedDir = learningParams().ROMDatasetDir + "replaysAnnotated/";
@@ -59,7 +59,7 @@ void DatabaseProcessor::processRawReplays(AppState &state)
 
     for (const string &filename : Directory::enumerateFiles(replayRawDir, ".dat"))
     {
-        if (state.SegmentDatabase.processedReplays.count(filename) == 0 ||
+        if (state.segmentDatabase.processedReplays.count(filename) == 0 ||
             !util::fileExists(replayAnnotatedDir + filename))
         {
             Replay replay;
@@ -69,23 +69,23 @@ void DatabaseProcessor::processRawReplays(AppState &state)
             {
                 if (frame->index % 1000 == 0)
                     cout << "Frame " << frame->index << " / " << replay.frames.size() << endl;
-                state.SegmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
+                state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
             }
-            state.SegmentDatabase.processedReplays.insert(filename);
+            state.segmentDatabase.processedReplays.insert(filename);
 
             //replay.clearImages();
             replay.save(replayAnnotatedDir + filename);
         }
     }
 
-    cout << "Segment manager has " << state.SegmentDatabase.segmentCount() << " segments" << endl;
-    state.SegmentDatabase.save(learningParams().ROMDatasetDir + "segments.dat");
-    state.SegmentDatabase.load(learningParams().ROMDatasetDir + "segments.dat");
+    cout << "Segment manager has " << state.segmentDatabase.segmentCount() << " segments" << endl;
+    state.segmentDatabase.save(learningParams().ROMDatasetDir + "segments.dat");
+    state.segmentDatabase.load(learningParams().ROMDatasetDir + "segments.dat");
 }
 
 void DatabaseProcessor::computeObjects(AppState &state)
 {
-    state.segmentAnalyzer.init(state.SegmentDatabase);
+    state.segmentAnalyzer.init(state.segmentDatabase);
 
     for (const Replay *replay : state.replayDatabase.replays)
     {
@@ -97,12 +97,12 @@ void DatabaseProcessor::computeObjects(AppState &state)
                 cout << "Frame " << frameIndex << " / " << replay->frames.size() << endl;
             const ReplayFrame &frameA = *replay->frames[frameIndex + 0];
             const ReplayFrame &frameB = *replay->frames[frameIndex + 1];
-            state.segmentAnalyzer.recordFramePair(state.SegmentDatabase, frameA, frameB);
+            state.segmentAnalyzer.recordFramePair(state.segmentDatabase, frameA, frameB);
         }
     }
 
-    state.SegmentDatabase.objects = state.segmentAnalyzer.extractObjects();
-    state.objectAnalyzer.init(state.SegmentDatabase, vec2i((int)state.ale.getScreen().width(), (int)state.ale.getScreen().height()));
+    state.segmentDatabase.objects = state.segmentAnalyzer.extractObjects();
+    state.objectAnalyzer.init(state.segmentDatabase, vec2i((int)state.ale.getScreen().width(), (int)state.ale.getScreen().height()));
 }
 
 void DatabaseProcessor::annotateObjects(AppState &state)
@@ -120,13 +120,13 @@ void DatabaseProcessor::annotateObjects(AppState &state)
             state.segmentAnalyzer.annotateObjects(frame);
         }
 
-        replay->updateObjectIDs(state.SegmentDatabase);
+        replay->updateObjectIDs(state.segmentDatabase);
 
         cout << "Computing object statistics in replay " << replay->index << endl;
         for (int frameIndex = 0; frameIndex < replay->frames.size(); frameIndex++)
         {
             const ReplayFrame &frame = *replay->frames[frameIndex];
-            state.objectAnalyzer.AnalyzeFrame(state.SegmentDatabase, frame);
+            state.objectAnalyzer.AnalyzeFrame(state.segmentDatabase, frame);
         }
 
         cout << "Computing object tracks in replay " << replay->index << endl;
@@ -162,7 +162,7 @@ void DatabaseProcessor::dumpReplayStateGraphs(AppState &state)
     {
         cout << "Dumping replay graphs in replay " << replay->index << endl;
         
-        replay->updateObjectIDs(state.SegmentDatabase);
+        replay->updateObjectIDs(state.segmentDatabase);
 
         vector<Game::StateInst> states;
         state.modelLearner.loadReplayStates(state, *replay, state.model, states);
