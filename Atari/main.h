@@ -19,7 +19,7 @@ struct AppState;
 struct SegmentAnimation;
 struct ReplayFrame;
 class ColourPalette;
-struct SegmentManager;
+struct SegmentDatabase;
 struct ObjectAnalyzer;
 
 namespace Game
@@ -29,7 +29,7 @@ namespace Game
 
 #include "atariUtil.h"
 #include "replay.h"
-#include "segmentManager.h"
+#include "segmentDatabase.h"
 #include "replayDatabase.h"
 #include "segmentAnalyzer.h"
 #include "objectAnalyzer.h"

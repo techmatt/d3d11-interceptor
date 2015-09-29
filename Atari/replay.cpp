@@ -63,7 +63,7 @@ void Replay::load(const string &filename)
     }
 }
 
-void ReplayFrame::updateObjectIDs(const SegmentManager &database)
+void ReplayFrame::updateObjectIDs(const SegmentDatabase &database)
 {
     for (ObjectAnnotation &o : objectAnnotations)
     {
@@ -73,7 +73,7 @@ void ReplayFrame::updateObjectIDs(const SegmentManager &database)
     }
 }
 
-void Replay::updateObjectIDs(const SegmentManager &database)
+void Replay::updateObjectIDs(const SegmentDatabase &database)
 {
     for (ReplayFrame *frame : frames)
     {

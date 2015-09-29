@@ -25,7 +25,7 @@
     <ClInclude Include="replay.h" />
     <ClInclude Include="replayDatabase.h" />
     <ClInclude Include="segmentAnalyzer.h" />
-    <ClInclude Include="segmentManager.h" />
+    <ClInclude Include="segmentDatabase.h" />
     <ClInclude Include="vizzer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -42,11 +42,12 @@
     <ClCompile Include="replay.cpp" />
     <ClCompile Include="replayDatabase.cpp" />
     <ClCompile Include="segmentAnalyzer.cpp" />
-    <ClCompile Include="segmentManager.cpp" />
+    <ClCompile Include="segmentDatabase.cpp" />
     <ClCompile Include="vizzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt" />
+    <Text Include="Pong.txt" />
     <Text Include="Seaquest.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

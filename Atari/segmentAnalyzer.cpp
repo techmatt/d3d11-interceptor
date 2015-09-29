@@ -15,7 +15,7 @@ bool SegmentAnalyzer::segmentsSoftMatch(const SegmentAnimation &segmentA, const 
             (hashA == hashB && segmentA.mask.size() >= 10));
 }
 
-void SegmentAnalyzer::init(const SegmentManager &segments)
+void SegmentAnalyzer::init(const SegmentDatabase &segments)
 {
     for (auto &p : segments.segmentsByHash)
     {
@@ -23,7 +23,7 @@ void SegmentAnalyzer::init(const SegmentManager &segments)
     }
 }
 
-void SegmentAnalyzer::recordFramePair(const SegmentManager &segments, const ReplayFrame &frameA, const ReplayFrame &frameB)
+void SegmentAnalyzer::recordFramePair(const SegmentDatabase &segments, const ReplayFrame &frameA, const ReplayFrame &frameB)
 {
     for (const SegmentAnnotation &frameAInst : frameA.segmentAnnotations)
     {
@@ -31,7 +31,7 @@ void SegmentAnalyzer::recordFramePair(const SegmentManager &segments, const Repl
     }
 }
 
-void SegmentAnalyzer::recordObjectMatch(const SegmentManager &segments, const SegmentAnnotation &frameAInst, const ReplayFrame &frameB)
+void SegmentAnalyzer::recordObjectMatch(const SegmentDatabase &segments, const SegmentAnnotation &frameAInst, const ReplayFrame &frameB)
 {
     const SegmentAnimation &segmentA = *segments.getSegment(frameAInst.segmentHash);
     

@@ -183,7 +183,7 @@ struct VariableDisplay
 {
     virtual VariableDisplayType type() const = 0;
     virtual string toString() const = 0;
-    virtual int readVariable(const SegmentManager &segments, const StateInst &inst) const = 0;
+    virtual int readVariable(const SegmentDatabase &segments, const StateInst &inst) const = 0;
 
     string variableName;
 };
@@ -201,7 +201,7 @@ struct VariableDisplayCounter : public VariableDisplay
         return "Counter display for " + variableName;
     }
 
-    int readVariable(const SegmentManager &segments, const StateInst &inst) const
+    int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
         return (int)inst.getSpriteList(spriteName).size();
     }
@@ -221,7 +221,7 @@ struct VariableDisplayHorizontalBar : public VariableDisplay
     {
         return "Horizontal bar display for " + variableName;
     }
-    int readVariable(const SegmentManager &segments, const StateInst &inst) const
+    int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
         const auto &list = inst.getSpriteList(spriteName);
         if (list.size() == 0)
@@ -250,7 +250,7 @@ struct Model
     void advance(const StateInst &inst, StateInst &nextInst);
 
     void loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const ReplayFrame &frame, StateInst &inst) const;
-    void readVariables(const SegmentManager &segments, StateInst &inst) const;
+    void readVariables(const SegmentDatabase &segments, StateInst &inst) const;
 
 
 

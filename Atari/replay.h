@@ -84,7 +84,7 @@ inline BinaryDataStream<BinaryDataBuffer, BinaryDataCompressor>& operator>>(Bina
 
 struct ReplayFrame
 {
-    void updateObjectIDs(const SegmentManager &database);
+    void updateObjectIDs(const SegmentDatabase &database);
 
     int index;
     Action action;
@@ -102,15 +102,17 @@ struct Replay
     {
         id = ml::util::hash64(ml::util::randomInteger(0, 0xFFFFFF) + rand());
         romName = "unknown";
+        index = -1;
     }
 
     void save(const string &filename) const;
     void load(const string &filename);
 
-    void updateObjectIDs(const SegmentManager &database);
+    void updateObjectIDs(const SegmentDatabase &database);
 
     void clearImages();
 
+    int index;
     string romName;
     UINT64 id;
     vector< ReplayFrame* > frames;

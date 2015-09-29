@@ -19,7 +19,7 @@ struct AppState
 
     D3D11AssetRenderer assets;
 
-    SegmentManager segmentManager;
+    SegmentDatabase SegmentDatabase;
     SegmentAnalyzer segmentAnalyzer;
     ObjectAnalyzer objectAnalyzer;
 
@@ -29,6 +29,7 @@ struct AppState
     DatabaseProcessor processor;
 
     Replay replay;
+    ReplayDatabase replayDatabase;
 
     D3D11Texture2D aleTexture;
     D3D11TriMesh aleBillboard;

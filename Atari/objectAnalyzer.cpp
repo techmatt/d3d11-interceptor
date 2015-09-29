@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-void ObjectAnalyzer::init(const SegmentManager &segments, const vec2i &screenDimensions)
+void ObjectAnalyzer::init(const SegmentDatabase &segments, const vec2i &screenDimensions)
 {
     objects.resize(segments.objects.size());
     for (ObjectStatistics &o : objects)
@@ -29,7 +29,7 @@ const ObjectTrack& ObjectAnalyzer::findObjectTrack(FrameID frame, int objectInde
     return *it->second;
 }
 
-void ObjectAnalyzer::AnalyzeFrame(const SegmentManager &segments, const ReplayFrame &frame)
+void ObjectAnalyzer::AnalyzeFrame(const SegmentDatabase &segments, const ReplayFrame &frame)
 {
     map<int, int> objectOccurrences;
     for (auto &o : frame.objectAnnotations)
@@ -201,7 +201,7 @@ void ObjectAnalyzer::outputSegmentBlacklist(AppState &state, const Replay &repla
         }
     }
 
-    for (UINT64 hash : state.segmentManager.segmentBlacklist)
+    for (UINT64 hash : state.SegmentDatabase.segmentBlacklist)
         blacklistedSegmentHashes.insert(hash);
 
     vector<UINT64> blacklistedSegmentHashesVec;

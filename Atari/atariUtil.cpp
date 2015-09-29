@@ -107,7 +107,7 @@ Bitmap AtariUtil::makeSegmentViz(const ColourPalette &palette, const vector<Segm
     return bmp;
 }
 
-Bitmap AtariUtil::makeFrameObjectImage(const SegmentManager &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame)
+Bitmap AtariUtil::makeFrameObjectImage(const SegmentDatabase &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame)
 {
     Bitmap result;
     frame.image.toBmp(palette, result);

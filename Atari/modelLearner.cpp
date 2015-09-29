@@ -12,7 +12,7 @@ namespace Game
     for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
     {
         model.loadObjects(state, state.objectAnalyzer, *replay.frames[frameIndex], states[frameIndex]);
-        model.readVariables(state.segmentManager, states[frameIndex]);
+        model.readVariables(state.SegmentDatabase, states[frameIndex]);
     }
 }
 

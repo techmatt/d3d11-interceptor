@@ -32,8 +32,8 @@ struct ObjectAnalyzer
     static UINT64 frameObjectHash(FrameID frame, int objectIndex);
     const ObjectTrack& findObjectTrack(FrameID frame, int objectIndex) const;
 
-    void init(const SegmentManager &segments, const vec2i &screenDimensions);
-    void AnalyzeFrame(const SegmentManager &segments, const ReplayFrame &frame);
+    void init(const SegmentDatabase &segments, const vec2i &screenDimensions);
+    void AnalyzeFrame(const SegmentDatabase &segments, const ReplayFrame &frame);
 
     void startTracking(const ReplayFrame &firstFrame, int replayIndex);
     void trackFrames(const ReplayFrame &frameA, const ReplayFrame &frameB);

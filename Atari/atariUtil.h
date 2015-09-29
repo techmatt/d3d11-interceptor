@@ -7,7 +7,7 @@ public:
     static Action actionFromKeyboard();
     static vec4uc getAtariColor(BYTE color, const ColourPalette &palette);
     static Bitmap makeSegmentViz(const ColourPalette &palette, const vector<SegmentAnimation*> &segments);
-    static Bitmap makeFrameObjectImage(const SegmentManager &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame);
+    static Bitmap makeFrameObjectImage(const SegmentDatabase &segments, const ColourPalette &palette, const ObjectAnalyzer &tracks, int replayIndex, const ReplayFrame &frame);
     static vec4uc randomSignatureColor();
 
     static void saveStateGraph(const vector<Game::StateInst> &states, const string &filename);

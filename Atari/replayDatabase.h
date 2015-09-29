@@ -2,6 +2,7 @@
 struct ReplayDatabase
 {
     void init();
+    void loadAnnotatedReplays();
 
-    map<string, Replay*> replays;
+    vector<Replay*> replays;
 };

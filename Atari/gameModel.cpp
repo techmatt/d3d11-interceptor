@@ -55,11 +55,17 @@ void Model::initStateSpec(const ObjectAnalyzer &objectSpec, const string &variab
         }
     }
 
-    VariableSpec score;
-    score.name = "score";
-    score.startValue = 0;
-    score.type = VariableType::VariableInt;
-    stateSpec.variables.push_back(score);
+    VariableSpec reward;
+    reward.name = "reward";
+    reward.startValue = 0;
+    reward.type = VariableType::VariableInt;
+    stateSpec.variables.push_back(reward);
+
+    VariableSpec action;
+    action.name = "action";
+    action.startValue = 0;
+    action.type = VariableType::VariableInt;
+    stateSpec.variables.push_back(action);
     
     const int spriteCount = (int)objectSpec.objects.size();
     stateSpec.objects.resize(spriteCount);
@@ -114,10 +120,11 @@ void Model::loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const
         inst.objects[objectName].push_back(oInst);
     }
 
-    inst.variables["score"] = frame.reward;
+    inst.variables["reward"] = frame.reward;
+    inst.variables["action"] = frame.action;
 }
 
-void Model::readVariables(const SegmentManager &segments, StateInst &inst) const
+void Model::readVariables(const SegmentDatabase &segments, StateInst &inst) const
 {
     for (const VariableDisplay *display : displays)
     {

@@ -45,9 +45,6 @@
     <ClInclude Include="replayDatabase.h">
       <Filter>Learning</Filter>
     </ClInclude>
-    <ClInclude Include="segmentManager.h">
-      <Filter>Learning</Filter>
-    </ClInclude>
     <ClInclude Include="databaseProcessor.h">
       <Filter>Learning</Filter>
     </ClInclude>
@@ -62,6 +59,9 @@
     </ClInclude>
     <ClInclude Include="modelLearner.h">
       <Filter>Modeling</Filter>
+    </ClInclude>
+    <ClInclude Include="segmentDatabase.h">
+      <Filter>Learning</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -83,9 +83,6 @@
     <ClCompile Include="replayDatabase.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
-    <ClCompile Include="segmentManager.cpp">
-      <Filter>Learning</Filter>
-    </ClCompile>
     <ClCompile Include="databaseProcessor.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
@@ -101,11 +98,15 @@
     <ClCompile Include="modelLearner.cpp">
       <Filter>Modeling</Filter>
     </ClCompile>
+    <ClCompile Include="segmentDatabase.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="learningParams.txt">
       <Filter>Core</Filter>
     </Text>
     <Text Include="Seaquest.txt" />
+    <Text Include="Pong.txt" />
   </ItemGroup>
 </Project>

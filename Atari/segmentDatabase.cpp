@@ -1,7 +1,7 @@
 
 #include "main.h"
 
-void SegmentManager::init()
+void SegmentDatabase::init()
 {
     for (const string &s : util::getFileLines(learningParams().ROMDatasetDir + "colorBlacklist.txt", 3))
     {
@@ -37,7 +37,7 @@ void SegmentManager::init()
     }
 }
 
-void SegmentManager::save(const string &filename) const
+void SegmentDatabase::save(const string &filename) const
 {
     BinaryDataStreamFile file(filename, true);
 
@@ -56,7 +56,7 @@ void SegmentManager::save(const string &filename) const
     file.closeStream();
 }
 
-void SegmentManager::load(const string &filename)
+void SegmentDatabase::load(const string &filename)
 {
     if (!util::fileExists(filename))
     {
@@ -88,7 +88,7 @@ void SegmentManager::load(const string &filename)
     file.closeStream();
 }
 
-void SegmentManager::saveVizColors(const ColourPalette &palette, const string &dir)
+void SegmentDatabase::saveVizColors(const ColourPalette &palette, const string &dir)
 {
     cout << "Saving visualiation by color to " << dir << endl;
     util::makeDirectory(dir);
@@ -102,7 +102,7 @@ void SegmentManager::saveVizColors(const ColourPalette &palette, const string &d
     }
 }
 
-void SegmentManager::saveVizObjects(const ColourPalette &palette, const string &dir)
+void SegmentDatabase::saveVizObjects(const ColourPalette &palette, const string &dir)
 {
     cout << "Saving visualiation by object to " << dir << endl;
     util::makeDirectory(dir);
@@ -113,7 +113,7 @@ void SegmentManager::saveVizObjects(const ColourPalette &palette, const string &
     }
 }
 
-void SegmentManager::recordAndAnnotateSegments(const ColourPalette &palette, ReplayFrame &frame)
+void SegmentDatabase::recordAndAnnotateSegments(const ColourPalette &palette, ReplayFrame &frame)
 {
     //Bitmap temp;
     //frame.image.toBmp(palette, temp);
@@ -148,20 +148,20 @@ void SegmentManager::recordAndAnnotateSegments(const ColourPalette &palette, Rep
     }
 }
 
-SegmentAnimation* SegmentManager::findExactMask(UINT64 segmentHash)
+SegmentAnimation* SegmentDatabase::findExactMask(UINT64 segmentHash)
 {
     if (segmentsByHash.count(segmentHash) == 0)
         return nullptr;
     return segmentsByHash.find(segmentHash)->second;
 }
 
-SegmentAnimation* SegmentManager::findExactMask(const set<vec2s> &mask, BYTE color)
+SegmentAnimation* SegmentDatabase::findExactMask(const set<vec2s> &mask, BYTE color)
 {
     const UINT64 hash = AtariUtil::animationHash(mask, color);
     return findExactMask(hash);
 }
 
-pair<SegmentAnimation*, int> SegmentManager::findClosestMask(const set<vec2s> &mask, BYTE color)
+pair<SegmentAnimation*, int> SegmentDatabase::findClosestMask(const set<vec2s> &mask, BYTE color)
 {
     pair<SegmentAnimation*, int> result = pair<SegmentAnimation*, int>(nullptr, 100000);
     for (auto &p : segmentsByColor[color])
@@ -173,7 +173,7 @@ pair<SegmentAnimation*, int> SegmentManager::findClosestMask(const set<vec2s> &m
     return result;
 }
 
-void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
+void SegmentDatabase::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
 {
     scratchpad.setValues(0);
     for (auto &p : frame.image.data)
@@ -224,7 +224,7 @@ void SegmentManager::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
     }
 }
 
-set<vec2s> SegmentManager::extractMask(const ReplayFrame &frame, const vec2s &seed, vec2s &maskOriginOut)
+set<vec2s> SegmentDatabase::extractMask(const ReplayFrame &frame, const vec2s &seed, vec2s &maskOriginOut)
 {
     const BYTE color = frame.image.data(seed);
 

@@ -37,7 +37,7 @@ struct SegmentAnimation
     vector<SegmentAnimation*> animations;
 };*/
 
-struct SegmentManager
+struct SegmentDatabase
 {
     void init();
 

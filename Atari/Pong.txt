@@ -1,0 +1,15 @@
+
+Prediction:
+
+Find similar velocity histories
+
+Compare velocity history candidates using:
+	* similar absolute position histories
+	* similar ghost history
+	* similar animation state history
+	* similar controller state history
+
+Use best match to:
+	* determine velocity
+	* determine next animation state
+	* determine object death
