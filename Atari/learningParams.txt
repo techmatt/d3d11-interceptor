@@ -6,3 +6,5 @@ ROMName=pong
 objectMotionRadius=16
 
 minMaskSize=3
+
+historyFrames=4

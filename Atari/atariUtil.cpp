@@ -158,8 +158,15 @@ void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const stri
 
     for (auto &o : states[0].objects)
     {
-        file << o.first << ',';
+        file << o.first << " count,";
     }
+
+    for (auto &o : states[0].objects)
+    {
+        file << o.first << " X,";
+        file << o.first << " Y,";
+    }
+
     file << endl;
 
     const int frameCount = (int)states.size();
@@ -175,6 +182,59 @@ void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const stri
         {
             file << o.second.size() << ',';
         }
+
+        for (auto &o : state.objects)
+        {
+            if (o.second.size() == 0)
+            {
+                file << "0,0,";
+            }
+            else
+            {
+                file << o.second[0].origin.toString(",") << ",";
+            }
+        }
+
         file << endl;
     }
+}
+
+int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
+{
+    int sum = 0;
+    for (int history = 0; history < historyDepth; history++)
+    {
+        const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
+        const Game::StateInst &stateB = statesA[max(0, baseFrameIndexB - history)];
+        const vector<Game::ObjectInst> &instancesA = stateA.objects.find(objectName)->second;
+        const vector<Game::ObjectInst> &instancesB = stateB.objects.find(objectName)->second;
+
+        if (instancesA.size() == 0 && instancesB.size() == 0)
+            continue;
+
+        if ((instancesA.size() == 1 && instancesB.size() == 0) ||
+            (instancesA.size() == 0 && instancesB.size() == 1))
+        {
+            sum++;
+            continue;
+        }
+
+        if (instancesA[0].segmentHash != instancesB[0].segmentHash)
+            sum++;
+    }
+    return sum;
+}
+
+int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
+{
+    int sum = 0;
+    for (int history = 0; history < historyDepth; history++)
+    {
+        const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
+        const Game::StateInst &stateB = statesA[max(0, baseFrameIndexB - history)];
+
+        if (stateA.variables.find("action")->second != stateB.variables.find("action")->second)
+            sum++;
+    }
+    return sum;
 }

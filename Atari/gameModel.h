@@ -54,12 +54,12 @@ struct ObjectInst
 //
 struct StateInst
 {
-    const vector<ObjectInst>& getSpriteList(const string &spriteName) const
+    const vector<ObjectInst>& getObjectList(const string &objectName) const
     {
-        auto it = objects.find(spriteName);
+        auto it = objects.find(objectName);
         if (it == objects.end())
         {
-            cout << "Sprite not found: " << spriteName << endl;
+            cout << "Object not found: " << objectName << endl;
         }
         return it->second;
     }
@@ -203,7 +203,7 @@ struct VariableDisplayCounter : public VariableDisplay
 
     int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
-        return (int)inst.getSpriteList(spriteName).size();
+        return (int)inst.getObjectList(spriteName).size();
     }
 
     string spriteName;
@@ -223,7 +223,7 @@ struct VariableDisplayHorizontalBar : public VariableDisplay
     }
     int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
-        const auto &list = inst.getSpriteList(spriteName);
+        const auto &list = inst.getObjectList(spriteName);
         if (list.size() == 0)
             return 0;
         if (list.size() >= 2)

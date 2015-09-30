@@ -33,6 +33,7 @@ namespace Game
 #include "replayDatabase.h"
 #include "segmentAnalyzer.h"
 #include "objectAnalyzer.h"
+#include "recallDatabase.h"
 #include "databaseProcessor.h"
 
 #include "gameModel.h"

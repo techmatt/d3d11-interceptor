@@ -25,6 +25,7 @@ struct AppState
 
     Game::Model model;
     Game::ModelLearner modelLearner;
+    RecallDatabase recallDatabase;
 
     DatabaseProcessor processor;
 

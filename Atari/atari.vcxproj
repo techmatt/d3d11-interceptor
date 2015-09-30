@@ -22,6 +22,7 @@
     <ClInclude Include="mLibInclude.h" />
     <ClInclude Include="modelLearner.h" />
     <ClInclude Include="objectAnalyzer.h" />
+    <ClInclude Include="recallDatabase.h" />
     <ClInclude Include="replay.h" />
     <ClInclude Include="replayDatabase.h" />
     <ClInclude Include="segmentAnalyzer.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="mLibSource.cpp" />
     <ClCompile Include="modelLearner.cpp" />
     <ClCompile Include="objectAnalyzer.cpp" />
+    <ClCompile Include="recallDatabase.cpp" />
     <ClCompile Include="replay.cpp" />
     <ClCompile Include="replayDatabase.cpp" />
     <ClCompile Include="segmentAnalyzer.cpp" />

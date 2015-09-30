@@ -26,6 +26,9 @@ void DatabaseProcessor::go(AppState &state)
     state.model.describeModel(learningParams().ROMDatasetDir + "model.csv");
 
     dumpReplayStateGraphs(state);
+
+    state.replayDatabase.loadGameStates(state);
+    state.recallDatabase.init(state);
 }
 
 void DatabaseProcessor::dumpDebugFrames(AppState &state, FrameID startFrame, int length)
@@ -35,7 +38,7 @@ void DatabaseProcessor::dumpDebugFrames(AppState &state, FrameID startFrame, int
 
     util::makeDirectory(outDir);
 
-    Replay &replay = *state.replayDatabase.replays[startFrame.replayIndex];
+    Replay &replay = *state.replayDatabase.replays[startFrame.replayIndex]->replay;
     cout << "Dumping frames in replay " << replay.index << endl;
     for (int frameOffset = 0; frameOffset < length; frameOffset++)
     {
@@ -86,16 +89,17 @@ void DatabaseProcessor::computeObjects(AppState &state)
 {
     state.segmentAnalyzer.init(state.segmentDatabase);
 
-    for (const Replay *replay : state.replayDatabase.replays)
+    for (const AnnotatedReplay *replayA : state.replayDatabase.replays)
     {
-        cout << "Computing objects in replay " << replay->index << endl;
+        const Replay &replay = *replayA->replay;
+        cout << "Computing objects in replay " << replay.index << endl;
         
-        for (int frameIndex = 0; frameIndex < replay->frames.size() - 1; frameIndex++)
+        for (int frameIndex = 0; frameIndex < replay.frames.size() - 1; frameIndex++)
         {
             if (frameIndex % 1000 == 0)
-                cout << "Frame " << frameIndex << " / " << replay->frames.size() << endl;
-            const ReplayFrame &frameA = *replay->frames[frameIndex + 0];
-            const ReplayFrame &frameB = *replay->frames[frameIndex + 1];
+                cout << "Frame " << frameIndex << " / " << replay.frames.size() << endl;
+            const ReplayFrame &frameA = *replay.frames[frameIndex + 0];
+            const ReplayFrame &frameB = *replay.frames[frameIndex + 1];
             state.segmentAnalyzer.recordFramePair(state.segmentDatabase, frameA, frameB);
         }
     }
@@ -107,8 +111,9 @@ void DatabaseProcessor::computeObjects(AppState &state)
 void DatabaseProcessor::annotateObjects(AppState &state)
 {
     int replayIndex = 0;
-    for (Replay *replay : state.replayDatabase.replays)
+    for (AnnotatedReplay *replayA : state.replayDatabase.replays)
     {
+        Replay *replay = replayA->replay;
         cout << "Annotating objects in replay " << replay->index << endl;
         
         for (int frameIndex = 0; frameIndex < replay->frames.size(); frameIndex++)
@@ -157,14 +162,14 @@ void DatabaseProcessor::dumpReplayStateGraphs(AppState &state)
 
     util::makeDirectory(graphDir);
 
-    for (Replay *replay : state.replayDatabase.replays)
+    for (AnnotatedReplay *replay : state.replayDatabase.replays)
     {
-        cout << "Dumping replay graphs in replay " << replay->index << endl;
+        cout << "Dumping replay graphs in replay " << replay->replay->index << endl;
         
-        replay->updateObjectIDs(state.segmentDatabase);
+        replay->replay->updateObjectIDs(state.segmentDatabase);
 
         vector<Game::StateInst> states;
-        state.modelLearner.loadReplayStates(state, *replay, state.model, states);
-        AtariUtil::saveStateGraph(states, graphDir + to_string(replay->index) + ".csv");
+        state.modelLearner.loadReplayStates(state, *replay->replay, state.model, states);
+        AtariUtil::saveStateGraph(states, graphDir + to_string(replay->replay->index) + ".csv");
     }
 }

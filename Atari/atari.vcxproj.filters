@@ -63,6 +63,9 @@
     <ClInclude Include="segmentDatabase.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="recallDatabase.h">
+      <Filter>Learning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -99,6 +102,9 @@
       <Filter>Modeling</Filter>
     </ClCompile>
     <ClCompile Include="segmentDatabase.cpp">
+      <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="recallDatabase.cpp">
       <Filter>Learning</Filter>
     </ClCompile>
   </ItemGroup>

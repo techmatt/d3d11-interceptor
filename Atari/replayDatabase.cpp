@@ -8,12 +8,12 @@ void ReplayDatabase::init()
 
 ReplayFrame& ReplayDatabase::getFrame(FrameID id)
 {
-    return *replays[id.replayIndex]->frames[id.frameIndex];
+    return *replays[id.replayIndex]->replay->frames[id.frameIndex];
 }
 
 const ReplayFrame& ReplayDatabase::getFrame(FrameID id) const
 {
-    return *replays[id.replayIndex]->frames[id.frameIndex];
+    return *replays[id.replayIndex]->replay->frames[id.frameIndex];
 }
 
 void ReplayDatabase::loadAnnotatedReplays()
@@ -23,9 +23,18 @@ void ReplayDatabase::loadAnnotatedReplays()
     {
         cout << "Loading " << filename << endl;
         
-        Replay *replay = new Replay();
-        replay->load(filename);
-        replay->index = (int)replays.size();
+        AnnotatedReplay *replay = new AnnotatedReplay();
+        replay->replay = new Replay();
+        replay->replay->load(filename);
+        replay->replay->index = (int)replays.size();
         replays.push_back(replay);
+    }
+}
+
+void ReplayDatabase::loadGameStates(AppState &state)
+{
+    for (auto &replay : replays)
+    {
+        Game::ModelLearner::loadReplayStates(state, *replay->replay, state.model, replay->states);
     }
 }

@@ -11,4 +11,7 @@ public:
     static vec4uc randomSignatureColor();
 
     static void saveStateGraph(const vector<Game::StateInst> &states, const string &filename);
+
+    static int compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
+    static int compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
 };
