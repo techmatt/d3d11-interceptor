@@ -27,6 +27,11 @@ private:
 
 struct ObjectTransition
 {
+    ObjectTransition()
+    {
+        nextAnimation = 0;
+        nextAlive = 0;
+    }
     UINT64 hash()
     {
         return ml::util::hash64(*this);
@@ -52,7 +57,7 @@ struct HistoryMetricWeights
 struct ObjectSampleDataset
 {
     vector<ObjectSample*> getTransitionCandidates(const ObjectHistory &history) const;
-    ObjectTransition predictTransitionSingleton(const ReplayDatabase &replays, const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName, const HistoryMetricWeights &metric) const;
+    ObjectTransition predictTransitionSingleton(const ReplayDatabase &replays, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const string &objectName, const HistoryMetricWeights &metric) const;
 
     map< UINT64, vector<ObjectSample*> > historyByCombinedHash;
     map< UINT64, vector<ObjectSample*> > historyByVelocityHash;

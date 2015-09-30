@@ -205,7 +205,7 @@ int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateI
     for (int history = 0; history < historyDepth; history++)
     {
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
-        const Game::StateInst &stateB = statesA[max(0, baseFrameIndexB - history)];
+        const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
         const vector<Game::ObjectInst> &instancesA = stateA.objects.find(objectName)->second;
         const vector<Game::ObjectInst> &instancesB = stateB.objects.find(objectName)->second;
 
@@ -225,16 +225,62 @@ int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateI
     return sum;
 }
 
-int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
+int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, int stateAAction0, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
 {
     int sum = 0;
     for (int history = 0; history < historyDepth; history++)
     {
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
-        const Game::StateInst &stateB = statesA[max(0, baseFrameIndexB - history)];
+        const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
 
-        if (stateA.variables.find("action")->second != stateB.variables.find("action")->second)
+        const int stateAAction = (history == 0) ? stateAAction0 : stateA.variables.find("action")->second;
+        if (stateAAction != stateB.variables.find("action")->second)
             sum++;
     }
     return sum;
+}
+
+void AtariUtil::overlayModelFrame(AppState &state, const Game::StateInst &gameState, Bitmap &bmp)
+{
+    for (auto &o : gameState.objects)
+    {
+        for (auto &inst : o.second)
+        {
+            SegmentAnimation *animation = state.segmentDatabase.getSegment(inst.segmentHash);
+            
+            vec4uc objColor;
+            
+            set<vec2s> mask;
+            if (animation == nullptr)
+            {
+                objColor = vec4uc(255, 0, 255, 255);
+                mask.insert(vec2s(0, 0));
+                mask.insert(vec2s(1, 0));
+                mask.insert(vec2s(0, 1));
+                mask.insert(vec2s(1, 1));
+            }
+            else
+            {
+                objColor = AtariUtil::getAtariColor(animation->color, state.getPalette());
+                mask = animation->mask;
+            }
+
+            for (vec2s v : mask)
+            {
+                vec2s pos = inst.origin + v;
+                if (bmp.isValidCoordinate(pos.x, pos.y))
+                {
+                    vec4uc &curColor = bmp(pos.x, pos.y);
+                    if (curColor == objColor)
+                    {
+                        curColor = vec4uc(255, 128, 0, 255);
+                    }
+                    else
+                    {
+                        curColor = vec4uc((vec4f(curColor) + vec4f(objColor)) * 0.5f);
+                    }
+                }
+            }
+        }
+    }
 }

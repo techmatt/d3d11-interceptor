@@ -42,14 +42,16 @@ vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectH
     }
     if (result.size() == 0 && historyByVelocityHash.count(history.velocityHash) > 0)
     {
-        for (auto &sample : historyByVelocityHash.find(combinedHash)->second)
+        for (auto &sample : historyByVelocityHash.find(history.velocityHash)->second)
             result.push_back(sample);
     }
     return result;
 }
 
-ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDatabase &replays, const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName, const HistoryMetricWeights &metric) const
+ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDatabase &replays, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const string &objectName, const HistoryMetricWeights &metric) const
 {
+    if (objectName == "unnamed")
+        return ObjectTransition();
     ObjectHistory history = RecallDatabase::computeObjectHistorySingleton(states, baseFrameIndex, objectName);
     vector<ObjectSample*> candidates = getTransitionCandidates(history);
 
@@ -69,7 +71,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
     {
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
         const int animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
-        const int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
+        const int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, action, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
 
         const float dist = animationDist * metric.animation + actionDist * metric.action;
         
@@ -120,7 +122,7 @@ void RecallDatabase::init(AppState &state)
         {
             const string predictionDir = learningParams().ROMDatasetDir + "predictions/";
             util::makeDirectory(predictionDir);
-            predictAllTransitions(state.replayDatabase, replay->states, o.name, predictionDir + "replay" + to_string(replay->replay->index) + "-" + o.name + ".csv");
+            //predictAllTransitions(state.replayDatabase, replay->states, o.name, predictionDir + "replay" + to_string(replay->replay->index) + "-" + o.name + ".csv");
         }
     }
 }
@@ -286,7 +288,7 @@ void RecallDatabase::predictAllTransitions(const ReplayDatabase &replays, const 
         HistoryMetricWeights metric;
         metric.action = 1;
         metric.animation = 1;
-        ObjectTransition predictedTransition = objectSamples[objectName]->predictTransitionSingleton(replays, states, baseFrameIndex, objectName, metric);
+        ObjectTransition predictedTransition = objectSamples[objectName]->predictTransitionSingleton(replays, states, baseFrameIndex, states[baseFrameIndex].variables.find("action")->second, objectName, metric);
         file << predictedTransition.velocity.x << ",";
         file << predictedTransition.velocity.y << ",";
         file << predictedTransition.nextAnimation << ",";

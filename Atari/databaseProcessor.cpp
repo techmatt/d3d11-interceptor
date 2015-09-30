@@ -12,7 +12,7 @@ void DatabaseProcessor::go(AppState &state)
     computeObjects(state);
     annotateObjects(state);
 
-    dumpDebugFrames(state, FrameID(0, 1505), 20);
+    //dumpDebugFrames(state, FrameID(0, 1505), 20);
 
     const bool dumpViz = false;
     if (dumpViz)
@@ -25,7 +25,7 @@ void DatabaseProcessor::go(AppState &state)
     state.model.initStateSpec(state.objectAnalyzer, learningParams().ROMDatasetDir + "modelSpec/variableSpec.txt");
     state.model.describeModel(learningParams().ROMDatasetDir + "model.csv");
 
-    dumpReplayStateGraphs(state);
+    //dumpReplayStateGraphs(state);
 
     state.replayDatabase.loadGameStates(state);
     state.recallDatabase.init(state);

@@ -25,9 +25,11 @@ void Vizzer::init(ApplicationData &app)
 
     font.init(app.graphics, "Calibri");
 
-    //state.ui.init("GameLearningUI.exe", "GameLearningUI");
+    state.ui.init("atariUI.exe", "atariUI");
     
     state.ale.setBool("color_averaging", false);
+    state.ale.setFloat("repeat_action_probability", 0.0f);
+    
     state.ale.loadROM(learningParams().ROMDir + learningParams().ROMName + ".bin");
 
     state.aleBillboard = D3D11TriMesh(app.graphics, ml::Shapesf::rectangleZ(vec2f(-50.0f, -50.0f), vec2f(50.0f, 50.0f)));
@@ -49,6 +51,8 @@ void Vizzer::init(ApplicationData &app)
     }
     state.segmentDatabase.saveAllViz(palette, learningParams().ROMDatasetDir + "viz/");*/
 
+    state.curFrame = FrameID(0, 0);
+
     registerEventHandlers(app);
 }
 
@@ -56,6 +60,16 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
 {
     state.eventMap.registerEvent("terminate", [&](const vector<string> &params) {
         PostQuitMessage(0);
+    });
+
+    state.eventMap.registerEvent("loadFrame", [&](const vector<string> &params) {
+        state.curFrame.replayIndex = util::convertTo<int>(params[1]);
+        state.curFrame.replayIndex = math::clamp(state.curFrame.replayIndex, 0, (int)state.replayDatabase.replays.size() - 1);
+        state.curFrame.frameIndex = util::convertTo<int>(params[2]);
+        if (state.curFrame.frameIndex < 0 || state.curFrame.frameIndex >= state.replayDatabase.replays[state.curFrame.replayIndex]->replay->frames.size())
+        {
+            state.curFrame.frameIndex = 0;
+        }
     });
 }
 
@@ -66,55 +80,72 @@ void Vizzer::render(ApplicationData &app)
 
     timer.frame();
 
-    //state.eventMap.dispatchEvents(state.ui);
+    state.eventMap.dispatchEvents(state.ui);
 
-    ActionVect legalActions = state.ale.getMinimalActionSet();
-
-    ReplayFrame *frame = new ReplayFrame();
-
-    //frame->action = util::randomElement(legalActions);
-    frame->action = AtariUtil::actionFromKeyboard();
-    
-    frame->reward = state.ale.act(frame->action);
-    
-    const ALEScreen &screen = state.ale.getScreen();
-    const ColourPalette &palette = state.ale.theOSystem->colourPalette();
-
-    frame->image.fromScreen(screen);
-
-    state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
-    state.segmentAnalyzer.annotateObjects(*frame);
-    frame->updateObjectIDs(state.segmentDatabase);
-
-    state.replay.frames.push_back(frame);
-
-    if (state.ale.game_over())
+    const bool livePlayMode = false;
+    ReplayFrame *frameToRender = nullptr;
+    const ColourPalette &palette = state.getPalette();
+    if (livePlayMode)
     {
-        state.replay.romName = learningParams().ROMName;
+        ActionVect legalActions = state.ale.getMinimalActionSet();
 
-        string dir = learningParams().ROMDatasetDir + "replaysRaw/";
-        util::makeDirectory(dir);
-        //state.replay.save(dir + to_string(state.replay.id) + ".dat");
-        state.replay = Replay();
-        state.ale.reset_game();
+        ReplayFrame *frame = new ReplayFrame();
+
+        //frame->action = util::randomElement(legalActions);
+        frame->action = AtariUtil::actionFromKeyboard();
+        frame->reward = state.ale.act(frame->action);
+
+        const ALEScreen &screen = state.ale.getScreen();
+        
+        frame->image.fromScreen(screen);
+
+        //state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
+        //state.segmentAnalyzer.annotateObjects(*frame);
+        //frame->updateObjectIDs(state.segmentDatabase);
+
+        if (state.replayFramesSkipsLeft)
+            state.replayFramesSkipsLeft--;
+        else
+            state.liveReplay.frames.push_back(frame);
+
+        if (state.ale.game_over())
+        {
+            state.liveReplay.romName = learningParams().ROMName;
+
+            string dir = learningParams().ROMDatasetDir + "replaysRaw/";
+            util::makeDirectory(dir);
+            //state.replay.save(dir + to_string(state.liveReplay.id) + ".dat");
+            state.liveReplay = Replay();
+            state.ale.reset_game();
+        }
+
+        if (GetAsyncKeyState(KEY_P))
+        {
+            string dir = learningParams().ROMDatasetDir + "replaysRaw/";
+            util::makeDirectory(dir);
+            state.liveReplay.save(dir + to_string(state.liveReplay.id) + ".dat");
+        }
+        frameToRender = frame;
+    }
+    else
+    {
+        frameToRender = &state.replayDatabase.getFrame(state.curFrame);
+    }
+    
+    frameToRender->image.toBmp(palette, state.sceenBmp);
+
+    if (state.modelStateHistory.size() > 0)
+    {
+        AtariUtil::overlayModelFrame(state, state.modelStateHistory.back(), state.sceenBmp);
     }
 
-    if (GetAsyncKeyState(KEY_P))
-    {
-        string dir = learningParams().ROMDatasetDir + "replaysRaw/";
-        util::makeDirectory(dir);
-        state.replay.save(dir + to_string(state.replay.id) + ".dat");
-    }
-
-    frame->image.toBmp(palette, state.aleScreenBmp);
-
-    state.aleTexture.load(app.graphics, state.aleScreenBmp);
+    state.aleTexture.load(app.graphics, state.sceenBmp);
     state.aleTexture.bind();
 
     state.assets.renderMesh(state.aleBillboard, state.camera.getCameraPerspective());
 
     Game::StateInst gameStateInst;
-    state.model.loadObjects(state, state.objectAnalyzer, *frame, gameStateInst);
+    state.model.loadObjects(state, state.objectAnalyzer, *frameToRender, gameStateInst);
     state.model.readVariables(state.segmentDatabase, gameStateInst);
 
     //LodePNG::save(state.aleScreenBmp, "debug.png");
@@ -154,6 +185,56 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
     if (key == KEY_R) state.ale.reset_game();
+
+    if (key == KEY_J)
+    {
+        state.anchorFrame = state.curFrame;
+        //state.gameModelState.load(state.anchorFrame, state.replays, state.characters);
+        state.gameModelFrame = state.curFrame;
+
+        state.modelStateHistory = state.replayDatabase.replays[state.gameModelFrame.replayIndex]->states;
+        state.modelStateHistory.resize(state.gameModelFrame.frameIndex + 1);
+    }
+
+    bool advanceModel = (key == KEY_B || key == KEY_V);
+
+    if (advanceModel)
+    {
+        int action = state.replayDatabase.getFrame(state.gameModelFrame).action;
+        state.gameModelFrame = state.gameModelFrame.delta(1);
+        
+        Game::StateInst nextState;
+        state.model.advance(state, state.modelStateHistory, action, nextState);
+        state.modelStateHistory.push_back(nextState);
+
+        /*ControllerState controller;
+        const ProcessedFrame *nextFrame = state.replays.getFrame(state.gameModelFrame);
+
+        if (nextFrame != nullptr)
+            controller.LoadGamecube(*nextFrame);
+
+        StateTransition transition;
+        state.gameModel.predictTransition(state.replays, state.characters, state.gameModelState, transition, 0);
+        state.gameModel.advanceGameState(state.gameModelState, transition, controller);
+
+        state.gameModelPredictedCharacterFrame = state.gameModelState.characters[state.curCharacterIndex].poseHistory[0]->seedFrame;
+
+        state.gameModelStateStore = state.gameModelState;
+
+        frameDirty = true;*/
+    }
+
+    int frameDelta = 0;
+    if (key == KEY_O) frameDelta = -1;
+    if (key == KEY_P || key == KEY_V) frameDelta = 1;
+
+    if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
+
+    if (frameDelta != 0)
+    {
+        Replay &replay = *state.replayDatabase.replays[state.curFrame.replayIndex]->replay;
+        state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
+    }
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)

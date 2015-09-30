@@ -132,4 +132,35 @@ void Model::readVariables(const SegmentDatabase &segments, StateInst &inst) cons
     }
 }
 
+void Model::advance(AppState &state, const vector<StateInst> &states, int action, StateInst &nextInst)
+{
+    
+    for (const auto &o : stateSpec.objects)
+    {
+        if (o.name == "unnamed")
+            continue;
+
+        HistoryMetricWeights metric;
+        metric.action = 1.0f;
+        metric.animation = 1.0f;
+        ObjectTransition transition = state.recallDatabase.objectSamples[o.name]->predictTransitionSingleton(state.replayDatabase, states, (int)states.size() - 1, action, o.name, metric);
+
+        const StateInst &curState = states.back();
+        const vector<ObjectInst> &curInstances = curState.objects.find(o.name)->second;
+
+        if (curInstances.size() == 1)
+        {
+            if (transition.nextAlive)
+            {
+                ObjectInst objectInst;
+                objectInst.origin = curInstances[0].origin + transition.velocity;
+                objectInst.segmentHash = transition.nextAnimation;
+                nextInst.objects[o.name].push_back(objectInst);
+            }
+        }
+    }
+
+    nextInst.variables["action"] = action;
+}
+
 }

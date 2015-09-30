@@ -7,4 +7,4 @@ objectMotionRadius=16
 
 minMaskSize=3
 
-historyFrames=4
+historyFrames=5

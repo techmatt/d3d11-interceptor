@@ -3,7 +3,7 @@ struct AppState
 {
     AppState()
     {
-
+        replayFramesSkipsLeft = 10;
     }
 
     const ColourPalette& getPalette() const
@@ -12,9 +12,9 @@ struct AppState
     }
 
     ALEInterface ale;
-    Bitmap aleScreenBmp;
+    Bitmap sceenBmp;
 
-    //UIConnection ui;
+    UIConnection ui;
     EventMap eventMap;
 
     D3D11AssetRenderer assets;
@@ -23,17 +23,24 @@ struct AppState
     SegmentAnalyzer segmentAnalyzer;
     ObjectAnalyzer objectAnalyzer;
 
+    FrameID curFrame;
+    FrameID anchorFrame;
+    FrameID gameModelFrame;
+
+    vector<Game::StateInst> modelStateHistory;
     Game::Model model;
     Game::ModelLearner modelLearner;
     RecallDatabase recallDatabase;
 
     DatabaseProcessor processor;
 
-    Replay replay;
+    Replay liveReplay;
     ReplayDatabase replayDatabase;
 
     D3D11Texture2D aleTexture;
     D3D11TriMesh aleBillboard;
+
+    int replayFramesSkipsLeft;
 
     Cameraf camera;
 };

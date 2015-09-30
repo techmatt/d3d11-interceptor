@@ -15,7 +15,7 @@ namespace UIWindow
 {
     public partial class UIWindow : Form
     {
-        const string pipeBaseName = "GameLearningUI";
+        const string pipeBaseName = "atariUI";
 
         NamedPipeServerStream server;
         NamedPipeClientStream client;
@@ -156,44 +156,9 @@ namespace UIWindow
             }
         }
 
-        private void buttonLoadSignature_Click(object sender, EventArgs e)
-        {
-            SendMessage("loadSignature " + textBoxSignature.Text);
-        }
-
-        private void checkBoxShowBoxes_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showBBoxes " + checkBoxShowBoxes.Checked);
-        }
-
-        private void checkBoxShowFullMesh_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showFullMesh " + checkBoxShowFullMesh.Checked);
-        }
-
-        private void checkBoxSelectionOnly_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showSelectionOnly " + checkBoxSelectionOnly.Checked);
-        }
-
-        private void checkBoxTrackable_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showTrackable " + checkBoxTrackable.Checked);
-        }
-
-        private void checkBoxShowCharacterSegments_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showCharacterSegments " + checkBoxShowCharacterSegments.Checked);
-        }
-
         private void buttonLoadFrame_Click(object sender, EventArgs e)
         {
             SendMessage("loadFrame " + textBoxReplayIndex.Text + " " + textBoxFrameIndex.Text);
-        }
-
-        private void checkBoxAnimationLabel_CheckedChanged(object sender, EventArgs e)
-        {
-            SendMessage("showAnimationLabel " + checkBoxAnimationLabel.Checked);
         }
 
         private void buttonTestAnchor_Click(object sender, EventArgs e)

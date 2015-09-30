@@ -247,7 +247,7 @@ struct Model
 {
     void initStateSpec(const ObjectAnalyzer &objectSpec, const string &variableSpecFile);
 
-    void advance(const StateInst &inst, StateInst &nextInst);
+    void advance(AppState &state, const vector<StateInst> &states, int action, StateInst &nextInst);
 
     void loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const ReplayFrame &frame, StateInst &inst) const;
     void readVariables(const SegmentDatabase &segments, StateInst &inst) const;
