@@ -3,7 +3,7 @@
 
 void SegmentDatabase::init()
 {
-    for (const string &s : util::getFileLines(learningParams().ROMDatasetDir + "colorBlacklist.txt", 3))
+    for (const string &s : util::getFileLinesCreate(learningParams().ROMDatasetDir + "colorBlacklist.txt", 3))
     {
         auto parts = util::split(s, ' ');
         if (parts.size() == 3)

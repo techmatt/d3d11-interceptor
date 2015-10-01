@@ -119,7 +119,7 @@ void Vizzer::render(ApplicationData &app)
             state.ale.reset_game();
         }
 
-        if (GetAsyncKeyState(KEY_P))
+        if (GetAsyncKeyState(KEY_C))
         {
             string dir = learningParams().ROMDatasetDir + "replaysRaw/";
             util::makeDirectory(dir);
@@ -152,6 +152,8 @@ void Vizzer::render(ApplicationData &app)
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
+
+    text.push_back("action = " + to_string(frameToRender->action));
 
     const bool displayVariables = true;
     if (displayVariables)

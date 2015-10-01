@@ -39,11 +39,13 @@ vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectH
     {
         for (auto &sample : historyByCombinedHash.find(combinedHash)->second)
             result.push_back(sample);
+        cout << "combined hash matches: " << result.size() << endl;
     }
     if (result.size() == 0 && historyByVelocityHash.count(history.velocityHash) > 0)
     {
         for (auto &sample : historyByVelocityHash.find(history.velocityHash)->second)
             result.push_back(sample);
+        cout << "velocity hash matches: " << result.size() << endl;
     }
     return result;
 }
@@ -52,15 +54,18 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
 {
     if (objectName == "unnamed")
         return ObjectTransition();
+
     ObjectHistory history = RecallDatabase::computeObjectHistorySingleton(states, baseFrameIndex, objectName);
     vector<ObjectSample*> candidates = getTransitionCandidates(history);
 
+    ObjectTransition blankTransition;
+    blankTransition.nextAlive = true;
+    blankTransition.nextAnimation = history.history[0].animation;
+    blankTransition.velocity = vec2s(0, 0);
+
     if (candidates.size() == 0)
     {
-        ObjectTransition blankTransition;
-        blankTransition.nextAlive = true;
-        blankTransition.nextAnimation = history.history[0].animation;
-        blankTransition.velocity = vec2s(0, 0);
+        cout << "No candidates found" << endl;
         return blankTransition;
     }
 
@@ -72,8 +77,9 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
         const int animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
         const int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, action, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
+        const int positionDist = AtariUtil::comparePositionDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
 
-        const float dist = animationDist * metric.animation + actionDist * metric.action;
+        const float dist = animationDist * metric.animation + actionDist * metric.action + positionDist * metric.position;
         
         if (dist < bestSamplesDist)
             bestSamples.clear();
@@ -87,12 +93,11 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
 
     if (bestSamples.size() == 0)
     {
-        ObjectTransition blankTransition;
-        blankTransition.nextAlive = true;
-        blankTransition.nextAnimation = history.history[0].animation;
-        blankTransition.velocity = vec2s(0, 0);
+        cout << "No samples found" << endl;
         return blankTransition;
     }
+
+    cout << "Best samples: " << bestSamples.size() << endl;
     return bestSamples[0]->transition;
 }
 
@@ -132,7 +137,14 @@ ObjectTransition RecallDatabase::computeObjectTransitionSingleton(const vector<G
     const Game::StateInst &curState = states[baseFrameIndex];
     const Game::StateInst &nextState = states[baseFrameIndex + 1];
 
-    const vector<Game::ObjectInst> &curInstances = curState.objects.find(objectName)->second;
+    const Game::ObjectInst *mostRecentInst = nullptr;
+    for (int frame = baseFrameIndex; !mostRecentInst && frame >= 0; frame--)
+    {
+        const auto &instances = states[frame].objects.find(objectName)->second;
+        if (instances.size() > 0)
+            mostRecentInst = &instances[0];
+    }
+
     const vector<Game::ObjectInst> &nextInstances = nextState.objects.find(objectName)->second;
 
     ObjectTransition result;
@@ -147,10 +159,10 @@ ObjectTransition RecallDatabase::computeObjectTransitionSingleton(const vector<G
     {
         result.nextAnimation = nextInstances[0].segmentHash;
         result.nextAlive = 1;
-        if (curInstances.size() == 0)
+        if (mostRecentInst == nullptr)
             result.velocity = vec2s(0, 0);
         else
-            result.velocity = nextInstances[0].origin - curInstances[0].origin;
+            result.velocity = nextInstances[0].origin - mostRecentInst->origin;
     }
     return result;
 }
@@ -286,8 +298,9 @@ void RecallDatabase::predictAllTransitions(const ReplayDatabase &replays, const 
         file << actualTransition.nextAlive << ",";
 
         HistoryMetricWeights metric;
-        metric.action = 1;
-        metric.animation = 1;
+        metric.action = 1.0f;
+        metric.animation = 1.0f;
+        metric.position = 0.0001f;
         ObjectTransition predictedTransition = objectSamples[objectName]->predictTransitionSingleton(replays, states, baseFrameIndex, states[baseFrameIndex].variables.find("action")->second, objectName, metric);
         file << predictedTransition.velocity.x << ",";
         file << predictedTransition.velocity.y << ",";

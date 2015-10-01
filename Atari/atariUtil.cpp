@@ -240,6 +240,33 @@ int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &states
     return sum;
 }
 
+int AtariUtil::comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
+{
+    int sum = 0;
+    for (int history = 0; history < historyDepth; history++)
+    {
+        const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
+        const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
+        const vector<Game::ObjectInst> &instancesA = stateA.objects.find(objectName)->second;
+        const vector<Game::ObjectInst> &instancesB = stateB.objects.find(objectName)->second;
+
+        if (instancesA.size() == 0 && instancesB.size() == 0)
+            continue;
+
+        if ((instancesA.size() == 1 && instancesB.size() == 0) ||
+            (instancesA.size() == 0 && instancesB.size() == 1))
+        {
+            sum += 20;
+            continue;
+        }
+
+        vec2s diff = instancesA[0].origin - instancesB[0].origin;
+        sum += min(10, math::abs((int)diff.x));
+        sum += min(10, math::abs((int)diff.y));
+    }
+    return sum;
+}
+
 void AtariUtil::overlayModelFrame(AppState &state, const Game::StateInst &gameState, Bitmap &bmp)
 {
     for (auto &o : gameState.objects)

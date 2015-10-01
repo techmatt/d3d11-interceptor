@@ -216,7 +216,7 @@ void ObjectAnalyzer::outputSegmentBlacklist(AppState &state, const Replay &repla
 
 void ObjectAnalyzer::assignObjectNames()
 {
-    for (const string &line : util::getFileLines(learningParams().ROMDatasetDir + "modelSpec/objectNames.txt", 3))
+    for (const string &line : util::getFileLinesCreate(learningParams().ROMDatasetDir + "modelSpec/objectNames.txt", 3))
     {
         const vector<string> words = util::split(line, '\t');
         if (words.size() == 2)

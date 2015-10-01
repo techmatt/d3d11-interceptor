@@ -25,7 +25,7 @@ void StateSpec::describe(ofstream &file) const
 
 void Model::initStateSpec(const ObjectAnalyzer &objectSpec, const string &variableSpecFile)
 {
-    for (const string &line : util::getFileLines(variableSpecFile, 3))
+    for (const string &line : util::getFileLinesCreate(variableSpecFile, 3))
     {
         const vector<string> parts = util::split(line, '\t');
         if (parts.size() == 5)
@@ -140,20 +140,31 @@ void Model::advance(AppState &state, const vector<StateInst> &states, int action
         if (o.name == "unnamed")
             continue;
 
+        if (o.name != "ball")
+            continue;
+
+        const ObjectInst *mostRecentInst = nullptr;
+        for (int frame = (int)states.size() - 1; !mostRecentInst && frame >= 0; frame--)
+        {
+            const auto &instances = states[frame].objects.find(o.name)->second;
+            if (instances.size() > 0)
+                mostRecentInst = &instances[0];
+        }
+
         HistoryMetricWeights metric;
         metric.action = 1.0f;
         metric.animation = 1.0f;
+        metric.position = 0.0001f;
         ObjectTransition transition = state.recallDatabase.objectSamples[o.name]->predictTransitionSingleton(state.replayDatabase, states, (int)states.size() - 1, action, o.name, metric);
 
         const StateInst &curState = states.back();
-        const vector<ObjectInst> &curInstances = curState.objects.find(o.name)->second;
-
-        if (curInstances.size() == 1)
+        
+        if (mostRecentInst != nullptr)
         {
             if (transition.nextAlive)
             {
                 ObjectInst objectInst;
-                objectInst.origin = curInstances[0].origin + transition.velocity;
+                objectInst.origin = mostRecentInst->origin + transition.velocity;
                 objectInst.segmentHash = transition.nextAnimation;
                 nextInst.objects[o.name].push_back(objectInst);
             }

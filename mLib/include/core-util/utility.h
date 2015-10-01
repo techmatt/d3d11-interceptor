@@ -300,6 +300,16 @@ namespace util
 	//
 	std::vector<std::string> getFileLines(std::ifstream& file, UINT minLineLength = 0);
 	std::vector<std::string> getFileLines(const std::string& filename, UINT minLineLength = 0);
+    inline std::vector<std::string> getFileLinesCreate(const std::string& filename, UINT minLineLength = 0)
+    {
+        if (!util::fileExists(filename))
+        {
+            std::ofstream file(filename);
+            std::cout << "Creating file: " << filename << std::endl;
+            return std::vector<std::string>();
+        }
+        return getFileLines(filename, minLineLength);
+    }
 
 	//! Save lines to file
 	void saveLinesToFile(const std::vector<std::string>& lines, const std::string& filename);

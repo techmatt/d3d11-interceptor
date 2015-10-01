@@ -270,6 +270,8 @@ namespace ml {
 
         iterator begin()
         {
+            if (m_width == 0)
+                return iterator(nullptr);
             return iterator(this);
         }
 
@@ -280,6 +282,8 @@ namespace ml {
 
         constIterator begin() const
         {
+            if (m_width == 0)
+                return constIterator(nullptr);
             return constIterator(this);
         }
 

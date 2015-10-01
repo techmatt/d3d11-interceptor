@@ -52,6 +52,7 @@ struct HistoryMetricWeights
 {
     float action;
     float animation;
+    float position;
 };
 
 struct ObjectSampleDataset
