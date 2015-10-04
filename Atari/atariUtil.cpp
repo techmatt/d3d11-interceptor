@@ -225,16 +225,16 @@ int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateI
     return sum;
 }
 
-int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, int stateAAction0, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
+int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
 {
     int sum = 0;
+
     for (int history = 0; history < historyDepth; history++)
     {
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
         const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
 
-        const int stateAAction = (history == 0) ? stateAAction0 : stateA.variables.find("action")->second;
-        if (stateAAction != stateB.variables.find("action")->second)
+        if (stateA.variables.find("action")->second != stateB.variables.find("action")->second)
             sum++;
     }
     return sum;

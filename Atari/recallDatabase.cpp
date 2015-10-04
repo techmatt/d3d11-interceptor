@@ -1,6 +1,16 @@
 
 #include "main.h"
 
+string ObjectSample::toString() const
+{
+    string result;
+    result += frame.toString() + "\n";
+    result += "nAlive=" + to_string(transition.nextAlive) + "\n";
+    result += "nAnimation=" + to_string(transition.nextAnimation) + "\n";
+    result += "nVelocity=" + transition.velocity.toString(",") + "\n";
+    return result;
+}
+
 void ObjectHistory::computeHashes()
 {
     velocityHash = computeVelocityAliveHash();
@@ -39,13 +49,17 @@ vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectH
     {
         for (auto &sample : historyByCombinedHash.find(combinedHash)->second)
             result.push_back(sample);
-        cout << "combined hash matches: " << result.size() << endl;
+
+        if (Constants::transitionDebugging)
+            cout << "combined hash matches: " << result.size() << endl;
     }
     if (result.size() == 0 && historyByVelocityHash.count(history.velocityHash) > 0)
     {
         for (auto &sample : historyByVelocityHash.find(history.velocityHash)->second)
             result.push_back(sample);
-        cout << "velocity hash matches: " << result.size() << endl;
+
+        if (Constants::transitionDebugging)
+            cout << "velocity hash matches: " << result.size() << endl;
     }
     return result;
 }
@@ -57,6 +71,11 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
 
     ObjectHistory history = RecallDatabase::computeObjectHistorySingleton(states, baseFrameIndex, objectName);
     vector<ObjectSample*> candidates = getTransitionCandidates(history);
+
+    if (Constants::dumpAllTransitions)
+    {
+        candidates = allSamples;
+    }
 
     ObjectTransition blankTransition;
     blankTransition.nextAlive = true;
@@ -72,14 +91,46 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
     vector<ObjectSample*> bestSamples;
     float bestSamplesDist = std::numeric_limits<float>::max();
 
+    
+    ofstream dumpFile;
+    if (Constants::dumpAllTransitions)
+    {
+        dumpFile.open("dump.csv", ios::out);
+        dumpFile << "selected action: " << action << endl;
+        for (int history = 0; history <= 10; history++)
+            dumpFile << "action" << history << ": " << states[max(0, (int)states.size() - 1 - history)].variables.find("action")->second << endl;
+        dumpFile << "frame,action,padB-y,trans-vy,animDist,actionDist,positionDist,dist" << endl;
+    }
+
     for (ObjectSample *sample : candidates)
     {
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
+
         const int animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
-        const int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, action, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
+        
+        int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
+        if (sample->nextAction != action)
+            actionDist++;
+
         const int positionDist = AtariUtil::comparePositionDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
 
         const float dist = animationDist * metric.animation + actionDist * metric.action + positionDist * metric.position;
+
+        if (Constants::dumpAllTransitions)
+        {
+            dumpFile << sample->frame.toString() << ",";
+
+            const Game::StateInst &stateInst = candidateStates[sample->frame.frameIndex];
+
+            dumpFile << stateInst.variables.find("action")->second << ",";
+            dumpFile << stateInst.objects.find("padB")->second[0].origin.y << ",";
+            dumpFile << sample->transition.velocity.y << ",";
+            
+            dumpFile << animationDist << ",";
+            dumpFile << actionDist << ",";
+            dumpFile << positionDist << ",";
+            dumpFile << dist << endl;
+        }
         
         if (dist < bestSamplesDist)
             bestSamples.clear();
@@ -97,7 +148,15 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(const ReplayDat
         return blankTransition;
     }
 
-    cout << "Best samples: " << bestSamples.size() << endl;
+    
+
+    if (Constants::transitionDebugging)
+    {
+        cout << "Best samples: " << bestSamples.size() << endl;
+        for (int sampleIndex = 0; sampleIndex < min(2, (int)bestSamples.size()); sampleIndex++)
+            cout << bestSamples[sampleIndex]->toString() << endl;
+    }
+
     return bestSamples[0]->transition;
 }
 
@@ -180,12 +239,15 @@ ObjectSampleDataset* RecallDatabase::makeObjectSampleDataset(AppState &state, co
             newSample->frame = FrameID(replay->replay->index, baseFrameIndex);
             newSample->history = computeObjectHistorySingleton(replay->states, baseFrameIndex, objectName);
             newSample->transition = computeObjectTransitionSingleton(replay->states, baseFrameIndex, objectName);
+            newSample->nextAction = replay->states[baseFrameIndex + 1].variables.find("action")->second;
             
             vector<ObjectSample*> &combinedHashList = result->historyByCombinedHash[newSample->history.combinedHash()];
             combinedHashList.push_back(newSample);
 
             vector<ObjectSample*> &velocityHashList = result->historyByVelocityHash[newSample->history.velocityHash];
             velocityHashList.push_back(newSample);
+
+            result->allSamples.push_back(newSample);
         }
     }
 

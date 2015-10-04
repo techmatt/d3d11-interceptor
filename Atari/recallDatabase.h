@@ -43,9 +43,12 @@ struct ObjectTransition
 
 struct ObjectSample
 {
+    string toString() const;
+
     FrameID frame;
     ObjectHistory history;
     ObjectTransition transition;
+    int nextAction;
 };
 
 struct HistoryMetricWeights
@@ -53,6 +56,7 @@ struct HistoryMetricWeights
     float action;
     float animation;
     float position;
+    map<string, float> objectOffset;
 };
 
 struct ObjectSampleDataset
@@ -62,6 +66,7 @@ struct ObjectSampleDataset
 
     map< UINT64, vector<ObjectSample*> > historyByCombinedHash;
     map< UINT64, vector<ObjectSample*> > historyByVelocityHash;
+    vector<ObjectSample*> allSamples;
 };
 
 struct RecallDatabase

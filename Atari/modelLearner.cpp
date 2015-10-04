@@ -11,8 +11,13 @@ namespace Game
 
     for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
     {
-        model.loadObjects(state, state.objectAnalyzer, *replay.frames[frameIndex], states[frameIndex]);
+        const ReplayFrame &prevFrame = *replay.frames[max(frameIndex - 1, 0)];
+        const ReplayFrame &frame = *replay.frames[frameIndex];
+        model.loadObjects(state, state.objectAnalyzer, frame, states[frameIndex]);
         model.readVariables(state.segmentDatabase, states[frameIndex]);
+
+        states[frameIndex].variables["action"] = prevFrame.action;
+        states[frameIndex].variables["reward"] = frame.reward;
     }
 }
 

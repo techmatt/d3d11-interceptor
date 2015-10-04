@@ -140,8 +140,8 @@ void Model::advance(AppState &state, const vector<StateInst> &states, int action
         if (o.name == "unnamed")
             continue;
 
-        if (o.name != "ball")
-            continue;
+        //if (o.name != "padB")
+        //    continue;
 
         const ObjectInst *mostRecentInst = nullptr;
         for (int frame = (int)states.size() - 1; !mostRecentInst && frame >= 0; frame--)
@@ -153,7 +153,7 @@ void Model::advance(AppState &state, const vector<StateInst> &states, int action
 
         HistoryMetricWeights metric;
         metric.action = 1.0f;
-        metric.animation = 1.0f;
+        metric.animation = 0.001f;
         metric.position = 0.0001f;
         ObjectTransition transition = state.recallDatabase.objectSamples[o.name]->predictTransitionSingleton(state.replayDatabase, states, (int)states.size() - 1, action, o.name, metric);
 

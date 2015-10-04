@@ -152,8 +152,8 @@ void Vizzer::render(ApplicationData &app)
 
     vector<string> text;
     text.push_back("FPS: " + convert::toString(timer.framesPerSecond()));
-
-    text.push_back("action = " + to_string(frameToRender->action));
+    text.push_back("frame: " + state.curFrame.toString());
+    text.push_back("action: " + to_string(frameToRender->action));
 
     const bool displayVariables = true;
     if (displayVariables)
@@ -162,6 +162,12 @@ void Vizzer::render(ApplicationData &app)
         {
             text.push_back(v.first + " = " + to_string(v.second));
         }
+
+        if (gameStateInst.objects.find("padB")->second.size() > 0)
+            text.push_back("padB-y, actual = " + to_string(gameStateInst.objects.find("padB")->second[0].origin.y));
+
+        if (state.modelStateHistory.size() > 0)
+            text.push_back("padB-y, predicted = " + to_string(state.modelStateHistory.back().objects.find("padB")->second[0].origin.y));
     }
     
     const bool useText = true;
@@ -203,6 +209,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
     if (advanceModel)
     {
         int action = state.replayDatabase.getFrame(state.gameModelFrame).action;
+        //cout << "Selected action = " << action << " drawn from frame " << state.gameModelFrame.toString() << endl;
         state.gameModelFrame = state.gameModelFrame.delta(1);
         
         Game::StateInst nextState;

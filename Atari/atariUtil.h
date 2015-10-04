@@ -13,7 +13,7 @@ public:
     static void saveStateGraph(const vector<Game::StateInst> &states, const string &filename);
 
     static int compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
-    static int compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, int stateAAction0, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
+    static int compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
     static int comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
 
     static void overlayModelFrame(AppState &state, const Game::StateInst &gameState, Bitmap &bmp);
