@@ -206,8 +206,8 @@ int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateI
     {
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
         const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
-        const vector<Game::ObjectInst> &instancesA = stateA.objects.find(objectName)->second;
-        const vector<Game::ObjectInst> &instancesB = stateB.objects.find(objectName)->second;
+        const vector<Game::ObjectInst> &instancesA = stateA.getInstances(objectName);
+        const vector<Game::ObjectInst> &instancesB = stateB.getInstances(objectName);
 
         if (instancesA.size() == 0 && instancesB.size() == 0)
             continue;
@@ -240,6 +240,67 @@ int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &states
     return sum;
 }
 
+
+const Game::ObjectInst* AtariUtil::findSingleton(const vector<Game::StateInst> &states, int frameIndex, const string &objectName)
+{
+    const Game::StateInst &state = states[max(0, frameIndex)];
+    const vector<Game::ObjectInst> &instances = state.getInstances(objectName);
+    if (instances.size() == 0)
+        return nullptr;
+    else
+        return &instances[0];
+}
+
+int AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2, int historyDepth)
+{
+    int sum = 0;
+
+    auto bboxDist = [](const bbox2f &a, const bbox2f &b)
+    {
+        const vec2f diff = a.getCenter() - b.getCenter();
+        const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
+        const int distX = max(0.0f, abs(diff.x) - variance.x);
+        const int distY = max(0.0f, abs(diff.y) - variance.y);
+        return max(distX, distY);
+    };
+
+    for (int history = 0; history < historyDepth; history++)
+    {
+        const Game::ObjectInst *instA1 = findSingleton(statesA, baseFrameIndexA - history, objectName1);
+        const Game::ObjectInst *instA2 = findSingleton(statesA, baseFrameIndexA - history, objectName2);
+
+        const Game::ObjectInst *instB1 = findSingleton(statesB, baseFrameIndexB - history, objectName1);
+        const Game::ObjectInst *instB2 = findSingleton(statesB, baseFrameIndexB - history, objectName2);
+
+        if (instA1 == nullptr || instA2 == nullptr || instB1 == nullptr || instB2 == nullptr)
+        {
+            sum += 1000;
+            continue;
+        }
+
+        const bbox2f bboxA1 = instA1->bbox(segments);
+        const bbox2f bboxA2 = instA2->bbox(segments);
+        const bbox2f bboxB1 = instB1->bbox(segments);
+        const bbox2f bboxB2 = instB2->bbox(segments);
+
+        const vec2i diffA = bboxA2.getCenter() - bboxA1.getCenter();
+        const vec2i diffB = bboxB2.getCenter() - bboxB1.getCenter();
+
+        const int distA = bboxDist(bboxA1, bboxA2);
+        const int distB = bboxDist(bboxB1, bboxB2);
+
+        if (max(distA, distB) >= learningParams().maxProximityDist)
+            sum += 1000;
+        
+        const vec2i offsetDiff = diffB - diffA;
+
+        sum += math::abs(distA - distB);
+        sum += math::abs((int)offsetDiff.x);
+        sum += math::abs((int)offsetDiff.y);
+    }
+    return sum;
+}
+
 int AtariUtil::comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
 {
     int sum = 0;
@@ -247,8 +308,8 @@ int AtariUtil::comparePositionDescriptorDistSingleton(const vector<Game::StateIn
     {
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
         const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
-        const vector<Game::ObjectInst> &instancesA = stateA.objects.find(objectName)->second;
-        const vector<Game::ObjectInst> &instancesB = stateB.objects.find(objectName)->second;
+        const vector<Game::ObjectInst> &instancesA = stateA.getInstances(objectName);
+        const vector<Game::ObjectInst> &instancesB = stateB.getInstances(objectName);
 
         if (instancesA.size() == 0 && instancesB.size() == 0)
             continue;

@@ -38,6 +38,7 @@
             this.buttonTestAnchor = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.textBoxReplayIndex = new System.Windows.Forms.TextBox();
+            this.checkBoxDumpTransitions = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // timerProcessMessages
@@ -111,11 +112,23 @@
             this.textBoxReplayIndex.TabIndex = 2;
             this.textBoxReplayIndex.Text = "0";
             // 
+            // checkBoxDumpTransitions
+            // 
+            this.checkBoxDumpTransitions.AutoSize = true;
+            this.checkBoxDumpTransitions.Location = new System.Drawing.Point(11, 121);
+            this.checkBoxDumpTransitions.Name = "checkBoxDumpTransitions";
+            this.checkBoxDumpTransitions.Size = new System.Drawing.Size(121, 19);
+            this.checkBoxDumpTransitions.TabIndex = 3;
+            this.checkBoxDumpTransitions.Text = "Dump transitions";
+            this.checkBoxDumpTransitions.UseVisualStyleBackColor = true;
+            this.checkBoxDumpTransitions.CheckedChanged += new System.EventHandler(this.checkBoxDumpTransitions_CheckedChanged);
+            // 
             // UIWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 382);
+            this.Controls.Add(this.checkBoxDumpTransitions);
             this.Controls.Add(this.textBoxReplayIndex);
             this.Controls.Add(this.textBoxFrameIndex);
             this.Controls.Add(this.label3);
@@ -147,6 +160,7 @@
         private System.Windows.Forms.Button buttonTestAnchor;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxReplayIndex;
+        private System.Windows.Forms.CheckBox checkBoxDumpTransitions;
     }
 }
 

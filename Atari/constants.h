@@ -7,5 +7,5 @@
 struct Constants
 {
     static const bool transitionDebugging = false;
-    static const bool dumpAllTransitions = false;
+    static const bool segmentGraphDebugging = false;
 };

@@ -109,14 +109,14 @@ public:
         return result;
     }
 
-    bool hasEdge(UINT n0, UINT n1)
+    bool hasEdge(UINT n0, UINT n1) const
     {
         if (n0 > n1) std::swap(n0, n1);
         const Node &node0 = _nodes[n0];
         const UINT edgeCount = (UINT)node0.edges.size();
         for (UINT edgeIndex = 0; edgeIndex < edgeCount; edgeIndex++)
         {
-            Edge &edge = _edges[node0.edges[edgeIndex]];
+            const Edge &edge = _edges[node0.edges[edgeIndex]];
             if (edge.node0 == n0 && edge.node1 == n1)
                 return true;
         }
@@ -135,6 +135,31 @@ public:
                 return edge;
         }
         return *((Edge*)nullptr);
+    }
+
+    void writeToCSV(const std::string &filename, const std::function<std::string(const NodeData&)> &nodeWriter) const
+    {
+        std::ofstream file(filename);
+        const UINT nodeCount = (UINT)_nodes.size();
+        file << "Nodes,data,edges";
+        for (UINT nodeIndex = 0; nodeIndex < _nodes.size(); nodeIndex++)
+            file << "," << nodeIndex;
+        file << endl;
+
+        for (UINT nodeIndexA = 0; nodeIndexA < nodeCount; nodeIndexA++)
+        {
+            file << nodeIndexA << ",";
+            file << nodeWriter(_nodes[nodeIndexA].data) << ",";
+            file << _nodes[nodeIndexA].edges.size();
+            for (UINT nodeIndexB = 0; nodeIndexB < nodeCount; nodeIndexB++)
+            {
+                if (hasEdge(nodeIndexA, nodeIndexB))
+                    file << ",1";
+                else
+                    file << ",0";
+            }
+            file << endl;
+        }
     }
 
 private:

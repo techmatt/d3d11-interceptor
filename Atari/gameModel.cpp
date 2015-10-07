@@ -4,6 +4,12 @@
 namespace Game
 {
 
+bbox2f ObjectInst::bbox(const SegmentDatabase &database) const
+{
+    bbox2i result;
+    return bbox2f(origin, origin + database.getSegment(segmentHash)->dimensions);
+}
+
 void StateSpec::describe(ofstream &file) const
 {
     file << "State specification" << endl;
@@ -132,7 +138,7 @@ void Model::readVariables(const SegmentDatabase &segments, StateInst &inst) cons
     }
 }
 
-void Model::advance(AppState &state, const vector<StateInst> &states, int action, StateInst &nextInst)
+void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, int action, StateInst &nextInst)
 {
     
     for (const auto &o : stateSpec.objects)
@@ -146,16 +152,21 @@ void Model::advance(AppState &state, const vector<StateInst> &states, int action
         const ObjectInst *mostRecentInst = nullptr;
         for (int frame = (int)states.size() - 1; !mostRecentInst && frame >= 0; frame--)
         {
-            const auto &instances = states[frame].objects.find(o.name)->second;
-            if (instances.size() > 0)
-                mostRecentInst = &instances[0];
+            auto &objects = states[frame].objects;
+            if (objects.count(o.name) > 0)
+            {
+                const auto &instances = objects.find(o.name)->second;
+                if (instances.size() > 0)
+                    mostRecentInst = &instances[0];
+            }
         }
 
         HistoryMetricWeights metric;
         metric.action = 1.0f;
         metric.animation = 0.001f;
         metric.position = 0.0001f;
-        ObjectTransition transition = state.recallDatabase.objectSamples[o.name]->predictTransitionSingleton(state.replayDatabase, states, (int)states.size() - 1, action, o.name, metric);
+        ObjectSampleDataset &oDataset = *state.recallDatabase.objectSamples[o.name];
+        ObjectTransition transition = oDataset.predictTransitionSingleton(state, state.replayDatabase, testReplayIndex, states, (int)states.size() - 1, action, o.name, metric);
 
         const StateInst &curState = states.back();
         

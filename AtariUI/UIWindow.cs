@@ -165,5 +165,10 @@ namespace UIWindow
         {
             SendMessage("testAnchor");
         }
+
+        private void checkBoxDumpTransitions_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("dumpAllTransitions " + checkBoxDumpTransitions.Checked);
+        }
     }
 }

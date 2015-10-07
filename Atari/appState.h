@@ -4,6 +4,7 @@ struct AppState
     AppState()
     {
         replayFramesSkipsLeft = 10;
+        dumpAllTransitions = false;
     }
 
     const ColourPalette& getPalette() const
@@ -43,4 +44,6 @@ struct AppState
     int replayFramesSkipsLeft;
 
     Cameraf camera;
+
+    bool dumpAllTransitions;
 };

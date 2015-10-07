@@ -45,6 +45,7 @@ struct StateSpec
 //
 struct ObjectInst
 {
+    bbox2f bbox(const SegmentDatabase &database) const;
     vec2s origin;
     UINT64 segmentHash;
 };
@@ -54,18 +55,20 @@ struct ObjectInst
 //
 struct StateInst
 {
-    const vector<ObjectInst>& getObjectList(const string &objectName) const
+    const vector<ObjectInst>& getInstances(const string &objectName) const
     {
         auto it = objects.find(objectName);
         if (it == objects.end())
         {
-            cout << "Object not found: " << objectName << endl;
+            //cout << "Object not found: " << objectName << endl;
+            return emptyObjects;
         }
         return it->second;
     }
 
     map<string, int> variables;
     map<string, vector<ObjectInst> > objects;
+    vector<ObjectInst> emptyObjects;
 };
 
 enum ConditionType
@@ -203,7 +206,7 @@ struct VariableDisplayCounter : public VariableDisplay
 
     int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
-        return (int)inst.getObjectList(spriteName).size();
+        return (int)inst.getInstances(spriteName).size();
     }
 
     string spriteName;
@@ -223,7 +226,7 @@ struct VariableDisplayHorizontalBar : public VariableDisplay
     }
     int readVariable(const SegmentDatabase &segments, const StateInst &inst) const
     {
-        const auto &list = inst.getObjectList(spriteName);
+        const auto &list = inst.getInstances(spriteName);
         if (list.size() == 0)
             return 0;
         if (list.size() >= 2)
@@ -247,7 +250,7 @@ struct Model
 {
     void initStateSpec(const ObjectAnalyzer &objectSpec, const string &variableSpecFile);
 
-    void advance(AppState &state, const vector<StateInst> &states, int action, StateInst &nextInst);
+    void advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, int action, StateInst &nextInst);
 
     void loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const ReplayFrame &frame, StateInst &inst) const;
     void readVariables(const SegmentDatabase &segments, StateInst &inst) const;

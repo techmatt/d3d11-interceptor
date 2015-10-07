@@ -61,8 +61,10 @@ struct HistoryMetricWeights
 
 struct ObjectSampleDataset
 {
-    vector<ObjectSample*> getTransitionCandidates(const ObjectHistory &history) const;
-    ObjectTransition predictTransitionSingleton(const ReplayDatabase &replays, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const string &objectName, const HistoryMetricWeights &metric) const;
+    void dumpToFile(const string &filename) const;
+
+    vector<ObjectSample*> getTransitionCandidates(const ObjectHistory &history, int testReplayIndex) const;
+    ObjectTransition predictTransitionSingleton(AppState &state, const ReplayDatabase &replays, int testReplayIndex, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const string &objectName, const HistoryMetricWeights &metric) const;
 
     map< UINT64, vector<ObjectSample*> > historyByCombinedHash;
     map< UINT64, vector<ObjectSample*> > historyByVelocityHash;
@@ -76,7 +78,7 @@ struct RecallDatabase
     static ObjectTransition computeObjectTransitionSingleton(const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName);
     static ObjectHistory computeObjectHistorySingleton(const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName);
 
-    void predictAllTransitions(const ReplayDatabase &replays, const vector<Game::StateInst> &states, const string &objectName, const string &filename);
+    void predictAllTransitions(AppState &state, const ReplayDatabase &replays, int testReplayIndex, const vector<Game::StateInst> &states, const string &objectName, const string &filename);
 
     map<string, ObjectSampleDataset*> objectSamples;
 

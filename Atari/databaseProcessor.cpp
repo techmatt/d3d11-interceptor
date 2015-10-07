@@ -12,12 +12,10 @@ void DatabaseProcessor::go(AppState &state)
     computeObjects(state);
     annotateObjects(state);
 
-    //dumpDebugFrames(state, FrameID(0, 1505), 20);
-
-    const bool dumpViz = true;
+    const bool dumpViz = false;
     if (dumpViz)
     {
-        dumpDebugFrames(state, FrameID(0, 100), 20);
+        dumpDebugFrames(state, FrameID(1, 500), 10);
 
         state.segmentDatabase.saveVizColors(state.getPalette(), learningParams().ROMDatasetDir + "vizColors/");
         state.segmentDatabase.saveVizObjects(state.getPalette(), learningParams().ROMDatasetDir + "vizObjects/");

@@ -18,7 +18,8 @@ struct LearningParams
 
         params.readParameter("historyFrames", historyFrames);
         
-
+        params.readParameter("maxProximityDist", maxProximityDist);
+        
         ROMDatasetDir = datasetDir + ROMName + "/";
     }
 
@@ -31,6 +32,7 @@ struct LearningParams
     int objectMotionRadius;
     int minMaskSize;
     int historyFrames;
+    int maxProximityDist;
 };
 
 extern LearningParams g_learningParams;

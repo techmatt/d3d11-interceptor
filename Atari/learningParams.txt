@@ -3,8 +3,10 @@ ROMDir=C:\Code\Arcade-Learning-Environment-0.5.0\roms\
 
 ROMName=pong
 
-objectMotionRadius=16
+objectMotionRadius=30
 
 minMaskSize=3
 
 historyFrames=5
+
+maxProximityDist=4

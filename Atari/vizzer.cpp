@@ -61,7 +61,6 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("terminate", [&](const vector<string> &params) {
         PostQuitMessage(0);
     });
-
     state.eventMap.registerEvent("loadFrame", [&](const vector<string> &params) {
         state.curFrame.replayIndex = util::convertTo<int>(params[1]);
         state.curFrame.replayIndex = math::clamp(state.curFrame.replayIndex, 0, (int)state.replayDatabase.replays.size() - 1);
@@ -70,6 +69,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
         {
             state.curFrame.frameIndex = 0;
         }
+    });
+    state.eventMap.registerEvent("dumpAllTransitions", [&](const vector<string> &params) {
+        state.dumpAllTransitions = ml::util::convertTo<bool>(params[1]);
     });
 }
 
@@ -167,7 +169,11 @@ void Vizzer::render(ApplicationData &app)
             text.push_back("padB-y, actual = " + to_string(gameStateInst.objects.find("padB")->second[0].origin.y));
 
         if (state.modelStateHistory.size() > 0)
-            text.push_back("padB-y, predicted = " + to_string(state.modelStateHistory.back().objects.find("padB")->second[0].origin.y));
+        {
+            auto &objects = state.modelStateHistory.back().objects;
+            if (objects.count("padB") > 0 && objects.find("padB")->second.size() > 0)
+                text.push_back("padB-y, predicted = " + to_string(objects.find("padB")->second[0].origin.y));
+        }
     }
     
     const bool useText = true;
@@ -213,7 +219,7 @@ void Vizzer::keyDown(ApplicationData &app, UINT key)
         state.gameModelFrame = state.gameModelFrame.delta(1);
         
         Game::StateInst nextState;
-        state.model.advance(state, state.modelStateHistory, action, nextState);
+        state.model.advance(state, state.gameModelFrame.replayIndex, state.modelStateHistory, action, nextState);
         state.modelStateHistory.push_back(nextState);
 
         /*ControllerState controller;

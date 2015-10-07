@@ -176,8 +176,7 @@ namespace ml {
 		}
 
 		vec2<FloatType> getCenter() const {
-			vec2<FloatType> center = getMin() + getMax();
-			center *= (FloatType)0.5;
+			vec2<FloatType> center = (getMin() + getMax()) / (FloatType)2.0;
 			return center;
 		}
 

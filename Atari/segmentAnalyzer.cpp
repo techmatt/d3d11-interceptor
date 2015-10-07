@@ -56,6 +56,11 @@ void SegmentAnalyzer::recordObjectMatch(const SegmentDatabase &segments, const S
 
 vector<GameObject*> SegmentAnalyzer::extractObjects()
 {
+    if (Constants::segmentGraphDebugging)
+    {
+        cout << "Dumping segment graph" << endl;
+        graph.writeToCSV(learningParams().ROMDatasetDir + "graph.csv", [](const SegmentAnimation* node) { return to_string(node->hash); });
+    }
     vector< vector<const SegmentGraph::Node*> > components = graph.computeConnectedComponents();
 
     cout << "Component count: " << components.size() << endl;
