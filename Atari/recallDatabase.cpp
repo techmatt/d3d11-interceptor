@@ -137,7 +137,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
         dumpFile << "selected action: " << action << endl;
         for (int history = 0; history <= 10; history++)
             dumpFile << "action" << history << ": " << states[max(0, (int)states.size() - 1 - history)].variables.find("action")->second << endl;
-        dumpFile << "frame,action,padB-y,ball-y,trans-vy,barrier,velDist,animDist,actionDist,positionDist,contactPadADist,offsetPadADist,contactPadBDist,offsetPadBDist,lineConstraints,dist" << endl;
+        dumpFile << "frame,action,padBPos,ballPos,trans-vy,barrier,velDist,animDist,actionDist,positionDist,contactPadADist,offsetPadADist,contactPadBDist,offsetPadBDist,lineConstraints,dist" << endl;
     }
 
     for (ObjectSample *sample : candidates)
@@ -154,11 +154,11 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
         const double velocityDist = AtariUtil::compareVelocityDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
 
-        const double contactPadADist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA", 1);
-        const double offsetPadADist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA", 1);
+        const double contactPadADist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA");
+        const double offsetPadADist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA");
 
-        const double contactPadBDist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
-        const double offsetPadBDist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
+        const double contactPadBDist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB");
+        const double offsetPadBDist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB");
         
         const double lineConstraints = AtariUtil::compareLineConstraintsSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, metric.lines);
 
@@ -183,12 +183,12 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
             if (stateInst.objects.find("padB")->second.size() == 0)
                 dumpFile << "dead,";
             else
-                dumpFile << stateInst.objects.find("padB")->second[0].origin.y << ",";
+                dumpFile << stateInst.objects.find("padB")->second[0].origin.toString("x") << ",";
 
             if (stateInst.objects.find("ball")->second.size() == 0)
                 dumpFile << "dead,";
             else
-                dumpFile << stateInst.objects.find("ball")->second[0].origin.y << ",";
+                dumpFile << stateInst.objects.find("ball")->second[0].origin.toString("x") << ",";
 
             dumpFile << sample->transition.velocity.y << ",x,";
             
@@ -443,9 +443,6 @@ void RecallDatabase::predictAllTransitions(AppState &state, const ReplayDatabase
         file << actualTransition.nextAlive << ",";
 
         HistoryMetricWeights metric;
-        metric.action = 1.0f;
-        metric.animation = 1.0f;
-        metric.position = 0.0001f;
         ObjectTransition predictedTransition = objectSamples[objectName]->predictTransitionSingleton(state, replays, testReplayIndex, states, baseFrameIndex, states[baseFrameIndex].variables.find("action")->second, objectName, metric);
         file << predictedTransition.velocity.x << ",";
         file << predictedTransition.velocity.y << ",";

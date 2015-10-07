@@ -60,10 +60,13 @@ struct HistoryMetricWeights
         animation = 0.0f;
         position = 0.0f;
 
-        lines.push_back(LineConstraint(33, false, 10.0f));
-        lines.push_back(LineConstraint(34, false, 10.0f));
-        lines.push_back(LineConstraint(191, false, 10.0f));
-        lines.push_back(LineConstraint(192, false, 10.0f));
+        lines.push_back(LineConstraint(33, false, 100.0f));
+        lines.push_back(LineConstraint(34, false, 100.0f));
+        lines.push_back(LineConstraint(191, false, 100.0f));
+        lines.push_back(LineConstraint(192, false, 100.0f));
+
+        lines.push_back(LineConstraint(3, true, 100.0f));
+        lines.push_back(LineConstraint(156, true, 100.0f));
     }
     float velocity;
     float action;
