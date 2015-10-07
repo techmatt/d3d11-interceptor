@@ -199,7 +199,7 @@ void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const stri
     }
 }
 
-int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
+double AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
 {
     int sum = 0;
     for (int history = 0; history < historyDepth; history++)
@@ -225,7 +225,7 @@ int AtariUtil::compareAnimationDescriptorDistSingleton(const vector<Game::StateI
     return sum;
 }
 
-int AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
+double AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth)
 {
     int sum = 0;
 
@@ -251,16 +251,16 @@ const Game::ObjectInst* AtariUtil::findSingleton(const vector<Game::StateInst> &
         return &instances[0];
 }
 
-int AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2, int historyDepth)
+double AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2, int historyDepth)
 {
-    int sum = 0;
+    double sum = 0.0;
 
     auto bboxDist = [](const bbox2f &a, const bbox2f &b)
     {
         const vec2f diff = a.getCenter() - b.getCenter();
         const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
-        const int distX = max(0.0f, abs(diff.x) - variance.x);
-        const int distY = max(0.0f, abs(diff.y) - variance.y);
+        const double distX = max(0.0f, abs(diff.x) - variance.x);
+        const double distY = max(0.0f, abs(diff.y) - variance.y);
         return max(distX, distY);
     };
 
@@ -286,22 +286,142 @@ int AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &segme
         const vec2i diffA = bboxA2.getCenter() - bboxA1.getCenter();
         const vec2i diffB = bboxB2.getCenter() - bboxB1.getCenter();
 
-        const int distA = bboxDist(bboxA1, bboxA2);
-        const int distB = bboxDist(bboxB1, bboxB2);
+        const double distA = bboxDist(bboxA1, bboxA2);
+        const double distB = bboxDist(bboxB1, bboxB2);
+
+        if (distA >= learningParams().maxProximityDist && distB >= learningParams().maxProximityDist)
+            continue;
 
         if (max(distA, distB) >= learningParams().maxProximityDist)
             sum += 1000;
-        
+
         const vec2i offsetDiff = diffB - diffA;
 
         sum += math::abs(distA - distB);
-        sum += math::abs((int)offsetDiff.x);
-        sum += math::abs((int)offsetDiff.y);
+        sum += math::abs(offsetDiff.x);
+        sum += math::abs(offsetDiff.y);
     }
     return sum;
 }
 
-int AtariUtil::comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
+double AtariUtil::compareContactDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2, int historyDepth)
+{
+    double sum = 0.0;
+
+    auto bboxDist = [](const bbox2f &a, const bbox2f &b)
+    {
+        const vec2f diff = a.getCenter() - b.getCenter();
+        const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
+        const float distX = max(0.0f, abs(diff.x) - variance.x);
+        const float distY = max(0.0f, abs(diff.y) - variance.y);
+        return max(distX, distY);
+    };
+
+    for (int history = 0; history < historyDepth; history++)
+    {
+        const Game::ObjectInst *instA1 = findSingleton(statesA, baseFrameIndexA - history, objectName1);
+        const Game::ObjectInst *instA2 = findSingleton(statesA, baseFrameIndexA - history, objectName2);
+
+        const Game::ObjectInst *instB1 = findSingleton(statesB, baseFrameIndexB - history, objectName1);
+        const Game::ObjectInst *instB2 = findSingleton(statesB, baseFrameIndexB - history, objectName2);
+
+        if (instA1 == nullptr || instA2 == nullptr || instB1 == nullptr || instB2 == nullptr)
+        {
+            sum += 1000;
+            continue;
+        }
+
+        const bbox2f bboxA1 = instA1->bbox(segments);
+        const bbox2f bboxA2 = instA2->bbox(segments);
+        const bbox2f bboxB1 = instB1->bbox(segments);
+        const bbox2f bboxB2 = instB2->bbox(segments);
+
+        const float distA = bboxDist(bboxA1, bboxA2);
+        const float distB = bboxDist(bboxB1, bboxB2);
+
+        if (distA >= learningParams().maxProximityDist && distB >= learningParams().maxProximityDist)
+            continue;
+
+        if (max(distA, distB) >= learningParams().maxProximityDist)
+        {
+            sum++;
+            continue;
+        }
+    }
+    return sum;
+}
+
+double AtariUtil::compareLineConstraintsSingleton(const vector<Game::StateInst> &statesA, int frameIndexA, const vector<Game::StateInst> &statesB, int frameIndexB, const string &objectName, const vector<LineConstraint> &lines)
+{
+    const Game::ObjectInst *instA = findSingleton(statesA, frameIndexA, objectName);
+    const Game::ObjectInst *instB = findSingleton(statesB, frameIndexB, objectName);
+
+    if (instA == nullptr && instB == nullptr)
+        return 0.0f;
+    if (instA == nullptr || instB == nullptr)
+        return 1000.0f;
+
+    double sum = 0.0;
+    for (const LineConstraint &l : lines)
+    {
+        auto onLine = [&](const vec2s &point)
+        {
+            if (l.vertical)
+                return point.x == l.value;
+            else
+                return point.y == l.value;
+        };
+        bool aOnLine = onLine(instA->origin);
+        bool bOnLine = onLine(instB->origin);
+        if (aOnLine != bOnLine)
+            sum += l.weight;
+    }
+    return sum;
+}
+
+double AtariUtil::compareVelocityDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
+{
+    auto getVelocity = [&](const vector<Game::StateInst> &states, int frame, bool &alive)
+    {
+        const Game::StateInst &state = states[max(0, frame)];
+        const Game::StateInst &stateP = states[max(0, frame - 1)];
+        const vector<Game::ObjectInst> &instances = state.getInstances(objectName);
+        const vector<Game::ObjectInst> &instancesP = stateP.getInstances(objectName);
+
+        if (instances.size() == 0 || instancesP.size() == 0)
+        {
+            alive = false;
+            return vec2s(0, 0);
+        }
+
+        alive = true;
+        return instances[0].origin - instancesP[0].origin;
+    };
+
+    int sum = 0;
+    for (int history = 0; history < historyDepth; history++)
+    {
+        bool aliveA, aliveB;
+        const vec2s velA = getVelocity(statesA, baseFrameIndexA - history, aliveA);
+        const vec2s velB = getVelocity(statesB, baseFrameIndexB - history, aliveB);
+
+        if (!aliveA && !aliveB)
+            continue;
+
+        if (!aliveA || !aliveB)
+        {
+            sum += 20;
+            continue;
+        }
+
+        const vec2s diff = velB - velA;
+        sum += math::abs(diff.x);
+        sum += math::abs(diff.y);
+    }
+    return sum;
+}
+
+double AtariUtil::comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth)
 {
     int sum = 0;
     for (int history = 0; history < historyDepth; history++)

@@ -73,6 +73,9 @@ UINT64 ObjectHistory::computeAnimationHash() const
 
 vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectHistory &history, int testReplayIndex) const
 {
+    // TODO: examine better ways to reduce sample count
+    return allSamples;
+
     vector<ObjectSample*> result;
     const UINT64 combinedHash = history.combinedHash();
     if (historyByCombinedHash.count(combinedHash) > 0)
@@ -125,7 +128,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
     }
 
     vector<ObjectSample*> bestSamples;
-    float bestSamplesDist = std::numeric_limits<float>::max();
+    double bestSamplesDist = std::numeric_limits<double>::max();
 
     ofstream dumpFile;
     if (state.dumpAllTransitions)
@@ -134,30 +137,40 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
         dumpFile << "selected action: " << action << endl;
         for (int history = 0; history <= 10; history++)
             dumpFile << "action" << history << ": " << states[max(0, (int)states.size() - 1 - history)].variables.find("action")->second << endl;
-        dumpFile << "frame,action,padB-y,trans-vy,animDist,actionDist,positionDist,offsetPadBDist,dist" << endl;
+        dumpFile << "frame,action,padB-y,ball-y,trans-vy,barrier,velDist,animDist,actionDist,positionDist,contactPadADist,offsetPadADist,contactPadBDist,offsetPadBDist,lineConstraints,dist" << endl;
     }
 
     for (ObjectSample *sample : candidates)
     {
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
 
-        const int animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
+        const double animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
         
-        int actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
+        double actionDist = AtariUtil::compareActionDescriptorDist(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, learningParams().historyFrames);
         if (sample->nextAction != action)
             actionDist++;
 
-        const int positionDist = AtariUtil::comparePositionDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
+        const double positionDist = AtariUtil::comparePositionDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
 
-        const int offsetPadBDist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
-        if (objectName == "ball" && offsetPadBDist == 0)
-        {
-            cout << "perfect" << endl;
-            int a = 5;
-            int offsetPadBDist2 = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
-        }
+        const double velocityDist = AtariUtil::compareVelocityDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);
 
-        const float dist = animationDist * metric.animation + actionDist * metric.action + positionDist * metric.position + offsetPadBDist * 10;
+        const double contactPadADist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA", 1);
+        const double offsetPadADist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padA", 1);
+
+        const double contactPadBDist = AtariUtil::compareContactDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
+        const double offsetPadBDist = AtariUtil::compareOffsetDescriptorDistSingleton(state.segmentDatabase, states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, "padB", 1);
+        
+        const double lineConstraints = AtariUtil::compareLineConstraintsSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, metric.lines);
+
+        const double dist = velocityDist * metric.velocity +
+                           animationDist * metric.animation +
+                           actionDist * metric.action +
+                           positionDist * metric.position +
+                           contactPadADist * 20 +
+                           offsetPadADist +
+                           contactPadBDist * 20 +
+                           offsetPadBDist +
+                           lineConstraints;
 
         if (state.dumpAllTransitions)
         {
@@ -171,12 +184,23 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
                 dumpFile << "dead,";
             else
                 dumpFile << stateInst.objects.find("padB")->second[0].origin.y << ",";
-            dumpFile << sample->transition.velocity.y << ",";
+
+            if (stateInst.objects.find("ball")->second.size() == 0)
+                dumpFile << "dead,";
+            else
+                dumpFile << stateInst.objects.find("ball")->second[0].origin.y << ",";
+
+            dumpFile << sample->transition.velocity.y << ",x,";
             
+            dumpFile << velocityDist << ",";
             dumpFile << animationDist << ",";
             dumpFile << actionDist << ",";
             dumpFile << positionDist << ",";
+            dumpFile << contactPadADist << ",";
+            dumpFile << offsetPadADist << ",";
+            dumpFile << contactPadBDist << ",";
             dumpFile << offsetPadBDist << ",";
+            dumpFile << lineConstraints << ",";
             dumpFile << dist << endl;
         }
         
@@ -197,6 +221,15 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
     {
         cout << "No samples found" << endl;
         return blankTransition;
+    }
+
+    if (state.dumpAllTransitions)
+    {
+        dumpFile << "Best samples:" << endl;
+        for (int i = 0; i < bestSamples.size(); i++)
+        {
+            dumpFile << i << "," << bestSamples[i]->frame.toString() << "," << bestSamples[i]->toString() << endl;
+        }
     }
 
     if (Constants::transitionDebugging)

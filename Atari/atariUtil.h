@@ -4,6 +4,19 @@ namespace Game
     struct ObjectInst;
 }
 
+struct LineConstraint
+{
+    LineConstraint(int _value, bool _vertical, float _weight)
+    {
+        value = _value;
+        vertical = _vertical;
+        weight = _weight;
+    }
+    int value;
+    bool vertical;
+    float weight;
+};
+
 class AtariUtil
 {
 public:
@@ -17,10 +30,14 @@ public:
 
     static void saveStateGraph(const vector<Game::StateInst> &states, const string &filename);
 
-    static int compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
-    static int comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
-    static int compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectNameA, const string &objectNameB, int historyDepth);
-    static int compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
+    static double compareVelocityDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
+    static double compareAnimationDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
+    static double comparePositionDescriptorDistSingleton(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName, int historyDepth);
+    static double compareContactDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectNameA, const string &objectNameB, int historyDepth);
+    static double compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectNameA, const string &objectNameB, int historyDepth);
+
+    static double compareLineConstraintsSingleton(const vector<Game::StateInst> &statesA, int frameIndexA, const vector<Game::StateInst> &statesB, int frameIndexB, const string &objectName, const vector<LineConstraint> &lines);
+    static double compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
 
     static const Game::ObjectInst* findSingleton(const vector<Game::StateInst> &states, int frameIndex, const string &objectName);
     static int computeSingletonOffset(const vector<Game::StateInst> &statesA, int frameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectNameA, const string &objectNameB, int historyDepth);

@@ -53,10 +53,24 @@ struct ObjectSample
 
 struct HistoryMetricWeights
 {
+    HistoryMetricWeights()
+    {
+        velocity = 3.0f;
+        action = 1.0f;
+        animation = 0.0f;
+        position = 0.0f;
+
+        lines.push_back(LineConstraint(33, false, 10.0f));
+        lines.push_back(LineConstraint(34, false, 10.0f));
+        lines.push_back(LineConstraint(191, false, 10.0f));
+        lines.push_back(LineConstraint(192, false, 10.0f));
+    }
+    float velocity;
     float action;
     float animation;
     float position;
     map<string, float> objectOffset;
+    vector<LineConstraint> lines;
 };
 
 struct ObjectSampleDataset
