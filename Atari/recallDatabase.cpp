@@ -102,6 +102,11 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
     for (ObjectSample *sample : candidates)
     {
+        if (sample->frame.toString() == "r1-f185")
+        {
+            int a = 5;
+        }
+
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
 
         const double animationDist = AtariUtil::compareAnimationDescriptorDistSingleton(states, baseFrameIndex, candidateStates, sample->frame.frameIndex, objectName, learningParams().historyFrames);

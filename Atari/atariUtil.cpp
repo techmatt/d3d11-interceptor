@@ -282,10 +282,10 @@ double AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &se
     const double distA = bboxDist(bboxA1, bboxA2);
     const double distB = bboxDist(bboxB1, bboxB2);
 
-    if (distA >= learningParams().maxProximityDist && distB >= learningParams().maxProximityDist)
+    if (distA > learningParams().maxProximityDist && distB > learningParams().maxProximityDist)
         return 0.0;
 
-    if (max(distA, distB) >= learningParams().maxProximityDist)
+    if (max(distA, distB) > learningParams().maxProximityDist)
         return 1000.0;
 
     const vec2i offsetDiff = diffB - diffA;
@@ -344,7 +344,7 @@ double AtariUtil::compareContactDescriptorDistSingleton(const SegmentDatabase &s
     if (distA > learningParams().maxProximityDist && distB > learningParams().maxProximityDist)
         return 0.0;
 
-    if (max(distA, distB) >= learningParams().maxProximityDist)
+    if (max(distA, distB) > learningParams().maxProximityDist)
         return 1.0;
 
     return 0.0;
