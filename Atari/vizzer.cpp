@@ -197,26 +197,21 @@ void Vizzer::drawText(ApplicationData &app, vector<string> &text)
 
 void Vizzer::keyDown(ApplicationData &app, UINT key)
 {
-    
+    int frameDelta = 0;
+    if (key == KEY_LEFT) frameDelta = -1;
+    if (key == KEY_RIGHT) frameDelta = 1;
+
+    if (GetAsyncKeyState(VK_CONTROL)) frameDelta *= 10;
+
+    if (frameDelta != 0)
+    {
+        Replay &replay = *state.replayDatabase.replays[state.curFrame.replayIndex]->replay;
+        state.curFrame.frameIndex = math::mod(state.curFrame.frameIndex + frameDelta, replay.frames.size());
+    }
 }
 
 void Vizzer::keyPressed(ApplicationData &app, UINT key)
 {
-    const float distance = 1.0f;
-    const float theta = 5.0f;
-
-    if(key == KEY_S) state.camera.move(-distance);
-    if(key == KEY_W) state.camera.move(distance);
-    if(key == KEY_A) state.camera.strafe(-distance);
-    if(key == KEY_D) state.camera.strafe(distance);
-	if(key == KEY_E) state.camera.jump(distance);
-	if(key == KEY_Q) state.camera.jump(-distance);
-
-    /*if(key == KEY_UP) state.camera.lookUp(theta);
-    if(key == KEY_DOWN) state.camera.lookUp(-theta);
-    if(key == KEY_LEFT) state.camera.lookRight(theta);
-    if(key == KEY_RIGHT) state.camera.lookRight(-theta);*/
-
     if (key == KEY_F) app.graphics.castD3D11().toggleWireframe();
     if (key == KEY_R) state.ale.reset_game();
 

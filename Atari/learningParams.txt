@@ -9,4 +9,4 @@ minMaskSize=3
 
 historyFrames=5
 
-maxProximityDist=1
+maxProximityDist=0

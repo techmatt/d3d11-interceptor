@@ -241,6 +241,15 @@ double AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &sta
 }
 
 
+const Game::ObjectInst* AtariUtil::findSingleton(const Game::StateInst &state, const string &objectName)
+{
+    const vector<Game::ObjectInst> &instances = state.getInstances(objectName);
+    if (instances.size() == 0)
+        return nullptr;
+    else
+        return &instances[0];
+}
+
 const Game::ObjectInst* AtariUtil::findSingleton(const vector<Game::StateInst> &states, int frameIndex, const string &objectName)
 {
     const Game::StateInst &state = states[max(0, frameIndex)];
@@ -253,15 +262,6 @@ const Game::ObjectInst* AtariUtil::findSingleton(const vector<Game::StateInst> &
 
 double AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2)
 {
-    auto bboxDist = [](const bbox2f &a, const bbox2f &b)
-    {
-        const vec2f diff = a.getCenter() - b.getCenter();
-        const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
-        const double distX = max(0.0f, abs(diff.x) - variance.x);
-        const double distY = max(0.0f, abs(diff.y) - variance.y);
-        return max(distX, distY);
-    };
-
     const Game::ObjectInst *instA1 = findSingleton(statesA, baseFrameIndexA, objectName1);
     const Game::ObjectInst *instA2 = findSingleton(statesA, baseFrameIndexA, objectName2);
 
@@ -297,17 +297,33 @@ double AtariUtil::compareOffsetDescriptorDistSingleton(const SegmentDatabase &se
     return sum;
 }
 
+float AtariUtil::bboxDist(const bbox2f &a, const bbox2f &b)
+{
+    const vec2f diff = a.getCenter() - b.getCenter();
+    const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
+    const float distX = max(0.0f, abs(diff.x) - variance.x);
+    const float distY = max(0.0f, abs(diff.y) - variance.y);
+    return max(distX, distY);
+}
+
+bool AtariUtil::objectsInContactSingleton(const SegmentDatabase &segments, const Game::StateInst &state, const string &objectNameA, const string &objectNameB)
+{
+    const Game::ObjectInst *instA = findSingleton(state, objectNameA);
+    const Game::ObjectInst *instB = findSingleton(state, objectNameB);
+
+    if (instA == nullptr || instB == nullptr)
+        return false;
+
+    const bbox2f bboxA = instA->bbox(segments);
+    const bbox2f bboxB = instB->bbox(segments);
+    
+    const float dist = bboxDist(bboxA, bboxB);
+    
+    return (dist <= learningParams().maxProximityDist);
+}
+
 double AtariUtil::compareContactDescriptorDistSingleton(const SegmentDatabase &segments, const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectName1, const string &objectName2)
 {
-    auto bboxDist = [](const bbox2f &a, const bbox2f &b)
-    {
-        const vec2f diff = a.getCenter() - b.getCenter();
-        const vec2f variance = (a.getExtent() + b.getExtent()) / 2;
-        const float distX = max(0.0f, abs(diff.x) - variance.x);
-        const float distY = max(0.0f, abs(diff.y) - variance.y);
-        return max(distX, distY);
-    };
-
     const Game::ObjectInst *instA1 = findSingleton(statesA, baseFrameIndexA, objectName1);
     const Game::ObjectInst *instA2 = findSingleton(statesA, baseFrameIndexA, objectName2);
 
@@ -325,7 +341,7 @@ double AtariUtil::compareContactDescriptorDistSingleton(const SegmentDatabase &s
     const float distA = bboxDist(bboxA1, bboxA2);
     const float distB = bboxDist(bboxB1, bboxB2);
 
-    if (distA >= learningParams().maxProximityDist && distB >= learningParams().maxProximityDist)
+    if (distA > learningParams().maxProximityDist && distB > learningParams().maxProximityDist)
         return 0.0;
 
     if (max(distA, distB) >= learningParams().maxProximityDist)
@@ -347,15 +363,8 @@ double AtariUtil::compareLineConstraintsSingleton(const vector<Game::StateInst> 
     double sum = 0.0;
     for (const LineConstraint &l : lines)
     {
-        auto onLine = [&](const vec2s &point)
-        {
-            if (l.vertical)
-                return point.x == l.value;
-            else
-                return point.y == l.value;
-        };
-        bool aOnLine = onLine(instA->origin);
-        bool bOnLine = onLine(instB->origin);
+        const bool aOnLine = l.onLine(instA->origin);
+        const bool bOnLine = l.onLine(instB->origin);
         if (aOnLine != bOnLine)
             sum += l.weight;
     }

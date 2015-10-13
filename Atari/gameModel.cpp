@@ -163,7 +163,7 @@ void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst
 
         HistoryMetricWeights metric;
         ObjectSampleDataset &oDataset = *state.recallDatabase.objectSamples[o.name];
-        ObjectTransition transition = oDataset.predictTransitionSingleton(state, state.replayDatabase, testReplayIndex, states, (int)states.size() - 1, action, o.name, metric);
+        ObjectTransition transition = oDataset.predictTransitionSingleton(state, state.replayDatabase, testReplayIndex, states, (int)states.size() - 1, action, metric);
 
         const StateInst &curState = states.back();
         

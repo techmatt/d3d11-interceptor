@@ -23,93 +23,53 @@ void ObjectSampleDataset::dumpToFile(const string &filename) const
     file << "Sample count: " << allSamples.size() << endl;
     file << "Frame,vHash";
 
-    int entryIndex = 0;
+    /*int entryIndex = 0;
     for (auto &e : allSamples[0]->history.history)
     {
         file << ",v" << entryIndex;
         entryIndex++;
-    }
+    }*/
     file << endl;
 
     for (auto &sample : allSamples)
     {
         file << sample->frame.toString();
-        file << "," << sample->history.velocityHash;
-        for (auto &e : sample->history.history)
-            file << "," << e.velocity.toString("_");
+        //file << "," << sample->history.velocityHash;
+        //for (auto &e : sample->history.history)
+        //    file << "," << e.velocity.toString("_");
         file << endl;
     }
 }
 
-void ObjectHistory::computeHashes()
+void ObjectHistory::computeHash()
 {
-    velocityHash = computeVelocityAliveHash();
-    animationHash = computeAnimationHash();
+    hash = util::hash64(velocity) +
+           util::hash64(contactStates.data(), (UINT)contactStates.size() * sizeof(BYTE)) +
+           util::hash64(lineConstraints.data(), (UINT)lineConstraints.size() * sizeof(BYTE));
 }
 
-UINT64 ObjectHistory::computeVelocityAliveHash() const
+vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectHistory &history) const
 {
-    UINT64 result = 0;
-    int factor = 7;
-    for (const Entry &e : history)
-    {
-        result += util::hash64(e.velocity) * factor + e.alive * factor * 541;
-        factor = factor * 77 + 911;
-    }
-    return result;
-}
-
-UINT64 ObjectHistory::computeAnimationHash() const
-{
-    UINT64 result = 0;
-    int factor = 7;
-    for (const Entry &e : history)
-    {
-        result += e.animation * factor;
-        factor = factor * 76 + 9213;
-    }
-    return result;
-}
-
-vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectHistory &history, int testReplayIndex) const
-{
+    if (samplesByHash.count(history.hash) > 0)
+        return samplesByHash.find(history.hash)->second;
+    
+    cout << "No samples found for " << objectName << endl;
     // TODO: examine better ways to reduce sample count
     return allSamples;
-
-    vector<ObjectSample*> result;
-    const UINT64 combinedHash = history.combinedHash();
-    if (historyByCombinedHash.count(combinedHash) > 0)
-    {
-        for (auto &sample : historyByCombinedHash.find(combinedHash)->second)
-        {
-            if (sample->frame.replayIndex != testReplayIndex)
-                result.push_back(sample);
-        }
-
-        if (Constants::transitionDebugging)
-            cout << "combined hash matches: " << result.size() << endl;
-    }
-    if (result.size() == 0 && historyByVelocityHash.count(history.velocityHash) > 0)
-    {
-        for (auto &sample : historyByVelocityHash.find(history.velocityHash)->second)
-        {
-            if (sample->frame.replayIndex != testReplayIndex)
-                result.push_back(sample);
-        }
-
-        if (Constants::transitionDebugging)
-            cout << "velocity hash matches: " << result.size() << endl;
-    }
-    return result;
 }
 
-ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state, const ReplayDatabase &replays, int testReplayIndex, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const string &objectName, const HistoryMetricWeights &metric) const
+ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state, const ReplayDatabase &replays, int testReplayIndex, const vector<Game::StateInst> &states, int baseFrameIndex, int action, const HistoryMetricWeights &metric) const
 {
     if (objectName == "unnamed")
         return ObjectTransition();
 
-    ObjectHistory history = RecallDatabase::computeObjectHistorySingleton(states, baseFrameIndex, objectName);
-    vector<ObjectSample*> candidates = getTransitionCandidates(history, testReplayIndex);
+    HistorySlotInfo slotInfo;
+    for (auto &it : state.model.stateSpec.objects)
+        slotInfo.objectNames.push_back(it.name);
+    slotInfo.lines = HistoryMetricWeights().lines;
+    
+    ObjectHistory history = RecallDatabase::computeObjectHistorySingleton(state, states, baseFrameIndex, objectName, slotInfo);
+    vector<ObjectSample*> candidates = getTransitionCandidates(history);
 
     if (state.dumpAllTransitions)
     {
@@ -118,7 +78,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
     ObjectTransition blankTransition;
     blankTransition.nextAlive = true;
-    blankTransition.nextAnimation = history.history[0].animation;
+    blankTransition.nextAnimation = 0;
     blankTransition.velocity = vec2s(0, 0);
 
     if (candidates.size() == 0)
@@ -242,19 +202,6 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
     return bestSamples[0]->transition;
 }
 
-float RecallDatabase::compareVelocityHistory(const ObjectHistory &a, const ObjectHistory &b)
-{
-    float sum = 0.0f;
-    for (int i = 0; i < a.history.size(); i++)
-    {
-        const ObjectHistory::Entry &aEntry = a.history[i];
-        const ObjectHistory::Entry &bEntry = b.history[i];
-
-        sum += vec2f::distSq(vec2f(aEntry.velocity), vec2f(bEntry.velocity));
-    }
-    return sum;
-}
-
 void RecallDatabase::init(AppState &state)
 {
     for (auto &o : state.model.stateSpec.objects)
@@ -312,7 +259,12 @@ ObjectTransition RecallDatabase::computeObjectTransitionSingleton(const vector<G
 ObjectSampleDataset* RecallDatabase::makeObjectSampleDataset(AppState &state, const string &objectName)
 {
     cout << "Making object sample dataset for " << objectName << endl;
-    ObjectSampleDataset *result = new ObjectSampleDataset();
+    ObjectSampleDataset *result = new ObjectSampleDataset(objectName);
+
+    HistorySlotInfo slotInfo;
+    for (auto &it : state.model.stateSpec.objects)
+        slotInfo.objectNames.push_back(it.name);
+    slotInfo.lines = HistoryMetricWeights().lines;
 
     for (auto &replay : state.replayDatabase.replays)
     {
@@ -320,15 +272,12 @@ ObjectSampleDataset* RecallDatabase::makeObjectSampleDataset(AppState &state, co
         {
             ObjectSample *newSample = new ObjectSample;
             newSample->frame = FrameID(replay->replay->index, baseFrameIndex);
-            newSample->history = computeObjectHistorySingleton(replay->states, baseFrameIndex, objectName);
+            newSample->history = computeObjectHistorySingleton(state, replay->states, baseFrameIndex, objectName, slotInfo);
             newSample->transition = computeObjectTransitionSingleton(replay->states, baseFrameIndex, objectName);
             newSample->nextAction = replay->states[baseFrameIndex + 1].variables.find("action")->second;
             
-            vector<ObjectSample*> &combinedHashList = result->historyByCombinedHash[newSample->history.combinedHash()];
-            combinedHashList.push_back(newSample);
-
-            vector<ObjectSample*> &velocityHashList = result->historyByVelocityHash[newSample->history.velocityHash];
-            velocityHashList.push_back(newSample);
+            vector<ObjectSample*> &hashList = result->samplesByHash[newSample->history.hash];
+            hashList.push_back(newSample);
 
             result->allSamples.push_back(newSample);
         }
@@ -337,10 +286,19 @@ ObjectSampleDataset* RecallDatabase::makeObjectSampleDataset(AppState &state, co
     return result;
 }
 
-ObjectHistory RecallDatabase::computeObjectHistorySingleton(const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName)
+ObjectHistory RecallDatabase::computeObjectHistorySingleton(AppState &appState, const vector<Game::StateInst> &states, int baseFrameIndex, const string &objectName, const HistorySlotInfo &slotInfo)
 {
     ObjectHistory result;
-    result.history.resize(learningParams().historyFrames);
+
+    const auto &curInstances = states[baseFrameIndex].getInstances(objectName);
+    if (curInstances.size() == 0)
+    {
+        result.alive = false;
+        result.hash = 0;
+        return result;
+    }
+    result.alive = true;
+    const vec2s curLocation = curInstances[0].origin;
 
     vec2s lastKnownLocation;
     for (int stateIndex = baseFrameIndex; stateIndex >= 0; stateIndex--)
@@ -353,45 +311,33 @@ ObjectHistory RecallDatabase::computeObjectHistorySingleton(const vector<Game::S
         }
     }
 
-    for (int historyIndex = 0; historyIndex < result.history.size(); historyIndex++)
+    result.velocity = lastKnownLocation - curLocation;
+    
+    const int objectCount = (int)slotInfo.objectNames.size();
+    result.contactStates.resize(objectCount);
+
+    for (int objectIndex = 0; objectIndex < objectCount; objectIndex++)
     {
-        ObjectHistory::Entry &entry = result.history[historyIndex];
-        
-        const Game::StateInst &curState = states[max(0, baseFrameIndex - historyIndex)];
-        const Game::StateInst &prevState = states[max(0, baseFrameIndex - historyIndex - 1)];
-
-        const vector<Game::ObjectInst> &instances = curState.getInstances(objectName);
-
-        if (instances.size() == 0)
-        {
-            entry.alive = 0;
-            entry.animation = 0;
-            entry.origin = lastKnownLocation;
-            entry.velocity = vec2s(0, 0);
-        }
-        else
-        {
-            if (instances.size() >= 2)
-                cout << "Multiple instances of singletion found" << endl;
-            entry.alive = 1;
-            entry.animation = instances[0].segmentHash;
-            entry.origin = instances[0].origin;
-
-            const vector<Game::ObjectInst> &prevInstances = prevState.getInstances(objectName);
-
-            if (prevInstances.size() == 0)
-                entry.velocity = vec2s(0, 0);
-            else
-                entry.velocity = entry.origin - prevInstances[0].origin;
-        }
+        const bool contact = AtariUtil::objectsInContactSingleton(appState.segmentDatabase, states[baseFrameIndex], objectName, slotInfo.objectNames[objectIndex]);
+        result.contactStates[objectIndex] = contact ? 1 : 0;
     }
-    result.computeHashes();
+
+    const int lineCount = (int)slotInfo.lines.size();
+    result.lineConstraints.resize(lineCount);
+    for (int lineIndex = 0; lineIndex < lineCount; lineIndex++)
+    {
+        const LineConstraint &line = slotInfo.lines[lineIndex];
+        const bool onLine = line.onLine(curLocation);
+        result.lineConstraints[lineIndex] = onLine ? 1 : 0;
+    }
+    
+    result.computeHash();
     return result;
 }
 
 void RecallDatabase::predictAllTransitions(AppState &state, const ReplayDatabase &replays, int testReplayIndex, const vector<Game::StateInst> &states, const string &objectName, const string &filename)
 {
-    cout << "Predicting all transitions for " << objectName << endl;
+    /*cout << "Predicting all transitions for " << objectName << endl;
 
     ofstream file(filename);
 
@@ -450,5 +396,5 @@ void RecallDatabase::predictAllTransitions(AppState &state, const ReplayDatabase
         file << predictedTransition.nextAlive << ",";
 
         file << endl;
-    }
+    }*/
 }

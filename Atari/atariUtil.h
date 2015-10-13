@@ -12,6 +12,13 @@ struct LineConstraint
         vertical = _vertical;
         weight = _weight;
     }
+    bool onLine(const vec2s &point) const
+    {
+        if (vertical)
+            return point.x == value;
+        else
+            return point.y == value;
+    };
     int value;
     bool vertical;
     float weight;
@@ -39,8 +46,13 @@ public:
     static double compareLineConstraintsSingleton(const vector<Game::StateInst> &statesA, int frameIndexA, const vector<Game::StateInst> &statesB, int frameIndexB, const string &objectName, const vector<LineConstraint> &lines);
     static double compareActionDescriptorDist(const vector<Game::StateInst> &statesA, int baseFrameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, int historyDepth);
 
+    static bool objectsInContactSingleton(const SegmentDatabase &segments, const Game::StateInst &state, const string &objectNameA, const string &objectNameB);
+
+    static const Game::ObjectInst* findSingleton(const Game::StateInst &state, const string &objectName);
     static const Game::ObjectInst* findSingleton(const vector<Game::StateInst> &states, int frameIndex, const string &objectName);
     static int computeSingletonOffset(const vector<Game::StateInst> &statesA, int frameIndexA, const vector<Game::StateInst> &statesB, int baseFrameIndexB, const string &objectNameA, const string &objectNameB, int historyDepth);
 
     static void overlayModelFrame(AppState &state, const Game::StateInst &gameState, Bitmap &bmp);
+
+    static float bboxDist(const bbox2f &a, const bbox2f &b);
 };
