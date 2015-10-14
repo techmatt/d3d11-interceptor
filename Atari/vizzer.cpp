@@ -77,6 +77,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("gamePaused", [&](const vector<string> &params) {
         state.gamePaused = ml::util::convertTo<bool>(params[1]);
     });
+    state.eventMap.registerEvent("automatePlay", [&](const vector<string> &params) {
+        state.automatePlay = ml::util::convertTo<bool>(params[1]);
+    });
 }
 
 void Vizzer::updateGamePlay(ApplicationData &app)
@@ -90,7 +93,25 @@ void Vizzer::updateGamePlay(ApplicationData &app)
     state.mostRecentFrame = frame;
 
     //frame->action = util::randomElement(legalActions);
-    frame->action = AtariUtil::actionFromKeyboard();
+
+    if (state.automatePlay && state.replayFramesSkipsLeft == 0)
+    {
+        MCTS mcts;
+        MCTSParams params;
+        params.actions = state.ale.getMinimalActionSet();
+        params.actionCount = (int)params.actions.size();
+        params.iterations = 1000;
+
+        MCTSMutableStateALE state(&state.ale);
+        mcts.init(params, &state);
+        mcts.go();
+        mcts.describeActions();
+        frame->action = mcts.bestAction();
+    }
+    else
+    {
+        frame->action = AtariUtil::actionFromKeyboard();
+    }
     frame->reward = state.ale.act(frame->action);
     
     const ALEScreen &screen = state.ale.getScreen();

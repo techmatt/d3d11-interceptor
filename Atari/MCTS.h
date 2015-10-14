@@ -38,31 +38,24 @@ struct MCTSParams
     {
         explorationConstant = 1.0f;
         actionChunkSize = 4;
+        maxActionDepth = 200;
+        iterations = 1000;
     }
     int actionCount;
     int actionChunkSize;
     int maxActionDepth;
+    int iterations;
     vector<Action> actions;
 
     float explorationConstant;
 };
 
-interface MCTSBaseState
-{
-public:
-    virtual ~MCTSBaseState() {}
-};
-
-struct MCTSBaseStateALE : public MCTSBaseState
-{
-    ALEState state;
-};
-
 struct MCTSMutableState
 {
-    virtual void act(Action a);
-    virtual void reset(const MCTSBaseState *baseState);
-    virtual bool gameOver() const;
+    virtual void act(Action a) = 0;
+    virtual void saveState() = 0;
+    virtual void loadState() = 0;
+    virtual bool gameOver() const = 0;
 
     int rewardSum;
     int actionsTaken;
@@ -70,6 +63,10 @@ struct MCTSMutableState
 
 struct MCTSMutableStateALE : public MCTSMutableState
 {
+    MCTSMutableStateALE(ALEInterface *_ale)
+    {
+        ale = _ale;
+    }
     void act(Action action)
     {
         if (ale->game_over())
@@ -81,10 +78,13 @@ struct MCTSMutableStateALE : public MCTSMutableState
     {
         return ale->game_over();
     }
-    void reset(const MCTSBaseState *baseState)
+    void saveState()
     {
-        const MCTSBaseStateALE *state = dynamic_cast<const MCTSBaseStateALE*>(baseState);
-        ale->restoreState(state->state);
+        ale->saveState();
+    }
+    void loadState()
+    {
+        ale->loadState();
         rewardSum = 0;
         actionsTaken = 0;
     }
@@ -94,7 +94,8 @@ struct MCTSMutableStateALE : public MCTSMutableState
 
 struct MCTS
 {
-    void init(const MCTSParams &_params, const MCTSBaseState *_baseState, MCTSMutableState *_mutableState);
+    void init(const MCTSParams &_params, MCTSMutableState *_mutableState);
+    void go();
     void iterate();
     Action bestAction();
     void describeActions();
@@ -107,7 +108,6 @@ private:
     void backpropagate(MCTSNode *leafNode, int rewardSum);
 
     MCTSParams params;
-    const MCTSBaseState *baseState;
     MCTSMutableState *mutableState;
 
     MCTSNode* root()

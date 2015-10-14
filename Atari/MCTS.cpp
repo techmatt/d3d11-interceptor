@@ -1,11 +1,11 @@
 
 #include "main.h"
 
-void MCTS::init(const MCTSParams &_params, const MCTSBaseState *_baseState, MCTSMutableState *_mutableState)
+void MCTS::init(const MCTSParams &_params, MCTSMutableState *_mutableState)
 {
     params = _params;
-    baseState = _baseState;
     mutableState = _mutableState;
+    mutableState->saveState();
 
     allNodes.clear();
 
@@ -15,9 +15,15 @@ void MCTS::init(const MCTSParams &_params, const MCTSBaseState *_baseState, MCTS
     allNodes.push_back(rootNode);
 }
 
+void MCTS::go()
+{
+    for (int i = 0; i < params.iterations; i++)
+        iterate();
+}
+
 void MCTS::iterate()
 {
-    mutableState->reset(baseState);
+    mutableState->loadState();
 
     MCTSNode *node = root();
     while (!node->isLeaf())
