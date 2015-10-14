@@ -23,8 +23,6 @@ void MCTS::go()
 
 void MCTS::iterate()
 {
-    mutableState->loadState();
-
     MCTSNode *node = root();
     while (!node->isLeaf())
     {
@@ -37,6 +35,8 @@ void MCTS::iterate()
     simulate();
 
     backpropagate(child, mutableState->rewardSum);
+
+    mutableState->loadState();
 }
 
 void MCTS::backpropagate(MCTSNode *leafNode, int rewardSum)

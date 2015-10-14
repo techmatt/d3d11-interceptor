@@ -80,15 +80,16 @@ struct MCTSMutableStateALE : public MCTSMutableState
     }
     void saveState()
     {
-        ale->saveState();
+        savedState = ale->cloneState();
     }
     void loadState()
     {
-        ale->loadState();
+        ale->restoreState(savedState);
         rewardSum = 0;
         actionsTaken = 0;
     }
-    
+
+    ALEState savedState;
     ALEInterface *ale;
 };
 

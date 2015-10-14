@@ -87,7 +87,11 @@ void Vizzer::updateGamePlay(ApplicationData &app)
     if (state.gamePaused)
         return;
 
-    ActionVect legalActions = state.ale.getMinimalActionSet();
+    //ActionVect legalActions = state.ale.getMinimalActionSet();
+    vector<Action> legalActions;
+    legalActions.push_back(Action::PLAYER_A_LEFT);
+    legalActions.push_back(Action::PLAYER_A_RIGHT);
+    legalActions.push_back(Action::PLAYER_A_NOOP);
 
     ReplayFrame *frame = new ReplayFrame();
     state.mostRecentFrame = frame;
@@ -98,9 +102,9 @@ void Vizzer::updateGamePlay(ApplicationData &app)
     {
         MCTS mcts;
         MCTSParams params;
-        params.actions = state.ale.getMinimalActionSet();
+        params.actions = legalActions;
         params.actionCount = (int)params.actions.size();
-        params.iterations = 1000;
+        params.iterations = 100;
 
         MCTSMutableStateALE state(&state.ale);
         mcts.init(params, &state);
