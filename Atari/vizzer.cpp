@@ -1,6 +1,8 @@
 
 #include "main.h"
 
+const bool livePlayMode = true;
+
 void Vizzer::init(ApplicationData &app)
 {
     //
@@ -90,7 +92,6 @@ void Vizzer::updateGamePlay(ApplicationData &app)
     if (state.gamePaused)
         return;
 
-    //ActionVect legalActions = state.ale.getMinimalActionSet();
     vector<Action> legalActions;
     legalActions.push_back(Action::PLAYER_A_LEFT);
     legalActions.push_back(Action::PLAYER_A_RIGHT);
@@ -98,8 +99,6 @@ void Vizzer::updateGamePlay(ApplicationData &app)
 
     ReplayFrame *frame = new ReplayFrame();
     state.mostRecentFrame = frame;
-
-    //frame->action = util::randomElement(legalActions);
 
     if (state.automatePlay && state.replayFramesSkipsLeft == 0)
     {
@@ -112,14 +111,14 @@ void Vizzer::updateGamePlay(ApplicationData &app)
 
         if (state.useProxyModel)
         {
-            MCTSMutableStateRecall state(&state, state.modelStateHistory);
-            mcts.init(params, &state);
+            MCTSMutableStateRecall gameState(&state, state.modelStateHistory);
+            mcts.init(params, &gameState);
             mcts.go();
         }
         else
         {
-            MCTSMutableStateALE state(&state.ale);
-            mcts.init(params, &state);
+            MCTSMutableStateALE gameState(&state.ale);
+            mcts.init(params, &gameState);
             mcts.go();
         }
         mcts.describeActions();
@@ -135,9 +134,13 @@ void Vizzer::updateGamePlay(ApplicationData &app)
 
     frame->image.fromScreen(screen);
 
-    //state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
-    //state.segmentAnalyzer.annotateObjects(*frame);
-    //frame->updateObjectIDs(state.segmentDatabase);
+    const bool annotateLiveFrames = true;
+    if (annotateLiveFrames)
+    {
+        state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
+        state.segmentAnalyzer.annotateObjects(*frame);
+        frame->updateObjectIDs(state.segmentDatabase);
+    }
 
     Game::StateInst curGameState;
     state.model.loadObjects(state, state.objectAnalyzer, *frame, curGameState);
@@ -176,7 +179,6 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    const bool livePlayMode = true;
     ReplayFrame *frameToRender = nullptr;
     const ColourPalette &palette = state.getPalette();
     if (livePlayMode)

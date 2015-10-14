@@ -115,14 +115,11 @@ void SegmentDatabase::saveVizObjects(const ColourPalette &palette, const string 
 
 void SegmentDatabase::recordAndAnnotateSegments(const ColourPalette &palette, ReplayFrame &frame)
 {
-    //Bitmap temp;
-    //frame.image.toBmp(palette, temp);
-    //LodePNG::save(temp, "debug3.png");
-
     frame.segmentAnnotations.clear();
     frame.objectAnnotations.clear();
 
     scratchpad = frame.image.data;
+    scratchpad.setValues(0);
 
     for (auto &p : blacklistImage)
     {
@@ -137,6 +134,10 @@ void SegmentDatabase::recordAndAnnotateSegments(const ColourPalette &palette, Re
     {
         allColors.insert(p.value);
     }
+
+    //Bitmap temp;
+    //frame.image.toBmp(palette, temp);
+    //LodePNG::save(temp, "debug3.png");
 
     for (BYTE color : allColors)
     {
@@ -175,7 +176,6 @@ pair<SegmentAnimation*, int> SegmentDatabase::findClosestMask(const set<vec2s> &
 
 void SegmentDatabase::recordAndAnnotateSegments(ReplayFrame &frame, BYTE color)
 {
-    scratchpad.setValues(0);
     for (auto &p : frame.image.data)
     {
         if (p.value == color)

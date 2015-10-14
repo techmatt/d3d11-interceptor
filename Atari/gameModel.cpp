@@ -174,7 +174,7 @@ void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst
         }
     }
 
-    cout << "predicted reward: " << reward << endl;
+    //cout << "predicted reward: " << reward << endl;
     nextInst.reward = reward;
     nextInst.action = action;
 }

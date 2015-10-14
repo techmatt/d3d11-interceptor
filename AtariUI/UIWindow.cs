@@ -188,7 +188,7 @@ namespace UIWindow
 
         private void checkBoxProxyModel_CheckedChanged(object sender, EventArgs e)
         {
-            SendMessage("useProxyModel " + checkBoxAutomate.Checked);
+            SendMessage("useProxyModel " + checkBoxProxyModel.Checked);
         }
     }
 }

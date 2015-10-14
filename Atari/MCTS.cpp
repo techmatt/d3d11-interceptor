@@ -4,7 +4,7 @@
 void MCTSMutableStateRecall::act(Action action)
 {
     Game::StateInst nextState;
-    appState->model.advance(*appState, appState->gameModelFrame.replayIndex, curStateHistory, action, nextState);
+    appState->model.advance(*appState, -1, curStateHistory, action, nextState);
     curStateHistory.push_back(nextState);
 
     rewardSum += nextState.reward;
@@ -28,7 +28,11 @@ void MCTS::init(const MCTSParams &_params, MCTSMutableState *_mutableState)
 void MCTS::go()
 {
     for (int i = 0; i < params.iterations; i++)
+    {
+        if (i % 10 == 0)
+            cout << "MCTS iteration " << i + 1 << " / " << params.iterations << endl;
         iterate();
+    }
 }
 
 void MCTS::iterate()

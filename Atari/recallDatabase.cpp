@@ -54,7 +54,7 @@ vector<ObjectSample*> ObjectSampleDataset::getTransitionCandidates(const ObjectH
     if (samplesByHash.count(history.hash) > 0)
         return samplesByHash.find(history.hash)->second;
     
-    cout << "No samples found for " << objectName << endl;
+    cout << "No candidates found for " << objectName << endl;
     // TODO: examine better ways to reduce sample count
     return allSamples;
 }
@@ -78,11 +78,11 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
     }
 
     //cout << objectName << " candidates: " << candidates.size() << endl;
-    if (candidates.size() == 1)
+    /*if (candidates.size() == 1)
     {
         cout << "Singular candidate -- get more training data" << endl;
         candidates = allSamples;
-    }
+    }*/
 
     ObjectTransition blankTransition;
     blankTransition.nextAlive = true;
@@ -193,7 +193,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
     if (bestSamples.size() == 0)
     {
-        cout << "No samples found for " << objectName << endl;
+        cout << "No non-training samples found for " << objectName << endl;
         return blankTransition;
     }
 

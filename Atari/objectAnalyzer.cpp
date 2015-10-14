@@ -188,15 +188,24 @@ void ObjectAnalyzer::outputSegmentBlacklist(AppState &state, const Replay &repla
     {
         for (const ObjectTrack *track : objects[i].tracks)
         {
-            //
-            // TODO: technically, "5000" should be the length of the replay
-            //
             if (track->startFrame.frameIndex == 0 && track->track.size() == replay.frames.size())
             {
                 const UINT objectIndex = track->track[0];
                 const ObjectAnnotation &objectAnnotation = firstFrame.objectAnnotations[objectIndex];
-                const UINT64 hash = firstFrame.segmentAnnotations[objectAnnotation.segments[0]].segmentHash;
-                blacklistedSegmentHashes.insert(hash);
+                
+                bool trackHomogenous = true;
+                const vec2s startLocation = objectAnnotation.origin;
+                for (int frameIndex = 0; trackHomogenous && frameIndex < track->track.size(); frameIndex++)
+                {
+                    if (replay.frames[frameIndex]->objectAnnotations[track->track[frameIndex]].origin != startLocation)
+                        trackHomogenous = false;
+                }
+
+                if (trackHomogenous)
+                {
+                    const UINT64 hash = firstFrame.segmentAnnotations[objectAnnotation.segments[0]].segmentHash;
+                    blacklistedSegmentHashes.insert(hash);
+                }
             }
         }
     }
