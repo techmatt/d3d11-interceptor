@@ -7,7 +7,7 @@ string ObjectSample::toString() const
     result += frame.toString() + "\n";
     result += "nAlive=" + to_string(transition.nextAlive) + "\n";
     result += "nAnimation=" + to_string(transition.nextAnimation) + "\n";
-    result += "nVelocity=" + transition.velocity.toString(",") + "\n";
+    result += "nVelocity=" + transition.velocity.toString("x") + "\n";
     return result;
 }
 
@@ -76,6 +76,8 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
         candidates = allSamples;
     }
 
+    cout << objectName << " candidates: " << candidates.size() << endl;
+
     ObjectTransition blankTransition;
     blankTransition.nextAlive = true;
     blankTransition.nextAnimation = 0;
@@ -102,10 +104,10 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
     for (ObjectSample *sample : candidates)
     {
-        if (sample->frame.toString() == "r1-f185")
+        /*if (sample->frame.toString() == "r1-f185")
         {
             int a = 5;
-        }
+        }*/
 
         const vector<Game::StateInst> &candidateStates = replays.replays[sample->frame.replayIndex]->states;
 
@@ -305,18 +307,18 @@ ObjectHistory RecallDatabase::computeObjectHistorySingleton(AppState &appState, 
     result.alive = true;
     const vec2s curLocation = curInstances[0].origin;
 
-    vec2s lastKnownLocation;
-    for (int stateIndex = baseFrameIndex; stateIndex >= 0; stateIndex--)
+    vec2s prevLocation;
+    for (int stateIndex = baseFrameIndex - 1; stateIndex >= 0; stateIndex--)
     {
         const vector<Game::ObjectInst> &instances = states[stateIndex].getInstances(objectName);
         if (instances.size() > 0)
         {
-            lastKnownLocation = instances[0].origin;
+            prevLocation = instances[0].origin;
             break;
         }
     }
 
-    result.velocity = lastKnownLocation - curLocation;
+    result.velocity = curLocation - prevLocation;
     
     const int objectCount = (int)slotInfo.objectNames.size();
     result.contactStates.resize(objectCount);

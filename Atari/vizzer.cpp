@@ -159,7 +159,7 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    const bool livePlayMode = true;
+    const bool livePlayMode = false;
     ReplayFrame *frameToRender = nullptr;
     const ColourPalette &palette = state.getPalette();
     if (livePlayMode)

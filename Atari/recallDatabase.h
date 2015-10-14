@@ -24,9 +24,9 @@ struct ObjectTransition
         nextAnimation = 0;
         nextAlive = 0;
     }
-    UINT64 hash()
+    UINT64 hash() const
     {
-        return ml::util::hash64(*this);
+        return util::hash64(*this);
     }
     UINT64 nextAnimation;
     UINT nextAlive;
