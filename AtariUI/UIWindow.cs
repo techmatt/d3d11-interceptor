@@ -185,5 +185,10 @@ namespace UIWindow
         {
             SendMessage("automatePlay " + checkBoxAutomate.Checked);
         }
+
+        private void checkBoxProxyModel_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("useProxyModel " + checkBoxAutomate.Checked);
+        }
     }
 }

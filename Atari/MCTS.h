@@ -52,9 +52,8 @@ struct MCTSParams
 
 struct MCTSMutableState
 {
-    virtual void act(Action a) = 0;
-    virtual void saveState() = 0;
-    virtual void loadState() = 0;
+    virtual void act(Action action) = 0;
+    virtual void resetState() = 0;
     virtual bool gameOver() const = 0;
 
     int rewardSum;
@@ -66,6 +65,7 @@ struct MCTSMutableStateALE : public MCTSMutableState
     MCTSMutableStateALE(ALEInterface *_ale)
     {
         ale = _ale;
+        savedState = ale->cloneState();
     }
     void act(Action action)
     {
@@ -78,11 +78,7 @@ struct MCTSMutableStateALE : public MCTSMutableState
     {
         return ale->game_over();
     }
-    void saveState()
-    {
-        savedState = ale->cloneState();
-    }
-    void loadState()
+    void resetState()
     {
         ale->restoreState(savedState);
         rewardSum = 0;
@@ -91,6 +87,31 @@ struct MCTSMutableStateALE : public MCTSMutableState
 
     ALEState savedState;
     ALEInterface *ale;
+};
+
+struct MCTSMutableStateRecall : public MCTSMutableState
+{
+    MCTSMutableStateRecall(AppState *_appState, const vector<Game::StateInst> &stateHistory)
+    {
+        appState = _appState;
+        savedStateHistory = stateHistory;
+        curStateHistory = stateHistory;
+    }
+    void act(Action action);
+    bool gameOver() const
+    {
+        return false;
+    }
+    void resetState()
+    {
+        curStateHistory = savedStateHistory;
+        rewardSum = 0;
+        actionsTaken = 0;
+    }
+
+    vector<Game::StateInst> savedStateHistory;
+    vector<Game::StateInst> curStateHistory;
+    AppState *appState;
 };
 
 struct MCTS

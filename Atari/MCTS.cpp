@@ -1,11 +1,21 @@
 
 #include "main.h"
 
+void MCTSMutableStateRecall::act(Action action)
+{
+    Game::StateInst nextState;
+    appState->model.advance(*appState, appState->gameModelFrame.replayIndex, curStateHistory, action, nextState);
+    curStateHistory.push_back(nextState);
+
+    rewardSum += nextState.reward;
+    actionsTaken++;
+}
+
 void MCTS::init(const MCTSParams &_params, MCTSMutableState *_mutableState)
 {
     params = _params;
     mutableState = _mutableState;
-    mutableState->saveState();
+    mutableState->resetState();
 
     allNodes.clear();
 
@@ -36,7 +46,7 @@ void MCTS::iterate()
 
     backpropagate(child, mutableState->rewardSum);
 
-    mutableState->loadState();
+    mutableState->resetState();
 }
 
 void MCTS::backpropagate(MCTSNode *leafNode, int rewardSum)

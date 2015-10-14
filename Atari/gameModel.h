@@ -66,7 +66,9 @@ struct StateInst
         return it->second;
     }
 
-    map<string, int> variables;
+    //map<string, int> variables;
+    Action action;
+    int reward;
     map<string, vector<ObjectInst> > objects;
     vector<ObjectInst> emptyObjects;
 };
@@ -250,12 +252,10 @@ struct Model
 {
     void initStateSpec(const ObjectAnalyzer &objectSpec, const string &variableSpecFile);
 
-    void advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, int action, StateInst &nextInst);
+    void advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, Action action, StateInst &nextInst);
 
     void loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const ReplayFrame &frame, StateInst &inst) const;
     void readVariables(const SegmentDatabase &segments, StateInst &inst) const;
-
-
 
     //
     // debugging

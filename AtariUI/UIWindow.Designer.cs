@@ -41,6 +41,7 @@
             this.checkBoxDumpTransitions = new System.Windows.Forms.CheckBox();
             this.checkBoxPaused = new System.Windows.Forms.CheckBox();
             this.checkBoxAutomate = new System.Windows.Forms.CheckBox();
+            this.checkBoxProxyModel = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // timerProcessMessages
@@ -147,11 +148,23 @@
             this.checkBoxAutomate.UseVisualStyleBackColor = true;
             this.checkBoxAutomate.CheckedChanged += new System.EventHandler(this.checkBoxAutomate_CheckedChanged);
             // 
+            // checkBoxProxyModel
+            // 
+            this.checkBoxProxyModel.AutoSize = true;
+            this.checkBoxProxyModel.Location = new System.Drawing.Point(294, 121);
+            this.checkBoxProxyModel.Name = "checkBoxProxyModel";
+            this.checkBoxProxyModel.Size = new System.Drawing.Size(94, 19);
+            this.checkBoxProxyModel.TabIndex = 3;
+            this.checkBoxProxyModel.Text = "Proxy model";
+            this.checkBoxProxyModel.UseVisualStyleBackColor = true;
+            this.checkBoxProxyModel.CheckedChanged += new System.EventHandler(this.checkBoxProxyModel_CheckedChanged);
+            // 
             // UIWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 382);
+            this.Controls.Add(this.checkBoxProxyModel);
             this.Controls.Add(this.checkBoxAutomate);
             this.Controls.Add(this.checkBoxPaused);
             this.Controls.Add(this.checkBoxDumpTransitions);
@@ -189,6 +202,7 @@
         private System.Windows.Forms.CheckBox checkBoxDumpTransitions;
         private System.Windows.Forms.CheckBox checkBoxPaused;
         private System.Windows.Forms.CheckBox checkBoxAutomate;
+        private System.Windows.Forms.CheckBox checkBoxProxyModel;
     }
 }
 

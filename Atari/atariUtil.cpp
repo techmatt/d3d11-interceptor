@@ -156,10 +156,10 @@ void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const stri
     ofstream file(filename);
 
     file << "frame,";
-    for (auto &o : states[0].variables)
+    /*for (auto &o : states[0].variables)
     {
         file << o.first << ',';
-    }
+    }*/
 
     for (auto &o : states[0].objects)
     {
@@ -179,10 +179,10 @@ void AtariUtil::saveStateGraph(const vector<Game::StateInst> &states, const stri
     {
         file << frameIndex << ',';
         auto &state = states[frameIndex];
-        for (auto &o : state.variables)
+        /*for (auto &o : state.variables)
         {
             file << o.second << ',';
-        }
+        }*/
         for (auto &o : state.objects)
         {
             file << o.second.size() << ',';
@@ -239,7 +239,7 @@ double AtariUtil::compareActionDescriptorDist(const vector<Game::StateInst> &sta
         const Game::StateInst &stateA = statesA[max(0, baseFrameIndexA - history)];
         const Game::StateInst &stateB = statesB[max(0, baseFrameIndexB - history)];
 
-        if (stateA.variables.find("action")->second != stateB.variables.find("action")->second)
+        if (stateA.action != stateB.action)
             sum++;
     }
     return sum;

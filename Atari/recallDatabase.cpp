@@ -8,6 +8,7 @@ string ObjectSample::toString() const
     result += "nAlive=" + to_string(transition.nextAlive) + "\n";
     result += "nAnimation=" + to_string(transition.nextAnimation) + "\n";
     result += "nVelocity=" + transition.velocity.toString("x") + "\n";
+    result += "nReward=" + to_string(transition.nextReward) + "\n";
     return result;
 }
 
@@ -76,11 +77,17 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
         candidates = allSamples;
     }
 
-    cout << objectName << " candidates: " << candidates.size() << endl;
+    //cout << objectName << " candidates: " << candidates.size() << endl;
+    if (candidates.size() == 1)
+    {
+        cout << "Singular candidate -- get more training data" << endl;
+        candidates = allSamples;
+    }
 
     ObjectTransition blankTransition;
     blankTransition.nextAlive = true;
     blankTransition.nextAnimation = 0;
+    blankTransition.nextReward = 0;
     blankTransition.velocity = vec2s(0, 0);
 
     if (candidates.size() == 0)
@@ -98,7 +105,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
         dumpFile.open(learningParams().ROMDatasetDir + "dump" + objectName + ".csv", ios::out);
         dumpFile << "selected action: " << action << endl;
         for (int history = 0; history <= 10; history++)
-            dumpFile << "action" << history << ": " << states[max(0, (int)states.size() - 1 - history)].variables.find("action")->second << endl;
+            dumpFile << "action" << history << ": " << states[max(0, (int)states.size() - 1 - history)].action << endl;
         dumpFile << "frame,action,padBPos,ballPos,trans-vy,barrier,velDist,animDist,actionDist,positionDist,contactPadADist,offsetPadADist,contactPadBDist,offsetPadBDist,lineConstraints,dist" << endl;
     }
 
@@ -145,7 +152,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
             const Game::StateInst &stateInst = candidateStates[sample->frame.frameIndex];
 
-            dumpFile << stateInst.variables.find("action")->second << ",";
+            dumpFile << stateInst.action << ",";
 
             if (stateInst.objects.find("padB")->second.size() == 0)
                 dumpFile << "dead,";
@@ -186,7 +193,7 @@ ObjectTransition ObjectSampleDataset::predictTransitionSingleton(AppState &state
 
     if (bestSamples.size() == 0)
     {
-        cout << "No samples found" << endl;
+        cout << "No samples found for " << objectName << endl;
         return blankTransition;
     }
 
@@ -245,9 +252,10 @@ ObjectTransition RecallDatabase::computeObjectTransitionSingleton(const vector<G
 
     ObjectTransition result;
 
+    result.nextReward = nextState.reward;
     if (nextInstances.size() == 0)
     {
-        result.nextAnimation = 0;
+        result.nextAnimation = mostRecentInst ? mostRecentInst->segmentHash : 0;
         result.nextAlive = 0;
         result.velocity = vec2s(0, 0);
     }
@@ -281,7 +289,7 @@ ObjectSampleDataset* RecallDatabase::makeObjectSampleDataset(AppState &state, co
             newSample->frame = FrameID(replay->replay->index, baseFrameIndex);
             newSample->history = computeObjectHistorySingleton(state, replay->states, baseFrameIndex, objectName, slotInfo);
             newSample->transition = computeObjectTransitionSingleton(replay->states, baseFrameIndex, objectName);
-            newSample->nextAction = replay->states[baseFrameIndex + 1].variables.find("action")->second;
+            newSample->nextAction = replay->states[baseFrameIndex + 1].action;
             
             vector<ObjectSample*> &hashList = result->samplesByHash[newSample->history.hash];
             hashList.push_back(newSample);

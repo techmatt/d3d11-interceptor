@@ -80,6 +80,9 @@ void Vizzer::registerEventHandlers(ApplicationData& app)
     state.eventMap.registerEvent("automatePlay", [&](const vector<string> &params) {
         state.automatePlay = ml::util::convertTo<bool>(params[1]);
     });
+    state.eventMap.registerEvent("useProxyModel", [&](const vector<string> &params) {
+        state.useProxyModel = ml::util::convertTo<bool>(params[1]);
+    });
 }
 
 void Vizzer::updateGamePlay(ApplicationData &app)
@@ -104,11 +107,21 @@ void Vizzer::updateGamePlay(ApplicationData &app)
         MCTSParams params;
         params.actions = legalActions;
         params.actionCount = (int)params.actions.size();
+        params.maxActionDepth = 60;
         params.iterations = 100;
 
-        MCTSMutableStateALE state(&state.ale);
-        mcts.init(params, &state);
-        mcts.go();
+        if (state.useProxyModel)
+        {
+            MCTSMutableStateRecall state(&state, state.modelStateHistory);
+            mcts.init(params, &state);
+            mcts.go();
+        }
+        else
+        {
+            MCTSMutableStateALE state(&state.ale);
+            mcts.init(params, &state);
+            mcts.go();
+        }
         mcts.describeActions();
         frame->action = mcts.bestAction();
     }
@@ -125,6 +138,10 @@ void Vizzer::updateGamePlay(ApplicationData &app)
     //state.segmentDatabase.recordAndAnnotateSegments(state.getPalette(), *frame);
     //state.segmentAnalyzer.annotateObjects(*frame);
     //frame->updateObjectIDs(state.segmentDatabase);
+
+    Game::StateInst curGameState;
+    state.model.loadObjects(state, state.objectAnalyzer, *frame, curGameState);
+    state.modelStateHistory.push_back(curGameState);
 
     if (state.replayFramesSkipsLeft)
         state.replayFramesSkipsLeft--;
@@ -159,7 +176,7 @@ void Vizzer::render(ApplicationData &app)
 
     state.eventMap.dispatchEvents(state.ui);
 
-    const bool livePlayMode = false;
+    const bool livePlayMode = true;
     ReplayFrame *frameToRender = nullptr;
     const ColourPalette &palette = state.getPalette();
     if (livePlayMode)
@@ -270,7 +287,7 @@ void Vizzer::keyPressed(ApplicationData &app, UINT key)
 
     if (advanceModel)
     {
-        int action = state.replayDatabase.getFrame(state.gameModelFrame).action;
+        Action action = state.replayDatabase.getFrame(state.gameModelFrame).action;
         //cout << "Selected action = " << action << " drawn from frame " << state.gameModelFrame.toString() << endl;
         state.gameModelFrame = state.gameModelFrame.delta(1);
 

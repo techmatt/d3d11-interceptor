@@ -21,6 +21,7 @@ struct ObjectTransition
 {
     ObjectTransition()
     {
+        nextReward = 0;
         nextAnimation = 0;
         nextAlive = 0;
     }
@@ -31,6 +32,7 @@ struct ObjectTransition
     UINT64 nextAnimation;
     UINT nextAlive;
     vec2s velocity;
+    int nextReward;
 };
 
 struct ObjectSample

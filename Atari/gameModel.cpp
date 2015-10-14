@@ -7,7 +7,10 @@ namespace Game
 bbox2f ObjectInst::bbox(const SegmentDatabase &database) const
 {
     bbox2i result;
-    return bbox2f(origin, origin + database.getSegment(segmentHash)->dimensions);
+    if (segmentHash == 0)
+        return bbox2f(origin, origin);
+    else
+        return bbox2f(origin, origin + database.getSegment(segmentHash)->dimensions);
 }
 
 void StateSpec::describe(ofstream &file) const
@@ -61,18 +64,6 @@ void Model::initStateSpec(const ObjectAnalyzer &objectSpec, const string &variab
         }
     }
 
-    VariableSpec reward;
-    reward.name = "reward";
-    reward.startValue = 0;
-    reward.type = VariableType::VariableInt;
-    stateSpec.variables.push_back(reward);
-
-    VariableSpec action;
-    action.name = "action";
-    action.startValue = 0;
-    action.type = VariableType::VariableInt;
-    stateSpec.variables.push_back(action);
-    
     const int spriteCount = (int)objectSpec.objects.size();
     stateSpec.objects.resize(spriteCount);
     for (int i = 0; i < spriteCount; i++)
@@ -126,21 +117,22 @@ void Model::loadObjects(AppState &state, const ObjectAnalyzer &objectSpec, const
         inst.objects[objectName].push_back(oInst);
     }
 
-    inst.variables["reward"] = frame.reward;
-    inst.variables["action"] = frame.action;
+    inst.reward = frame.reward;
+    inst.action = frame.action;
 }
 
 void Model::readVariables(const SegmentDatabase &segments, StateInst &inst) const
 {
     for (const VariableDisplay *display : displays)
     {
-        inst.variables[display->variableName] = display->readVariable(segments, inst);
+        //inst.variables[display->variableName] = display->readVariable(segments, inst);
     }
 }
 
-void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, int action, StateInst &nextInst)
+void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst> &states, Action action, StateInst &nextInst)
 {
-    
+    int reward = 0;
+
     for (const auto &o : stateSpec.objects)
     {
         if (o.name == "unnamed")
@@ -165,6 +157,9 @@ void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst
         ObjectSampleDataset &oDataset = *state.recallDatabase.objectSamples[o.name];
         ObjectTransition transition = oDataset.predictTransitionSingleton(state, state.replayDatabase, testReplayIndex, states, (int)states.size() - 1, action, metric);
 
+        if (o.name == "ball")
+            reward = transition.nextReward;
+
         const StateInst &curState = states.back();
         
         if (mostRecentInst != nullptr)
@@ -179,7 +174,9 @@ void Model::advance(AppState &state, int testReplayIndex, const vector<StateInst
         }
     }
 
-    nextInst.variables["action"] = action;
+    cout << "predicted reward: " << reward << endl;
+    nextInst.reward = reward;
+    nextInst.action = action;
 }
 
 }

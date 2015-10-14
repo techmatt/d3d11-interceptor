@@ -16,8 +16,8 @@ void ModelLearner::loadReplayStates(AppState &state, const Replay &replay, const
         model.loadObjects(state, state.objectAnalyzer, frame, states[frameIndex]);
         model.readVariables(state.segmentDatabase, states[frameIndex]);
 
-        states[frameIndex].variables["action"] = prevFrame.action;
-        states[frameIndex].variables["reward"] = frame.reward;
+        states[frameIndex].action = prevFrame.action;
+        states[frameIndex].reward = frame.reward;
     }
 }
 

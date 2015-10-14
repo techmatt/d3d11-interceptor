@@ -7,6 +7,7 @@ struct AppState
         dumpAllTransitions = false;
         gamePaused = false;
         automatePlay = false;
+        useProxyModel = false;
         mostRecentFrame = nullptr;
     }
 
@@ -51,6 +52,7 @@ struct AppState
     bool dumpAllTransitions;
     bool gamePaused;
     bool automatePlay;
+    bool useProxyModel;
 
     ReplayFrame *mostRecentFrame;
 };
