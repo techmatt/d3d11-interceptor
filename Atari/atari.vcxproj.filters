@@ -13,6 +13,9 @@
     <Filter Include="Modeling">
       <UniqueIdentifier>{8772b448-89c7-4e79-aa85-b246a7fbfd07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{71c307fb-9841-42f1-9b12-085e88675b33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -66,6 +69,9 @@
     <ClInclude Include="recallDatabase.h">
       <Filter>Learning</Filter>
     </ClInclude>
+    <ClInclude Include="MCTS.h">
+      <Filter>Player</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mLibSource.cpp">
@@ -106,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="recallDatabase.cpp">
       <Filter>Learning</Filter>
+    </ClCompile>
+    <ClCompile Include="MCTS.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

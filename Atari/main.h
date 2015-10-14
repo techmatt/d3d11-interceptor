@@ -39,5 +39,7 @@ namespace Game
 #include "gameModel.h"
 #include "modelLearner.h"
 
+#include "MCTS.h"
+
 #include "appState.h"
 #include "vizzer.h"

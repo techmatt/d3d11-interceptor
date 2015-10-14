@@ -1,6 +1,11 @@
 
 #include "main.h"
 
+string AtariUtil::toString(Action action)
+{
+    return action_to_string(action);
+}
+
 int AtariUtil::maskDiff(const set<vec2s> &a, const set<vec2s> &b)
 {
     int diffCount = 0;

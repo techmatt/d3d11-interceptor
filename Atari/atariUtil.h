@@ -27,6 +27,8 @@ struct LineConstraint
 class AtariUtil
 {
 public:
+    static string toString(Action action);
+
     static UINT64 animationHash(const set<vec2s> &mask, BYTE color);
     static int maskDiff(const set<vec2s> &a, const set<vec2s> &b);
     static Action actionFromKeyboard();

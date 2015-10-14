@@ -170,5 +170,20 @@ namespace UIWindow
         {
             SendMessage("dumpAllTransitions " + checkBoxDumpTransitions.Checked);
         }
+
+        private void checkBoxPaused_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("gamePaused " + checkBoxPaused.Checked);
+        }
+
+        private void checkBoxMCTS_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("useMCTS " + checkBoxAutomate.Checked);
+        }
+
+        private void checkBoxAutomate_CheckedChanged(object sender, EventArgs e)
+        {
+            SendMessage("automatePlay " + checkBoxAutomate.Checked);
+        }
     }
 }

@@ -5,6 +5,9 @@ struct AppState
     {
         replayFramesSkipsLeft = 10;
         dumpAllTransitions = false;
+        gamePaused = false;
+        automatePlay = false;
+        mostRecentFrame = nullptr;
     }
 
     const ColourPalette& getPalette() const
@@ -46,4 +49,8 @@ struct AppState
     Cameraf camera;
 
     bool dumpAllTransitions;
+    bool gamePaused;
+    bool automatePlay;
+
+    ReplayFrame *mostRecentFrame;
 };

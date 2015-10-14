@@ -20,6 +20,8 @@ private:
     void registerEventHandlers(ApplicationData& app);
     void drawText(ApplicationData &app, vector< string > &text);
 
+    void updateGamePlay(ApplicationData &app);
+
     D3D11Font font;
     FrameTimer timer;
 

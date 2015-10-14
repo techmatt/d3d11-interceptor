@@ -39,6 +39,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.textBoxReplayIndex = new System.Windows.Forms.TextBox();
             this.checkBoxDumpTransitions = new System.Windows.Forms.CheckBox();
+            this.checkBoxPaused = new System.Windows.Forms.CheckBox();
+            this.checkBoxAutomate = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // timerProcessMessages
@@ -123,11 +125,35 @@
             this.checkBoxDumpTransitions.UseVisualStyleBackColor = true;
             this.checkBoxDumpTransitions.CheckedChanged += new System.EventHandler(this.checkBoxDumpTransitions_CheckedChanged);
             // 
+            // checkBoxPaused
+            // 
+            this.checkBoxPaused.AutoSize = true;
+            this.checkBoxPaused.Location = new System.Drawing.Point(138, 121);
+            this.checkBoxPaused.Name = "checkBoxPaused";
+            this.checkBoxPaused.Size = new System.Drawing.Size(66, 19);
+            this.checkBoxPaused.TabIndex = 3;
+            this.checkBoxPaused.Text = "Paused";
+            this.checkBoxPaused.UseVisualStyleBackColor = true;
+            this.checkBoxPaused.CheckedChanged += new System.EventHandler(this.checkBoxPaused_CheckedChanged);
+            // 
+            // checkBoxAutomate
+            // 
+            this.checkBoxAutomate.AutoSize = true;
+            this.checkBoxAutomate.Location = new System.Drawing.Point(210, 121);
+            this.checkBoxAutomate.Name = "checkBoxAutomate";
+            this.checkBoxAutomate.Size = new System.Drawing.Size(78, 19);
+            this.checkBoxAutomate.TabIndex = 3;
+            this.checkBoxAutomate.Text = "Automate";
+            this.checkBoxAutomate.UseVisualStyleBackColor = true;
+            this.checkBoxAutomate.CheckedChanged += new System.EventHandler(this.checkBoxAutomate_CheckedChanged);
+            // 
             // UIWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(408, 382);
+            this.Controls.Add(this.checkBoxAutomate);
+            this.Controls.Add(this.checkBoxPaused);
             this.Controls.Add(this.checkBoxDumpTransitions);
             this.Controls.Add(this.textBoxReplayIndex);
             this.Controls.Add(this.textBoxFrameIndex);
@@ -161,6 +187,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxReplayIndex;
         private System.Windows.Forms.CheckBox checkBoxDumpTransitions;
+        private System.Windows.Forms.CheckBox checkBoxPaused;
+        private System.Windows.Forms.CheckBox checkBoxAutomate;
     }
 }
 
